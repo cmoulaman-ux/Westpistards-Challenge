@@ -707,16 +707,29 @@ def __migrate_add_pseudo():
     if token != app.config.get("SECRET_KEY"):
         abort(403)
 
-    # Vérifie si la colonne 'pseudo' existe déjà
-    res = db.session.execute(db.text("PRAGMA table_info(user)")).all()
-    cols = [r[1] for r in res]  # 2e colonne = name
+    # 1) Lister les colonnes existantes de 'user'
+    try:
+        res = db.session.execute(db.text("PRAGMA table_info(user)")).all()
+        # res = liste de lignes (cid, name, type, notnull, dflt_value, pk)
+        cols = [row[1] for row in res]
+    except Exception as e:
+        return f"PRAGMA error: {e.__class__.__name__}: {e}", 500
+
+    # 2) Si 'pseudo' existe déjà → OK
     if "pseudo" in cols:
         return "OK: colonne 'pseudo' déjà présente"
 
-    # Ajoute la colonne
-    db.session.execute(db.text("ALTER TABLE user ADD COLUMN pseudo VARCHAR(80)"))
-    db.session.commit()
-    return "OK: colonne 'pseudo' ajoutée"
+    # 3) Sinon, on tente de l'ajouter
+    try:
+        db.session.execute(db.text("ALTER TABLE user ADD COLUMN pseudo VARCHAR(80)"))
+        db.session.commit()
+        return "OK: colonne 'pseudo' ajoutée"
+    except Exception as e:
+        # Si jamais SQLite renvoie 'duplicate column' malgré le test, on renvoie OK
+        if "duplicate column" in str(e).lower():
+            return "OK: colonne 'pseudo' déjà présente (via erreur)."
+        return f"Erreur migration: {e.__class__.__name__}: {e}", 500
+
 
 
 if __name__ == "__main__":
