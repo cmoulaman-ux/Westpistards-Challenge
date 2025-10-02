@@ -1,0 +1,44 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="2299.77">
+  <style type="text/css">
+    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica}
+  </style>
+</head>
+<body>
+<p class="p1">{% extends 'base.html' %}</p>
+<p class="p1">{% block content %}</p>
+<p class="p1">&lt;h1&gt;Ajouter un chrono&lt;/h1&gt;</p>
+<p class="p1">&lt;form method="post" class="form"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;label&gt;Manche</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;select name="round_id" required&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{% for r in rounds %}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;option value="{{ r.id }}"&gt;{{ r.name }}&lt;/option&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{% endfor %}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/select&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;/label&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;label&gt;Temps (ex: 1:02.345 ou 62.345)</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;input type="text" name="time" required&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;/label&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;label&gt;Pénalités (1 = +1s)</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;input type="number" min="0" step="1" name="penalties" value="0"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;/label&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;label&gt;Moto</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;input type="text" name="bike" placeholder="ex: Yamaha R6"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;/label&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;label&gt;Lien YouTube</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;input type="url" name="youtube_url" placeholder="https://youtu.be/..."&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;/label&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;label&gt;Note</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;textarea name="note" rows="3"&gt;&lt;/textarea&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;/label&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;button class="btn" type="submit"&gt;Soumettre&lt;/button&gt;</p>
+<p class="p1">&lt;/form&gt;</p>
+<p class="p1">{% endblock %}</p>
+</body>
+</html>
