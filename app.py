@@ -50,8 +50,61 @@ def current_user():
 # --- Routes publiques ---
 @app.get("/")
 def index():
-    # pas encore de Round ici : on passe des listes vides
-    return render_template("index.html", user=current_user(), open_rounds=[])
+    return """
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WP Challenge</title>
+  <style>
+    :root{ --bg:#f9fafb; --card:#ffffff; --text:#111827; --muted:#6b7280; --primary:#2563eb; --border:#e5e7eb; }
+    *{ box-sizing:border-box; } body{ margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu; background:var(--bg); color:var(--text); }
+    .container{ max-width:980px; margin:0 auto; padding:16px; }
+    .nav{ display:flex; justify-content:space-between; align-items:center; }
+    .brand{ font-weight:700; text-decoration:none; color:var(--text); }
+    nav a{ margin-left:12px; text-decoration:none; color:var(--text); }
+    .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    .card{ background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px; }
+    .btn{ background:var(--primary); color:white; border:none; padding:10px 14px; border-radius:8px; cursor:pointer; text-decoration:none; display:inline-block; }
+    .btn.outline{ background:white; color:var(--primary); border:1px solid var(--primary); }
+    .muted{ color:var(--muted); }
+  </style>
+</head>
+<body>
+  <header class="container">
+    <div class="nav">
+      <div><a class="brand" href="/">WP Challenge</a></div>
+      <nav>
+        <a href="/rounds">Manches</a>
+        <a href="/register">Inscription</a>
+        <a href="/login">Connexion</a>
+      </nav>
+    </div>
+  </header>
+  <main class="container">
+    <h1>Bienvenue sur WP Challenge</h1>
+    <p>Entre tes chronos, partage ton lien YouTube et grimpe au classement !</p>
+    <section class="card">
+      <h2>Manches ouvertes</h2>
+      <p class="muted">Aucune manche ouverte pour le moment.</p>
+    </section>
+    <section class="grid2" style="margin-top:16px">
+      <div class="card">
+        <h3>Inscription</h3>
+        <p><a class="btn" href="/register">Créer mon compte</a></p>
+      </div>
+      <div class="card">
+        <h3>Connexion</h3>
+        <p><a class="btn outline" href="/login">Me connecter</a></p>
+      </div>
+    </section>
+  </main>
+  <footer class="container muted">© 2025 westpistards</footer>
+</body>
+</html>
+    """
+
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
