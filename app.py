@@ -106,6 +106,48 @@ def index():
 </html>
     """
 
+# --- Mise en page inline réutilisable pour toutes les pages ---
+def PAGE(inner_html: str) -> str:
+    return f"""
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WP Challenge</title>
+  <style>
+    :root{{ --bg:#f9fafb; --card:#ffffff; --text:#111827; --muted:#6b7280; --primary:#2563eb; --border:#e5e7eb; }}
+    *{{ box-sizing:border-box; }} body{{ margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu; background:var(--bg); color:var(--text); }}
+    .container{{ max-width:980px; margin:0 auto; padding:16px; }}
+    .nav{{ display:flex; justify-content:space-between; align-items:center; }}
+    .brand{{ font-weight:700; text-decoration:none; color:var(--text); }}
+    nav a{{ margin-left:12px; text-decoration:none; color:var(--text); }}
+    .card{{ background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px; }}
+    .form{{ display:grid; gap:12px; max-width:460px; background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px; }}
+    .form input{{ width:100%; padding:10px; border:1px solid var(--border); border-radius:8px; }}
+    .btn{{ background:var(--primary); color:white; border:none; padding:10px 14px; border-radius:8px; cursor:pointer; text-decoration:none; display:inline-block; }}
+    .btn.outline{{ background:white; color:var(--primary); border:1px solid var(--primary); }}
+    .muted{{ color:var(--muted); }}
+  </style>
+</head>
+<body>
+  <header class="container">
+    <div class="nav">
+      <div><a class="brand" href="/">WP Challenge</a></div>
+      <nav>
+        <a href="/rounds">Manches</a>
+        <a href="/register">Inscription</a>
+        <a href="/login">Connexion</a>
+      </nav>
+    </div>
+  </header>
+  <main class="container">
+    {inner_html}
+  </main>
+  <footer class="container muted">© 2025 westpistards</footer>
+</body>
+</html>
+"""
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
@@ -113,18 +155,44 @@ def register():
         email = (request.form.get("email") or "").strip().lower()
         nat = (request.form.get("nationality") or "").strip()
         if not email:
-            flash("Email obligatoire", "error")
-            return redirect(url_for("register"))
+            return render_template_string(PAGE("""
+                <h1>Inscription</h1>
+                <p class="muted">Email obligatoire.</p>
+                <form method="post" class="form">
+                  <label>Email
+                    <input type="email" name="email" required>
+                  </label>
+                  <label>Nationalité
+                    <input type="text" name="nationality" placeholder="FR, BE, ...">
+                  </label>
+                  <button class="btn" type="submit">S'inscrire</button>
+                </form>
+            """)), 400
         user = User.query.filter_by(email=email).first()
         if user:
-            flash("Ce mail est déjà inscrit. Connecte-toi.", "info")
+            # déjà inscrit -> redirige vers login
             return redirect(url_for("login"))
-        user = User(email=email, nationality=nat, is_admin=(email in ADMIN_EMAILS))
+        is_admin = email in {"renaud.debry@ecf-cerca.fr","westpistards@gmail.com"}
+        user = User(email=email, nationality=nat, is_admin=is_admin)
         db.session.add(user); db.session.commit()
         session["user_id"] = user.id
-        flash("Inscription réussie !", "success")
         return redirect(url_for("index"))
-    return render_template("register.html")
+
+    # GET -> page stylée
+    return render_template_string(PAGE("""
+        <h1>Inscription</h1>
+        <form method="post" class="form">
+          <label>Email
+            <input type="email" name="email" required>
+          </label>
+          <label>Nationalité
+            <input type="text" name="nationality" placeholder="FR, BE, ...">
+          </label>
+          <button class="btn" type="submit">S'inscrire</button>
+        </form>
+        <p class="muted" style="margin-top:12px;">Déjà inscrit ? <a href="/login">Connexion</a></p>
+    """))
+
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -132,12 +200,23 @@ def login():
         email = (request.form.get("email") or "").strip().lower()
         user = User.query.filter_by(email=email).first()
         if not user:
-            flash("Aucun compte pour cet email. Inscris-toi.", "error")
+            # pas de compte -> renvoi vers inscription
             return redirect(url_for("register"))
         session["user_id"] = user.id
-        flash("Connecté.", "success")
         return redirect(url_for("index"))
-    return render_template("login.html")
+
+    # GET -> page stylée
+    return render_template_string(PAGE("""
+        <h1>Connexion (sans mot de passe)</h1>
+        <form method="post" class="form">
+          <label>Email
+            <input type="email" name="email" required>
+          </label>
+          <button class="btn" type="submit">Se connecter</button>
+        </form>
+        <p class="muted" style="margin-top:12px;">Pas encore de compte ? <a href="/register">Inscription</a></p>
+    """))
+
 
 @app.get("/logout")
 def logout():
