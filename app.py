@@ -8,6 +8,26 @@ BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 app = Flask(__name__, static_folder='static', template_folder='templates')
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-secret-change-me')
 
+# --- DB SQLite (fichier) ---
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(BASE_DIR, 'wp_challenge.sqlite3')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+db = SQLAlchemy(app)
+
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(255), unique=True, nullable=False)
+    nationality = db.Column(db.String(100))
+    is_admin = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+
+app = Flask(__name__, static_folder='static', template_folder='templates')
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-secret-change-me')
+
 # --- DB config: SQLite locale / fichier dans le conteneur Render ---
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(BASE_DIR, 'wp_challenge.sqlite3')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -88,6 +108,17 @@ def profile():
         return redirect(url_for("login"))
     # pas encore de chronos => on affiche juste le profil
     return render_template("profile.html", user=user, laps=[], ms_to_string=lambda x: x)
+
+from flask import request, abort
+
+@app.get("/__init_db")
+def __init_db():
+    token = request.args.get("token")
+    if token != app.config.get("SECRET_KEY"):
+        abort(403)
+    with app.app_context():
+        db.create_all()
+    return "DB OK"
 
 if __name__ == "__main__":
     with app.app_context():
