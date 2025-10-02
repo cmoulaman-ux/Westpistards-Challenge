@@ -24,6 +24,13 @@ if db:
         nationality = db.Column(db.String(100))
         is_admin = db.Column(db.Boolean, default=False)
         created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    class Round(db.Model):
+        id = db.Column(db.Integer, primary_key=True)
+        name = db.Column(db.String(200), nullable=False)
+        status = db.Column(db.String(20), default='open')  # open | closed
+        created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
 
 ADMIN_EMAILS = {'renaud.debry@ecf-cerca.fr', 'westpistards@gmail.com'}
 
