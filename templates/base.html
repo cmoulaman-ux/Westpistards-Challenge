@@ -15,21 +15,44 @@
 <body>
 <p class="p1"><span class="s1">&lt;!doctype html&gt;</span></p>
 <p class="p1"><span class="s1">&lt;html lang="fr"&gt;</span></p>
-<p class="p1"><span class="s1">&lt;style&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>body { background: pink !important; }</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>h1 { color: green !important; }</span></p>
-<p class="p1"><span class="s1">&lt;/style&gt;</span></p>
 <p class="p1"><span class="s1">&lt;head&gt;</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;meta charset="utf-8"&gt;</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;meta name="viewport" content="width=device-width, initial-scale=1"&gt;</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;title&gt;WP Challenge&lt;/title&gt;</span></p>
-<p class="p1"><span class="s1">&lt;link rel="stylesheet" href="{{ url_for('static', filename='style.css', v=2) }}"&gt;</span></p>
-<p class="p1"><span class="s1">&lt;link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml"&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;!-- CSS INLINE pour éviter tout souci de cache/chemin --&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;style&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>:root{ --bg:#f9fafb; --card:#ffffff; --text:#111827; --muted:#6b7280; --primary:#2563eb; --danger:#dc2626; --border:#e5e7eb; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>*{ box-sizing:border-box; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>body{ margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu; background:var(--bg); color:var(--text); }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.container{ max-width:980px; margin:0 auto; padding:16px; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.nav{ display:flex; justify-content:space-between; align-items:center; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.brand{ font-weight:700; text-decoration:none; color:var(--text); }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>nav a{ margin-left:12px; text-decoration:none; color:var(--text); }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.grid2{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.card{ background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.cards{ list-style:none; padding:0; display:grid; grid-template-columns:1fr 1fr; gap:16px; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.btn{ background:var(--primary); color:white; border:none; padding:10px 14px; border-radius:8px; cursor:pointer; text-decoration:none; display:inline-block; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.btn.outline{ background:white; color:var(--primary); border:1px solid var(--primary); }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.btn.danger{ background:var(--danger); }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.form{ display:grid; gap:12px; max-width:460px; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.form input, .form select, .form textarea{ width:100%; padding:10px; border:1px solid var(--border); border-radius:8px; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.table{ width:100%; border-collapse:collapse; background:var(--card); border:1px solid var(--border); }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.table th, .table td{ padding:10px; border-bottom:1px solid var(--border); }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.table th{ text-align:left; background:#f3f4f6; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.row{ display:flex; gap:8px; align-items:center; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.flash{ list-style:none; padding:0; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.flash li{ margin:8px 0; padding:10px; border-radius:8px; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.flash li.success{ background:#d1fae5; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.flash li.error{ background:#fee2e2; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.flash li.info{ background:#dbeafe; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.muted{ color:var(--muted); }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;/style&gt;</span></p>
 <p class="p1"><span class="s1">&lt;/head&gt;</span></p>
 <p class="p1"><span class="s1">&lt;body&gt;</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;header class="container"&gt;</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div class="nav"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;div&gt;&lt;a class="brand" href="/"&gt;WP Challenge&lt;/a&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;div&gt;&lt;a class="brand" href="{{ url_for('index') }}"&gt;WP Challenge&lt;/a&gt;&lt;/div&gt;</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;nav&gt;</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;a href="{{ url_for('rounds_list') }}"&gt;Manches&lt;/a&gt;</span></p>
 <p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>{% if user %}</span></p>
