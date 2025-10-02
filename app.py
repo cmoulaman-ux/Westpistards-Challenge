@@ -638,12 +638,24 @@ def profile():
         </table>
         """
 
+    admin_links = ""
+    if is_admin(u):
+        admin_links = """
+        <div style="margin-top:12px; display:flex; gap:8px;">
+          <a class="btn" href="/admin/rounds">Admin — Manches</a>
+          <a class="btn outline" href="/admin/times">Admin — Chronos</a>
+        </div>
+        """
+
     return PAGE(f"""
       <h1>Mon profil</h1>
-      <p class="muted">{display_name(u)} — {u.nationality or 'nationalité non renseignée'} {'(admin)' if u.is_admin else ''}</p>
+      <p class="muted">{(u.pseudo or u.email)} — {u.nationality or 'nationalité non renseignée'} {'(admin)' if u.is_admin else ''}</p>
       <p><a class="btn" href="/submit">Soumettre un chrono</a></p>
+      {admin_links}
       {body}
     """)
+
+
 
 @app.get("/rounds/<int:round_id>")
 def round_leaderboard(round_id):
