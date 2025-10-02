@@ -24,12 +24,34 @@ if db:
         nationality = db.Column(db.String(100))
         is_admin = db.Column(db.Boolean, default=False)
         created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    
+
     class Round(db.Model):
         id = db.Column(db.Integer, primary_key=True)
         name = db.Column(db.String(200), nullable=False)
         status = db.Column(db.String(20), default='open')  # open | closed
         created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    class TimeEntry(db.Model):
+        id = db.Column(db.Integer, primary_key=True)
+        user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+        round_id = db.Column(db.Integer, db.ForeignKey('round.id'), nullable=False)
+
+        # temps brut en millisecondes (on convertira le format saisi ensuite)
+        raw_time_ms = db.Column(db.Integer, nullable=False)
+
+        # 1 pénalité = +1000 ms
+        penalties = db.Column(db.Integer, default=0)
+
+        bike = db.Column(db.String(120))
+        youtube_link = db.Column(db.String(500))
+        note = db.Column(db.Text)
+
+        status = db.Column(db.String(20), default='pending')  # pending | approved | rejected
+        created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+        # relations pratiques
+        user = db.relationship('User', backref='time_entries', lazy=True)
+        round = db.relationship('Round', backref='time_entries', lazy=True)
 
 
 ADMIN_EMAILS = {'renaud.debry@ecf-cerca.fr', 'westpistards@gmail.com'}
