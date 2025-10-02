@@ -24,6 +24,7 @@ if db:
         nationality = db.Column(db.String(100))
         is_admin = db.Column(db.Boolean, default=False)
         created_at = db.Column(db.DateTime, default=datetime.utcnow)
+        pseudo = db.Column(db.String(80))
 
     class Round(db.Model):
         id = db.Column(db.Integer, primary_key=True)
@@ -54,6 +55,8 @@ if db:
         round = db.relationship('Round', backref='time_entries', lazy=True)
 
 
+
+
 ADMIN_EMAILS = {'renaud.debry@ecf-cerca.fr', 'westpistards@gmail.com'}
 
 # --- Helpers utilisateur ---
@@ -65,6 +68,10 @@ def current_user():
 
 def is_admin(user):
     return bool(user and user.is_admin)
+
+def display_name(user):
+    return (user.pseudo or user.email) if user else "—"
+
 
 # --- Helpers temps (parse/format) ---
 def parse_time_to_ms(s: str) -> int:
@@ -197,17 +204,18 @@ def register():
     if request.method == "POST":
         email = (request.form.get("email") or "").strip().lower()
         nat = (request.form.get("nationality") or "").strip()
+        pseudo = (request.form.get("pseudo") or "").strip()
         if not email:
             return PAGE("<h1>Inscription</h1><p class='muted'>Email obligatoire.</p>")
         u = User.query.filter_by(email=email).first()
         if u:
             return redirect(url_for("login"))
         is_admin = email in ADMIN_EMAILS
-        u = User(email=email, nationality=nat, is_admin=is_admin)
+        u = User(email=email, nationality=nat, is_admin=is_admin, pseudo=pseudo)
         db.session.add(u); db.session.commit()
         session["user_id"] = u.id
         return redirect(url_for("index"))
-    return PAGE("""
+      return PAGE("""
       <h1>Inscription</h1>
       <form method="post" class="form">
         <label>Email
@@ -216,10 +224,14 @@ def register():
         <label>Nationalité
           <input type="text" name="nationality" placeholder="FR, BE, ...">
         </label>
+        <label>Pseudo (affiché au classement)
+          <input type="text" name="pseudo" placeholder="Ton pseudo (obligatoire)" required>
+        </label>
         <button class="btn" type="submit">S'inscrire</button>
       </form>
       <p class="muted" style="margin-top:12px;">Déjà inscrit ? <a href="/login">Connexion</a></p>
     """)
+
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -321,6 +333,7 @@ def admin_rounds():
       <h2 style="margin-top:16px;">Liste</h2>
       <ul class="cards">{items}</ul>
     """)
+
 @app.post("/admin/rounds/<int:round_id>/close")
 def admin_round_close(round_id):
     if not db:
@@ -389,7 +402,7 @@ def admin_times():
         return f"""
         <tr>
           <td>{e.id}</td>
-          <td>{e.user.email}</td>
+          <td>{display_name(e.user)}</td>
           <td>{e.round.name}</td>
           <td>{ms_to_str(e.raw_time_ms)}</td>
           <td>{e.penalties}</td>
@@ -569,6 +582,7 @@ def submit_time():
         <button class="btn" type="submit">Envoyer</button>
       </form>
     """)
+
 @app.get("/profile")
 def profile():
     if not db:
@@ -617,7 +631,7 @@ def profile():
 
     return PAGE(f"""
       <h1>Mon profil</h1>
-      <p class="muted">{u.email} — {u.nationality or 'nationalité non renseignée'} {'(admin)' if u.is_admin else ''}</p>
+      <p class="muted">{display_name(u)} — {u.nationality or 'nationalité non renseignée'} {'(admin)' if u.is_admin else ''}</p>
       <p><a class="btn" href="/submit">Soumettre un chrono</a></p>
       {body}
     """)
@@ -651,7 +665,7 @@ def round_leaderboard(round_id):
         return f"""
         <tr>
           <td>{i}</td>
-          <td>{e.user.email}</td>
+          <td>{display_name(e.user)}</td>
           <td>{ms_to_str(e.raw_time_ms)}</td>
           <td>{e.penalties}</td>
           <td><strong>{ms_to_str(final_ms_val)}</strong></td>
@@ -674,6 +688,27 @@ def round_leaderboard(round_id):
     """
 
     return PAGE(f"<h1>{r.name}</h1>{table}")
+
+@app.get("/__migrate_add_pseudo")
+def __migrate_add_pseudo():
+    if not db:
+        return "DB non dispo", 500
+    from flask import request, abort
+    token = request.args.get("token")
+    if token != app.config.get("SECRET_KEY"):
+        abort(403)
+
+    # Vérifie si la colonne 'pseudo' existe déjà
+    res = db.session.execute(db.text("PRAGMA table_info(user)")).all()
+    cols = [r[1] for r in res]  # 2e colonne = name
+    if "pseudo" in cols:
+        return "OK: colonne 'pseudo' déjà présente"
+
+    # Ajoute la colonne
+    db.session.execute(db.text("ALTER TABLE user ADD COLUMN pseudo VARCHAR(80)"))
+    db.session.commit()
+    return "OK: colonne 'pseudo' ajoutée"
+
 
 if __name__ == "__main__":
     if db:
