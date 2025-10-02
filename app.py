@@ -200,22 +200,30 @@ def index():
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if not db:
-        return PAGE("<h1>Erreur</h1><p class='muted'>DB non initialisée.</p>")
+        return PAGE("<h1>Inscription</h1><p class='muted'>DB non dispo.</p>")
+
     if request.method == "POST":
         email = (request.form.get("email") or "").strip().lower()
         nat = (request.form.get("nationality") or "").strip()
         pseudo = (request.form.get("pseudo") or "").strip()
+
         if not email:
-            return PAGE("<h1>Inscription</h1><p class='muted'>Email obligatoire.</p>")
+            return PAGE("<h1>Inscription</h1><p class='muted'>Email obligatoire.</p>"), 400
+        if not pseudo:
+            return PAGE("<h1>Inscription</h1><p class='muted'>Pseudo obligatoire.</p>"), 400
+
         u = User.query.filter_by(email=email).first()
         if u:
             return redirect(url_for("login"))
+
         is_admin = email in ADMIN_EMAILS
         u = User(email=email, nationality=nat, is_admin=is_admin, pseudo=pseudo)
-        db.session.add(u); db.session.commit()
+        db.session.add(u)
+        db.session.commit()
         session["user_id"] = u.id
         return redirect(url_for("index"))
-      return PAGE("""
+
+    return PAGE("""
       <h1>Inscription</h1>
       <form method="post" class="form">
         <label>Email
@@ -231,6 +239,7 @@ def register():
       </form>
       <p class="muted" style="margin-top:12px;">Déjà inscrit ? <a href="/login">Connexion</a></p>
     """)
+
 
 
 @app.route("/login", methods=["GET", "POST"])
