@@ -33,6 +33,7 @@ if db:
 
 
 ADMIN_EMAILS = {'renaud.debry@ecf-cerca.fr', 'westpistards@gmail.com'}
+
 # --- Helpers utilisateur ---
 def current_user():
     if not db:
