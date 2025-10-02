@@ -257,16 +257,17 @@ def rounds_list():
         html = "<h1>Manches</h1><p class='muted'>Aucune manche pour l’instant.</p>"
     else:
         items = "".join(
-            f"<li class='card'><strong>{r.name}</strong> — "
+            f"<li class='card'><a href='/rounds/{r.id}'><strong>{r.name}</strong></a> — "
             f"<span class='muted'>{'ouverte' if r.status=='open' else 'clôturée'}</span></li>"
             for r in rounds
         )
         html = f"<h1>Manches</h1><ul class='cards'>{items}</ul>"
-    # petit lien admin si connecté admin
     u = current_user()
     if is_admin(u):
         html += "<p style='margin-top:12px'><a class='btn' href='/admin/rounds'>Admin : créer une manche</a></p>"
     return PAGE(html)
+
+
 @app.route("/admin/rounds", methods=["GET", "POST"])
 def admin_rounds():
     if not db:
@@ -361,6 +362,91 @@ def admin_round_delete(round_id):
     db.session.delete(r)
     db.session.commit()
     return redirect(url_for("admin_rounds"))
+
+@app.get("/admin/times")
+def admin_times():
+    if not db:
+        return PAGE("<h1>Admin — Chronos</h1><p class='muted'>DB non dispo.</p>")
+    u = current_user()
+    if not is_admin(u):
+        return PAGE("<h1>Accès refusé</h1><p class='muted'>Réservé aux administrateurs.</p>"), 403
+
+    # Montrer d'abord les pending, puis approved puis rejected
+    entries = (
+        TimeEntry.query
+        .order_by(
+            db.case((TimeEntry.status == "pending", 0), (TimeEntry.status == "approved", 1), else_=2),
+            TimeEntry.created_at.desc()
+        )
+        .all()
+    )
+
+    if not entries:
+        return PAGE("<h1>Admin — Chronos</h1><p class='muted'>Aucun chrono pour le moment.</p>")
+
+    def row(e):
+        final_ms_val = final_time_ms(e.raw_time_ms, e.penalties)
+        return f"""
+        <tr>
+          <td>{e.id}</td>
+          <td>{e.user.email}</td>
+          <td>{e.round.name}</td>
+          <td>{ms_to_str(e.raw_time_ms)}</td>
+          <td>{e.penalties}</td>
+          <td><strong>{ms_to_str(final_ms_val)}</strong></td>
+          <td>{e.status}</td>
+          <td>
+            <form method="post" action="/admin/times/{e.id}/approve" style="display:inline;">
+              <button class="btn" type="submit">Valider</button>
+            </form>
+            <form method="post" action="/admin/times/{e.id}/reject" style="display:inline;">
+              <button class="btn danger" type="submit">Refuser</button>
+            </form>
+          </td>
+        </tr>
+        """
+
+    rows = "".join(row(e) for e in entries)
+    table = f"""
+    <table class="table">
+      <thead>
+        <tr>
+          <th>ID</th><th>Pilote</th><th>Manche</th><th>Brut</th><th>Pén.</th><th>Final</th><th>Statut</th><th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>{rows}</tbody>
+    </table>
+    """
+
+    return PAGE(f"<h1>Admin — Chronos</h1>{table}<p style='margin-top:12px'><a class='btn outline' href='/rounds'>Voir les manches</a></p>")
+
+@app.post("/admin/times/<int:time_id>/approve")
+def admin_time_approve(time_id):
+    if not db:
+        return PAGE("<h1>Admin</h1><p class='muted'>DB non dispo.</p>")
+    u = current_user()
+    if not is_admin(u):
+        return PAGE("<h1>Accès refusé</h1><p class='muted'>Réservé aux administrateurs.</p>"), 403
+    e = db.session.get(TimeEntry, time_id)
+    if not e:
+        return PAGE("<h1>Erreur</h1><p class='muted'>Chrono introuvable.</p>"), 404
+    e.status = "approved"
+    db.session.commit()
+    return redirect(url_for("admin_times"))
+
+@app.post("/admin/times/<int:time_id>/reject")
+def admin_time_reject(time_id):
+    if not db:
+        return PAGE("<h1>Admin</h1><p class='muted'>DB non dispo.</p>")
+    u = current_user()
+    if not is_admin(u):
+        return PAGE("<h1>Accès refusé</h1><p class='muted'>Réservé aux administrateurs.</p>"), 403
+    e = db.session.get(TimeEntry, time_id)
+    if not e:
+        return PAGE("<h1>Erreur</h1><p class='muted'>Chrono introuvable.</p>"), 404
+    e.status = "rejected"
+    db.session.commit()
+    return redirect(url_for("admin_times"))
 
 @app.get("/__selftest")
 def __selftest():
@@ -535,6 +621,59 @@ def profile():
       <p><a class="btn" href="/submit">Soumettre un chrono</a></p>
       {body}
     """)
+
+@app.get("/rounds/<int:round_id>")
+def round_leaderboard(round_id):
+    if not db:
+        return PAGE("<h1>Classement</h1><p class='muted'>DB non dispo.</p>")
+    r = db.session.get(Round, round_id)
+    if not r:
+        return PAGE("<h1>Classement</h1><p class='muted'>Manche introuvable.</p>"), 404
+
+    # On prend uniquement les chronos VALIDÉS (approved)
+    entries = (
+        TimeEntry.query
+        .filter_by(round_id=r.id, status="approved")
+        .order_by(TimeEntry.raw_time_ms + TimeEntry.penalties * 1000)
+        .all()
+    )
+
+    if not entries:
+        return PAGE(f"<h1>{r.name}</h1><p class='muted'>Aucun chrono validé pour le moment.</p>")
+
+    # Calcul du meilleur + classement + %
+    finals = [final_time_ms(e.raw_time_ms, e.penalties) for e in entries]
+    best = min(finals)
+
+    def row(i, e):
+        final_ms_val = final_time_ms(e.raw_time_ms, e.penalties)
+        pct = (final_ms_val / best - 1.0) * 100.0 if best > 0 else 0.0
+        return f"""
+        <tr>
+          <td>{i}</td>
+          <td>{e.user.email}</td>
+          <td>{ms_to_str(e.raw_time_ms)}</td>
+          <td>{e.penalties}</td>
+          <td><strong>{ms_to_str(final_ms_val)}</strong></td>
+          <td>{pct:.2f}%</td>
+          <td>{e.bike or '—'}</td>
+          <td>{('<a target="_blank" href="'+e.youtube_link+'">Vidéo</a>') if e.youtube_link else '—'}</td>
+        </tr>
+        """
+
+    rows = "".join(row(i+1, e) for i, e in enumerate(entries))
+    table = f"""
+    <table class="table">
+      <thead>
+        <tr>
+          <th>#</th><th>Pilote</th><th>Brut</th><th>Pén.</th><th>Final</th><th>% du meilleur</th><th>Moto</th><th>YouTube</th>
+        </tr>
+      </thead>
+      <tbody>{rows}</tbody>
+    </table>
+    """
+
+    return PAGE(f"<h1>{r.name}</h1>{table}")
 
 if __name__ == "__main__":
     if db:
