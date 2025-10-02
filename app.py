@@ -284,6 +284,22 @@ def admin_round_delete(round_id):
     db.session.commit()
     return redirect(url_for("admin_rounds"))
 
+@app.get("/__selftest")
+def __selftest():
+    try:
+        out = []
+        out.append(f"db: {'OK' if db else 'MISSING'}")
+        try:
+            count = Round.query.count()
+            out.append(f"Round.count: {count}")
+        except Exception as e:
+            out.append(f"Round.query ERROR: {e.__class__.__name__}: {e}")
+        u = current_user()
+        out.append(f"current_user: {u.email if u else 'None'}")
+        out.append(f"is_admin: {is_admin(u)}")
+        return PAGE("<pre>" + "\n".join(out) + "</pre>")
+    except Exception as e:
+        return PAGE(f"<pre>SELFTEST FAIL: {e.__class__.__name__}\n{e}</pre>"), 500
 
 
 # --- Init DB temporaire (si besoin) ---
