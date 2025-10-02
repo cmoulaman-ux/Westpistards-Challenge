@@ -205,10 +205,30 @@ def admin_rounds():
         return redirect(url_for("admin_rounds"))
 
     rounds = Round.query.order_by(Round.created_at.desc()).all()
-    items = "".join(
-        f"<li class='card'><strong>{r.name}</strong> — <span class='muted'>{'ouverte' if r.status=='open' else 'clôturée'}</span></li>"
-        for r in rounds
-    ) or "<p class='muted'>Aucune manche pour l’instant.</p>"
+
+    def row_html(r):
+        status_label = "ouverte" if r.status == "open" else "clôturée"
+        # 3 formulaires (POST) pour close / open / delete
+        return f"""
+        <li class="card">
+          <div class="row" style="justify-content:space-between;">
+            <div><strong>{r.name}</strong> — <span class="muted">{status_label}</span></div>
+            <div class="row">
+              <form method="post" action="/admin/rounds/{r.id}/close">
+                <button class="btn outline" {'disabled' if r.status=='closed' else ''} type="submit">Clôturer</button>
+              </form>
+              <form method="post" action="/admin/rounds/{r.id}/open">
+                <button class="btn outline" {'disabled' if r.status=='open' else ''} type="submit">Rouvrir</button>
+              </form>
+              <form method="post" action="/admin/rounds/{r.id}/delete" onsubmit="return confirm('Supprimer définitivement cette manche ?');">
+                <button class="btn danger" type="submit">Supprimer</button>
+              </form>
+            </div>
+          </div>
+        </li>
+        """
+
+    items = "".join(row_html(r) for r in rounds) or "<p class='muted'>Aucune manche pour l’instant.</p>"
 
     return PAGE(f"""
       <h1>Admin — Manches</h1>
@@ -221,6 +241,48 @@ def admin_rounds():
       <h2 style="margin-top:16px;">Liste</h2>
       <ul class="cards">{items}</ul>
     """)
+@app.post("/admin/rounds/<int:round_id>/close")
+def admin_round_close(round_id):
+    if not db:
+        return PAGE("<h1>Admin</h1><p class='muted'>DB non dispo.</p>")
+    u = current_user()
+    if not is_admin(u):
+        return PAGE("<h1>Accès refusé</h1><p class='muted'>Réservé aux administrateurs.</p>"), 403
+    r = db.session.get(Round, round_id)
+    if not r:
+        return PAGE("<h1>Erreur</h1><p class='muted'>Manche introuvable.</p>"), 404
+    r.status = "closed"
+    db.session.commit()
+    return redirect(url_for("admin_rounds"))
+
+@app.post("/admin/rounds/<int:round_id>/open")
+def admin_round_open(round_id):
+    if not db:
+        return PAGE("<h1>Admin</h1><p class='muted'>DB non dispo.</p>")
+    u = current_user()
+    if not is_admin(u):
+        return PAGE("<h1>Accès refusé</h1><p class='muted'>Réservé aux administrateurs.</p>"), 403
+    r = db.session.get(Round, round_id)
+    if not r:
+        return PAGE("<h1>Erreur</h1><p class='muted'>Manche introuvable.</p>"), 404
+    r.status = "open"
+    db.session.commit()
+    return redirect(url_for("admin_rounds"))
+
+@app.post("/admin/rounds/<int:round_id>/delete")
+def admin_round_delete(round_id):
+    if not db:
+        return PAGE("<h1>Admin</h1><p class='muted'>DB non dispo.</p>")
+    u = current_user()
+    if not is_admin(u):
+        return PAGE("<h1>Accès refusé</h1><p class='muted'>Réservé aux administrateurs.</p>"), 403
+    r = db.session.get(Round, round_id)
+    if not r:
+        return PAGE("<h1>Erreur</h1><p class='muted'>Manche introuvable.</p>"), 404
+    db.session.delete(r)
+    db.session.commit()
+    return redirect(url_for("admin_rounds"))
+
 
 
 # --- Init DB temporaire (si besoin) ---
