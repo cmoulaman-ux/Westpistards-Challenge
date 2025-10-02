@@ -600,20 +600,28 @@ def profile():
     if not u:
         return redirect(url_for("login"))
 
+    # Construire un petit résumé lisible
+    role = "Administrateur" if u.is_admin else "Pilote"
+    pseudo = u.pseudo or "—"
+    nationality = u.nationality or "—"
+    email = u.email
+
+    # Récupérer les chronos de l'utilisateur
     entries = (
         TimeEntry.query.filter_by(user_id=u.id)
         .order_by(TimeEntry.created_at.desc())
         .all()
     )
 
+    # Section chronos
     if not entries:
-        body = "<p class='muted'>Aucun chrono pour l’instant.</p>"
+        chronos_html = "<p class='muted'>Aucun chrono pour l’instant.</p>"
     else:
         def row(e):
             raw = ms_to_str(e.raw_time_ms)
             final_ms = final_time_ms(e.raw_time_ms, e.penalties)
             final_s = ms_to_str(final_ms)
-            yt = f"<a href='{e.youtube_link}' target='_blank'>Vidéo</a>" if e.youtube_link else "—"
+            yt = f\"<a href='{e.youtube_link}' target='_blank'>Vidéo</a>\" if e.youtube_link else \"—\"
             return f"""
             <tr>
               <td>{e.round.name}</td>
@@ -626,34 +634,60 @@ def profile():
             </tr>
             """
         rows = "".join(row(e) for e in entries)
-        body = f"""
+        chronos_html = f"""
         <table class="table">
           <thead>
             <tr>
-              <th>Manche</th><th>Temps brut</th><th>Pénalités</th>
-              <th>Temps final</th><th>Moto</th><th>YouTube</th><th>Statut</th>
+              <th>Manche</th><th>Brut</th><th>Pén.</th>
+              <th>Final</th><th>Moto</th><th>YouTube</th><th>Statut</th>
             </tr>
           </thead>
           <tbody>{rows}</tbody>
         </table>
         """
 
+    # Liens admin (uniquement si admin)
     admin_links = ""
     if is_admin(u):
         admin_links = """
-        <div style="margin-top:12px; display:flex; gap:8px;">
+        <div class="row" style="gap:8px; margin-top:8px;">
           <a class="btn" href="/admin/rounds">Admin — Manches</a>
           <a class="btn outline" href="/admin/times">Admin — Chronos</a>
         </div>
         """
 
+    # Boutons actions pilote
+    actions_html = """
+      <div class="row" style="gap:8px;">
+        <a class="btn" href="/submit">Soumettre un chrono</a>
+        <a class="btn outline" href="/logout">Se déconnecter</a>
+      </div>
+    """
+
+    # Rendu final propre
     return PAGE(f"""
       <h1>Mon profil</h1>
-      <p class="muted">{(u.pseudo or u.email)} — {u.nationality or 'nationalité non renseignée'} {'(admin)' if u.is_admin else ''}</p>
-      <p><a class="btn" href="/submit">Soumettre un chrono</a></p>
-      {admin_links}
-      {body}
+
+      <section class="card">
+        <h2 style="margin-top:0;">Infos pilote</h2>
+        <p><strong>Pseudo :</strong> {pseudo}</p>
+        <p><strong>Email :</strong> {email}</p>
+        <p><strong>Nationalité :</strong> {nationality}</p>
+        <p><strong>Rôle :</strong> {role}</p>
+        {admin_links}
+      </section>
+
+      <section style="margin-top:16px;" class="card">
+        <h2 style="margin-top:0;">Mes actions</h2>
+        {actions_html}
+      </section>
+
+      <section style="margin-top:16px;" class="card">
+        <h2 style="margin-top:0;">Mes chronos</h2>
+        {chronos_html}
+      </section>
     """)
+
 
 
 
