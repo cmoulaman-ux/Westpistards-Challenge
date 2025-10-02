@@ -33,6 +33,16 @@ if db:
 
 
 ADMIN_EMAILS = {'renaud.debry@ecf-cerca.fr', 'westpistards@gmail.com'}
+# --- Helpers utilisateur ---
+def current_user():
+    if not db:
+        return None
+    uid = session.get("user_id")
+    return db.session.get(User, uid) if uid else None
+
+def is_admin(user):
+    return bool(user and user.is_admin)
+
 
 # --- Layout inline réutilisable ---
 def PAGE(inner_html: str) -> str:
@@ -161,7 +171,57 @@ def logout():
 
 @app.get("/rounds")
 def rounds_list():
-    return PAGE("<h1>Manches</h1><p class='muted'>Bientôt ici.</p>")
+    if not db:
+        return PAGE("<h1>Manches</h1><p class='muted'>DB non dispo.</p>")
+    rounds = Round.query.order_by(Round.created_at.desc()).all()
+    if not rounds:
+        html = "<h1>Manches</h1><p class='muted'>Aucune manche pour l’instant.</p>"
+    else:
+        items = "".join(
+            f"<li class='card'><strong>{r.name}</strong> — "
+            f"<span class='muted'>{'ouverte' if r.status=='open' else 'clôturée'}</span></li>"
+            for r in rounds
+        )
+        html = f"<h1>Manches</h1><ul class='cards'>{items}</ul>"
+    # petit lien admin si connecté admin
+    u = current_user()
+    if is_admin(u):
+        html += "<p style='margin-top:12px'><a class='btn' href='/admin/rounds'>Admin : créer une manche</a></p>"
+    return PAGE(html)
+@app.route("/admin/rounds", methods=["GET", "POST"])
+def admin_rounds():
+    if not db:
+        return PAGE("<h1>Admin</h1><p class='muted'>DB non dispo.</p>")
+    u = current_user()
+    if not is_admin(u):
+        return PAGE("<h1>Accès refusé</h1><p class='muted'>Réservé aux administrateurs.</p>"), 403
+
+    if request.method == "POST":
+        name = (request.form.get("name") or "").strip()
+        if not name:
+            return PAGE("<h1>Admin — Manches</h1><p class='muted'>Nom obligatoire.</p>"), 400
+        r = Round(name=name, status="open")
+        db.session.add(r); db.session.commit()
+        return redirect(url_for("admin_rounds"))
+
+    rounds = Round.query.order_by(Round.created_at.desc()).all()
+    items = "".join(
+        f"<li class='card'><strong>{r.name}</strong> — <span class='muted'>{'ouverte' if r.status=='open' else 'clôturée'}</span></li>"
+        for r in rounds
+    ) or "<p class='muted'>Aucune manche pour l’instant.</p>"
+
+    return PAGE(f"""
+      <h1>Admin — Manches</h1>
+      <form method="post" class="form">
+        <label>Nom de la manche
+          <input type="text" name="name" placeholder="Ex: Manche 1 — Circuit X" required>
+        </label>
+        <button class="btn" type="submit">Créer la manche</button>
+      </form>
+      <h2 style="margin-top:16px;">Liste</h2>
+      <ul class="cards">{items}</ul>
+    """)
+
 
 # --- Init DB temporaire (si besoin) ---
 @app.get("/__init_db")
