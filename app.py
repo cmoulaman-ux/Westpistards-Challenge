@@ -66,6 +66,62 @@ def current_user():
 def is_admin(user):
     return bool(user and user.is_admin)
 
+# --- Helpers temps (parse/format) ---
+def parse_time_to_ms(s: str) -> int:
+    """
+    Accepte :
+      - "m:s.ms"   ex: "1:23.456"
+      - "mm:ss"    ex: "01:23"
+      - "ss.ms"    ex: "83.456"
+      - "ss"       ex: "83"  (secondes entières)
+    Retourne le temps en millisecondes (int). Lève ValueError si invalide.
+    """
+    s = (s or "").strip()
+    if not s:
+        raise ValueError("Temps vide")
+    if ":" in s:
+        # formats avec minutes:secondes(.ms)
+        parts = s.split(":")
+        if len(parts) != 2:
+            raise ValueError("Format temps invalide (attendu mm:ss[.ms])")
+        m_str, rest = parts
+        if "." in rest:
+            sec_str, ms_str = rest.split(".", 1)
+            ms_str = (ms_str + "000")[:3]  # normalise milli en 3 chiffres
+            minutes = int(m_str)
+            seconds = int(sec_str)
+            millis = int(ms_str)
+        else:
+            minutes = int(m_str)
+            seconds = int(rest)
+            millis = 0
+        if seconds >= 60 or minutes < 0 or seconds < 0:
+            raise ValueError("Minutes/secondes invalides")
+        return minutes * 60000 + seconds * 1000 + millis
+    else:
+        # pas de ":" → soit "ss.ms" soit "ss"
+        if "." in s:
+            sec_str, ms_str = s.split(".", 1)
+            ms_str = (ms_str + "000")[:3]
+            seconds = float(f"{sec_str}.{ms_str}")
+            millis = int(round(float(seconds) * 1000))
+            return millis
+        # entier en secondes
+        seconds = int(s)
+        if seconds < 0:
+            raise ValueError("Temps négatif invalide")
+        return seconds * 1000
+
+def ms_to_str(ms: int) -> str:
+    ms = int(ms)
+    m = ms // 60000
+    s = (ms % 60000) // 1000
+    milli = ms % 1000
+    return f"{m}:{s:02d}.{milli:03d}"
+
+def final_time_ms(raw_ms: int, penalties: int) -> int:
+    return int(raw_ms) + max(0, int(penalties or 0)) * 1000
+
 
 # --- Layout inline réutilisable ---
 def PAGE(inner_html: str) -> str:
@@ -337,6 +393,149 @@ def __init_db():
     return "DB OK"
 
 # --- Run local ---
+@app.route("/submit", methods=["GET", "POST"])
+def submit_time():
+    if not db:
+        return PAGE("<h1>Soumettre un chrono</h1><p class='muted'>DB non dispo.</p>")
+    u = current_user()
+    if not u:
+        # doit être connecté
+        return redirect(url_for("login"))
+
+    # Récupère les manches OUVERTES
+    open_rounds = Round.query.filter_by(status="open").order_by(Round.created_at.desc()).all()
+
+    if request.method == "POST":
+        if not open_rounds:
+            return PAGE("<h1>Soumettre un chrono</h1><p class='muted'>Aucune manche ouverte pour le moment.</p>"), 400
+
+        round_id = request.form.get("round_id")
+        time_input = request.form.get("time_input")
+        penalties = request.form.get("penalties") or "0"
+        bike = (request.form.get("bike") or "").strip()
+        youtube_link = (request.form.get("youtube_link") or "").strip()
+        note = (request.form.get("note") or "").strip()
+
+        # validations
+        try:
+            r_id = int(round_id)
+            r = db.session.get(Round, r_id)
+            if not r or r.status != "open":
+                return PAGE("<h1>Soumettre un chrono</h1><p class='muted'>Manche invalide ou clôturée.</p>"), 400
+        except Exception:
+            return PAGE("<h1>Soumettre un chrono</h1><p class='muted'>Manche invalide.</p>"), 400
+
+        try:
+            raw_ms = parse_time_to_ms(time_input)
+        except Exception as e:
+            return PAGE(f"<h1>Soumettre un chrono</h1><p class='muted'>Format de temps invalide : {str(e)}</p>"), 400
+
+        try:
+            pen = int(penalties)
+            if pen < 0:
+                pen = 0
+        except Exception:
+            pen = 0
+
+        entry = TimeEntry(
+            user_id=u.id,
+            round_id=r.id,
+            raw_time_ms=raw_ms,
+            penalties=pen,
+            bike=bike,
+            youtube_link=youtube_link,
+            note=note,
+            status="pending",
+        )
+        db.session.add(entry)
+        db.session.commit()
+
+        return redirect(url_for("profile"))
+
+    # GET → formulaire
+    if not open_rounds:
+        return PAGE("<h1>Soumettre un chrono</h1><p class='muted'>Aucune manche ouverte pour le moment.</p>")
+
+    opts = "".join(f"<option value='{r.id}'>{r.name}</option>" for r in open_rounds)
+    return PAGE(f"""
+      <h1>Soumettre un chrono</h1>
+      <form method="post" class="form">
+        <label>Manche
+          <select name="round_id" required>
+            {opts}
+          </select>
+        </label>
+        <label>Temps (mm:ss.mmm, mm:ss, ss.mmm ou ss)
+          <input type="text" name="time_input" placeholder="1:23.456 ou 83.456" required>
+        </label>
+        <label>Pénalités (1 pénalité = +1s)
+          <input type="number" name="penalties" min="0" step="1" value="0">
+        </label>
+        <label>Moto (facultatif)
+          <input type="text" name="bike" placeholder="Marque / Modèle">
+        </label>
+        <label>Lien YouTube (facultatif)
+          <input type="url" name="youtube_link" placeholder="https://...">
+        </label>
+        <label>Note (facultatif)
+          <textarea name="note" rows="3" placeholder="Remarque libre..."></textarea>
+        </label>
+        <button class="btn" type="submit">Envoyer</button>
+      </form>
+    """)
+@app.get("/profile")
+def profile():
+    if not db:
+        return PAGE("<h1>Mon profil</h1><p class='muted'>DB non dispo.</p>")
+    u = current_user()
+    if not u:
+        return redirect(url_for("login"))
+
+    entries = (
+        TimeEntry.query.filter_by(user_id=u.id)
+        .order_by(TimeEntry.created_at.desc())
+        .all()
+    )
+
+    if not entries:
+        body = "<p class='muted'>Aucun chrono pour l’instant.</p>"
+    else:
+        def row(e):
+            raw = ms_to_str(e.raw_time_ms)
+            final_ms = final_time_ms(e.raw_time_ms, e.penalties)
+            final_s = ms_to_str(final_ms)
+            yt = f"<a href='{e.youtube_link}' target='_blank'>Vidéo</a>" if e.youtube_link else "—"
+            return f"""
+            <tr>
+              <td>{e.round.name}</td>
+              <td>{raw}</td>
+              <td>{e.penalties}</td>
+              <td><strong>{final_s}</strong></td>
+              <td>{e.bike or '—'}</td>
+              <td>{yt}</td>
+              <td>{e.status}</td>
+            </tr>
+            """
+        rows = "".join(row(e) for e in entries)
+        body = f"""
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Manche</th><th>Temps brut</th><th>Pénalités</th>
+              <th>Temps final</th><th>Moto</th><th>YouTube</th><th>Statut</th>
+            </tr>
+          </thead>
+          <tbody>{rows}</tbody>
+        </table>
+        """
+
+    return PAGE(f"""
+      <h1>Mon profil</h1>
+      <p class="muted">{u.email} — {u.nationality or 'nationalité non renseignée'} {'(admin)' if u.is_admin else ''}</p>
+      <p><a class="btn" href="/submit">Soumettre un chrono</a></p>
+      {body}
+    """)
+
 if __name__ == "__main__":
     if db:
         with app.app_context():
