@@ -1,7 +1,8 @@
 import os
 from datetime import datetime
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+from flask import Flask, render_template, request, redirect, url_for, session, flash, render_template_string
 from flask_sqlalchemy import SQLAlchemy
+
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
