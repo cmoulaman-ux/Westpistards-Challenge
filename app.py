@@ -399,7 +399,9 @@ def admin_rounds():
 
     def row_html(r):
         status_label = "ouverte" if r.status == "open" else "clôturée"
-        plan_link = f"<a href='/rounds/{r.id}/plan' target='_blank' rel='noopener'>Plan</a>" if r.plan_data else "—"
+        # lien plan robuste même si l'attribut n'est pas mappé/lisible
+        has_plan = hasattr(r, "plan_data") and bool(getattr(r, "plan_data"))
+        plan_link = f"<a href='/rounds/{r.id}/plan' target='_blank' rel='noopener'>Plan</a>" if has_plan else "—"
 
         # 3 formulaires (POST) pour close / open / delete
         return f"""
