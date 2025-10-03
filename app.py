@@ -233,13 +233,31 @@ def PAGE(inner_html: str) -> str:
 # --- Pages ---
 @app.get("/")
 def index():
-    return PAGE("""
+    # Lister les manches "open" (plus récentes en premier)
+    open_list_html = "<p class='muted'>Aucune manche ouverte pour le moment.</p>"
+    if db:
+        open_rounds = (
+            Round.query.filter_by(status="open")
+            .order_by(Round.created_at.desc())
+            .all()
+        )
+        if open_rounds:
+            items = "".join(
+                f"<li><a href='/rounds/{r.id}'>{r.name}</a> "
+                f"<span class='muted'>({r.created_at.strftime('%d/%m/%Y')})</span></li>"
+                for r in open_rounds
+            )
+            open_list_html = f"<ul>{items}</ul>"
+
+    return PAGE(f"""
       <h1>Bienvenue sur WP Challenge</h1>
       <p>Entre tes chronos, partage ton lien YouTube et grimpe au classement !</p>
+
       <section class="card">
         <h2>Manches ouvertes</h2>
-        <p class="muted">Aucune manche ouverte pour le moment.</p>
+        {open_list_html}
       </section>
+
       <section class="grid2" style="margin-top:16px">
         <div class="card">
           <h3>Inscription</h3>
@@ -251,6 +269,7 @@ def index():
         </div>
       </section>
     """)
+
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
