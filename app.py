@@ -253,7 +253,7 @@ def index():
       <p class="muted" style="margin-top:-4px;">Merci à nos partenaires pour leur soutien.</p>
       <ul class="links">
         <li><a href="https://www.facebook.com/coneaddict" target="_blank" rel="noopener">Cone Addict</a></li>
-        <li><a href="https://www.instagram.com/lou_etheve/" target="_blank" rel="noopener">Sellerie Lou Ethève/a></li>
+        <li><a href="https://www.instagram.com/lou_etheve/" target="_blank" rel="noopener">Sellerie Lou Ethève</a></li>
       </ul>
     </section>
     """
