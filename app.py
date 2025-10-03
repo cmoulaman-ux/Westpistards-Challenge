@@ -132,6 +132,23 @@ def final_time_ms(raw_ms: int, penalties: int) -> int:
 
 # --- Layout inline réutilisable ---
 def PAGE(inner_html: str) -> str:
+    # On détecte l'utilisateur connecté et son rôle
+    u = current_user()
+    isadm = is_admin(u)
+
+    # Construire la partie droite de la nav selon le contexte
+    nav_right = '<a href="/rounds">Manches</a>'
+    if u:
+        nav_right += ' <a href="/profile">Mon profil</a>'
+        if isadm:
+            # raccourcis admin visibles seulement pour les admins
+            nav_right += ' <a href="/admin/rounds">Admin Manches</a>'
+            nav_right += ' <a href="/admin/times">Admin Chronos</a>'
+        nav_right += ' <a href="/logout">Déconnexion</a>'
+    else:
+        nav_right += ' <a href="/register">Inscription</a>'
+        nav_right += ' <a href="/login">Connexion</a>'
+
     return f"""
 <!doctype html>
 <html lang="fr">
@@ -142,7 +159,7 @@ def PAGE(inner_html: str) -> str:
     :root{{ --bg:#f9fafb; --card:#ffffff; --text:#111827; --muted:#6b7280; --primary:#2563eb; --danger:#dc2626; --border:#e5e7eb; }}
     *{{ box-sizing:border-box; }} body{{ margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu; background:var(--bg); color:var(--text); }}
     .container{{ max-width:980px; margin:0 auto; padding:16px; }}
-    .nav{{ display:flex; justify-content:space-between; align-items:center; }}
+    .nav{{ display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; }}
     .brand{{ font-weight:700; text-decoration:none; color:var(--text); }}
     nav a{{ margin-left:12px; text-decoration:none; color:var(--text); }}
     .grid2{{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }}
@@ -153,18 +170,18 @@ def PAGE(inner_html: str) -> str:
     .btn.outline{{ background:white; color:var(--primary); border:1px solid var(--primary); }}
     .btn.danger{{ background:var(--danger); }}
     .muted{{ color:var(--muted); }}
+    .row{{ display:flex; gap:8px; align-items:center; }}
+    .cards{{ list-style:none; padding:0; display:grid; grid-template-columns:1fr 1fr; gap:16px; }}
+    .table{{ width:100%; border-collapse:collapse; background:var(--card); border:1px solid var(--border); }}
+    .table th, .table td{{ padding:10px; border-bottom:1px solid var(--border); }}
+    .table th{{ text-align:left; background:#f3f4f6; }}
   </style>
 </head>
 <body>
   <header class="container">
     <div class="nav">
       <div><a class="brand" href="/">WP Challenge</a></div>
-      <nav>
-        <a href="/rounds">Manches</a>
-        <a href="/register">Inscription</a>
-        <a href="/login">Connexion</a>
-        <a href="/logout">Déconnexion</a>
-      </nav>
+      <nav>{nav_right}</nav>
     </div>
   </header>
   <main class="container">
@@ -174,6 +191,7 @@ def PAGE(inner_html: str) -> str:
 </body>
 </html>
 """
+
 
 # --- Pages ---
 @app.get("/")
