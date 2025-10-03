@@ -802,7 +802,7 @@ def round_leaderboard(round_id):
 
         def row(i, e, fm):
             # % par rapport au meilleur
-            pct = (best / fm * 100.0) if fm > 0 and best > 0 else 0.0
+            pct = (fm / best * 100.0) if fm > 0 and best > 0 else 0.0
             # nom affiché robuste
             name = display_name(getattr(e, "user", None)) if hasattr(e, "user") else "—"
             # lien vidéo
