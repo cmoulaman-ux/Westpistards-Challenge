@@ -216,7 +216,12 @@ def PAGE(inner_html: str) -> str:
 <body>
   <header class="container">
     <div class="nav">
-      <div><a class="brand" href="/">WP Challenge</a></div>
+      <div>
+  <a class="brand" href="/" title="Retour à l’accueil" aria-label="Retour à l’accueil">
+    🏠 <span>WP Challenge</span>
+  </a>
+</div>
+
       <nav>{nav_right}</nav>
     </div>
   </header>

@@ -26,4 +26,27 @@ nav a{ margin-left:12px; text-decoration:none; color:var(--text); }
 body {
   background: pink !important;
 }
+/* Bouton d’accueil plus visible (WP Challenge) */
+.brand{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  font-weight:800;
+  text-decoration:none;
+  color:var(--text);
+  padding:8px 12px;
+  border:2px solid var(--text);
+  border-radius:999px;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.brand:hover,
+.brand:focus{
+  background:var(--text);
+  color:#fff;
+  outline:none;
+}
+.brand:focus-visible{
+  box-shadow:0 0 0 3px rgba(37,99,235,.35);
+}
+
 
