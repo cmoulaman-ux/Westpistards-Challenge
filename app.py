@@ -874,29 +874,7 @@ def __migrate_add_pseudo():
             return "OK: colonne 'pseudo' déjà présente (via erreur)."
         return f"Erreur migration: {e.__class__.__name__}: {e}", 500
 
-@app.get("/__reset_db")
-def __reset_db():
-    if not db:
-        return "DB non dispo", 500
-    from flask import request, abort
-    token = request.args.get("token")
-    if token != app.config.get("SECRET_KEY"):
-        abort(403)
-    # ⚠️ ATTENTION: supprime TOUTES les tables connues par SQLAlchemy
-    db.drop_all()
-    db.create_all()
-    return "DB RESET OK"
 
-@app.get("/__init_db")
-def __init_db():
-    if not db:
-        return "DB non dispo", 500
-    from flask import request, abort
-    token = request.args.get("token")
-    if token != app.config.get("SECRET_KEY"):
-        abort(403)
-    db.create_all()
-    return "DB OK"
 
 
 
