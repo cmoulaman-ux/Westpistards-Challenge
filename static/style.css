@@ -1,76 +1,148 @@
-:root{ --bg:#f9fafb; --card:#ffffff; --text:#111827; --muted:#6b7280; --primary:#2563eb; --danger:#dc2626; --border:#e5e7eb; }
+/* ===== Thème clair équilibré ===== */
+:root{
+  --bg:#f7f7fb;        /* fond légèrement grisé, moins flashy que blanc pur */
+  --card:#ffffff;      /* cartes / blocs */
+  --text:#0f172a;      /* gris bleuté foncé, très lisible */
+  --muted:#667085;     /* gris moyen pour les infos secondaires */
+  --primary:#2563eb;   /* bleu moderne */
+  --primary-weak:#e8efff;
+  --danger:#dc2626;
+  --warn:#f59e0b;
+  --success:#16a34a;
+  --border:#e5e7eb;    /* contours discrets */
+  --ring: rgba(37,99,235,.35);
+}
+
+/* ===== Reset & base ===== */
 *{ box-sizing:border-box; }
-body{ margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu; background:var(--bg); color:var(--text); }
-.container{ max-width:980px; margin:0 auto; padding:16px; }
-.nav{ display:flex; justify-content:space-between; align-items:center; }
-.brand{ font-weight:700; text-decoration:none; color:var(--text); }
-nav a{ margin-left:12px; text-decoration:none; color:var(--text); }
-.grid2{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
-.card{ background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px; }
-.cards{ list-style:none; padding:0; display:grid; grid-template-columns:1fr 1fr; gap:16px; }
-.btn{ background:var(--primary); color:white; border:none; padding:10px 14px; border-radius:8px; cursor:pointer; text-decoration:none; display:inline-block; }
-.btn.outline{ background:white; color:var(--primary); border:1px solid var(--primary); }
-.btn.danger{ background:var(--danger); }
-.form{ display:grid; gap:12px; max-width:460px; }
-.form input, .form select, .form textarea{ width:100%; padding:10px; border:1px solid var(--border); border-radius:8px; }
-.table{ width:100%; border-collapse:collapse; background:var(--card); border:1px solid var(--border); }
-.table th, .table td{ padding:10px; border-bottom:1px solid var(--border); }
-.table th{ text-align:left; background:#f3f4f6; }
-.row{ display:flex; gap:8px; align-items:center; }
-.flash{ list-style:none; padding:0; }
-.flash li{ margin:8px 0; padding:10px; border-radius:8px; }
-.flash li.success{ background:#d1fae5; }
-.flash li.error{ background:#fee2e2; }
-.flash li.info{ background:#dbeafe; }
-.muted{ color:var(--muted); }
+html, body{ height:100%; }
 body{
   margin:0;
-  font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial;
   background:var(--bg);
   color:var(--text);
+  line-height:1.5;
 }
-/* Bouton d’accueil plus visible (WP Challenge) */
+img{ max-width:100%; height:auto; display:block; }
+a{ color:var(--primary); text-decoration:none; }
+a:hover{ text-decoration:underline; }
+
+/* ===== Layout ===== */
+.container{ max-width:1024px; margin:0 auto; padding:20px; }
+.nav{ display:flex; justify-content:space-between; align-items:center; gap:16px; }
+
+/* Marque (lien Accueil) */
 .brand{
-  display:inline-flex;
-  align-items:center;
-  gap:8px;
+  display:inline-flex; align-items:center; gap:8px;
   font-weight:800;
-  text-decoration:none;
-  color:var(--text);
   padding:8px 12px;
   border:2px solid var(--text);
   border-radius:999px;
-  transition:background .15s, color .15s, border-color .15s;
-}
-.brand:hover,
-.brand:focus{
-  background:var(--text);
-  color:#fff;
-  outline:none;
-}
-.brand:focus-visible{
-  box-shadow:0 0 0 3px rgba(37,99,235,.35);
-}
-
-/* Liens partenaires en "pills" */
-.links{
-  list-style:none;
-  padding:0;
-  margin:8px 0 0 0;
-  display:flex;
-  gap:12px;
-  flex-wrap:wrap;
-}
-.links a{
+  color:var(--text);
   text-decoration:none;
-  border:1px solid var(--border);
-  border-radius:999px;
-  padding:8px 12px;
+  transition:background .15s, color .15s, border-color .15s, transform .06s;
+}
+.brand:hover, .brand:focus{ background:var(--text); color:#fff; outline:none; }
+.brand:active{ transform:translateY(1px); }
+.brand:focus-visible{ box-shadow:0 0 0 3px var(--ring); }
+
+/* Nav droite */
+nav a{
+  margin-left:12px;
+  padding:6px 8px;
+  border-radius:8px;
   color:var(--text);
 }
-.links a:hover{
-  background:var(--text);
-  color:#fff;
-  border-color:var(--text);
+nav a:hover{
+  background:var(--primary-weak);
+  text-decoration:none;
 }
 
+/* ===== Cards & sections ===== */
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:16px 18px;
+  box-shadow: 0 1px 0 rgba(16,24,40,.04);
+}
+.grid2{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+@media (max-width:720px){ .grid2{ grid-template-columns:1fr; } }
+
+/* ===== Boutons ===== */
+.btn{
+  display:inline-block;
+  background:var(--primary);
+  color:#fff;
+  border:1px solid var(--primary);
+  padding:10px 14px;
+  border-radius:10px;
+  cursor:pointer;
+  font-weight:600;
+  text-decoration:none;
+  transition: transform .06s, box-shadow .15s, background .15s, border-color .15s;
+}
+.btn:hover{ box-shadow:0 2px 10px rgba(37,99,235,.25); text-decoration:none; }
+.btn:active{ transform:translateY(1px); }
+.btn.outline{ background:#fff; color:var(--primary); }
+.btn.danger{ background:var(--danger); border-color:var(--danger); }
+
+/* ===== Formulaires ===== */
+.form{ display:grid; gap:12px; max-width:520px; }
+.form label{ font-weight:600; }
+.form input, .form select, .form textarea{
+  width:100%;
+  padding:10px 12px;
+  border:1px solid var(--border);
+  border-radius:10px;
+  background:#fff;
+}
+.form input:focus, .form select:focus, .form textarea:focus{
+  outline:none; border-color:var(--primary);
+  box-shadow:0 0 0 3px var(--ring);
+}
+
+/* ===== Tableaux ===== */
+.table{
+  width:100%;
+  border-collapse:separate;
+  border-spacing:0;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:12px;
+  overflow:hidden;
+}
+.table th, .table td{
+  padding:12px 12px;
+  border-bottom:1px solid var(--border);
+}
+.table thead th{
+  background:#f3f4f6;
+  text-align:left;
+  font-weight:700;
+}
+.table tbody tr:hover{ background:#fafafa; }
+
+/* ===== Badges (statuts) ===== */
+.badge{
+  display:inline-block;
+  padding:4px 8px;
+  border-radius:999px;
+  font-size:.85rem;
+  font-weight:600;
+  border:1px solid var(--border);
+}
+.badge.pending{ background:#fff; color:var(--muted); }
+.badge.approved{ background:#ecfdf5; color:var(--success); border-color:#bbf7d0; }
+.badge.rejected{ background:#fef2f2; color:var(--danger); border-color:#fecaca; }
+
+/* ===== Flash ===== */
+.flash{ list-style:none; padding:0; margin:12px 0; }
+.flash li{ margin:8px 0; padding:10px 12px; border-radius:10px; }
+.flash li.success{ background:#ecfdf5; border:1px solid #bbf7d0; }
+.flash li.error{ background:#fef2f2; border:1px solid #fecaca; }
+.flash li.info{ background:#eff6ff; border:1px solid #bfdbfe; }
+
+/* ===== Utilitaires ===== */
+.row{ display:flex; gap:8px; align-items:center; }
+.muted{ color:var(--muted); }
