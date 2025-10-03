@@ -444,38 +444,41 @@ def admin_times():
         return PAGE("<h1>Admin — Chronos</h1><p class='muted'>Aucun chrono pour le moment.</p>")
 
     def row(e):
-        final_ms_val = final_time_ms(e.raw_time_ms, e.penalties)
-        return f"""
-        <tr>
-          <td>{e.id}</td>
-          <td>{display_name(e.user)}</td>
-          <td>{e.round.name}</td>
-          <td>{ms_to_str(e.raw_time_ms)}</td>
-          <td>{e.penalties}</td>
-          <td><strong>{ms_to_str(final_ms_val)}</strong></td>
-          <td>{e.status}</td>
-          <td>
-            <form method="post" action="/admin/times/{e.id}/approve" style="display:inline;">
-              <button class="btn" type="submit">Valider</button>
-            </form>
-            <form method="post" action="/admin/times/{e.id}/reject" style="display:inline;">
-              <button class="btn danger" type="submit">Refuser</button>
-            </form>
-          </td>
-        </tr>
-        """
+    final_ms_val = final_time_ms(e.raw_time_ms, e.penalties)
+    yt = f"<a href='{e.youtube_link}' target='_blank' rel='noopener'>Vidéo</a>" if e.youtube_link else "—"
+    return f"""
+    <tr>
+      <td>{e.id}</td>
+      <td>{display_name(e.user)}</td>
+      <td>{e.round.name}</td>
+      <td>{ms_to_str(e.raw_time_ms)}</td>
+      <td>{e.penalties}</td>
+      <td><strong>{ms_to_str(final_ms_val)}</strong></td>
+      <td>{yt}</td>
+      <td>{e.status}</td>
+      <td>
+        <form method="post" action="/admin/times/{e.id}/approve" style="display:inline;">
+          <button class="btn" type="submit">Valider</button>
+        </form>
+        <form method="post" action="/admin/times/{e.id}/reject" style="display:inline;">
+          <button class="btn danger" type="submit">Refuser</button>
+        </form>
+      </td>
+    </tr>
+    """
+
 
     rows = "".join(row(e) for e in entries)
     table = f"""
     <table class="table">
-      <thead>
-        <tr>
-          <th>ID</th><th>Pilote</th><th>Manche</th><th>Brut</th><th>Pén.</th><th>Final</th><th>Statut</th><th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>{rows}</tbody>
-    </table>
-    """
+  <thead>
+    <tr>
+      <th>ID</th><th>Pilote</th><th>Manche</th><th>Brut</th><th>Pén.</th><th>Final</th><th>YouTube</th><th>Statut</th><th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>{rows}</tbody>
+</table>
+
 
     return PAGE(f"<h1>Admin — Chronos</h1>{table}<p style='margin-top:12px'><a class='btn outline' href='/rounds'>Voir les manches</a></p>")
 
