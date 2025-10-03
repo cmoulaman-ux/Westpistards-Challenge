@@ -165,73 +165,63 @@ def final_time_ms(raw_ms: int, penalties: int) -> int:
 
 
 # --- Layout inline réutilisable ---
-def PAGE(inner_html: str) -> str:
-    # Nav ultra-safe (aucune 500 si la DB / session pose problème)
-    try:
-        u = current_user()
-        isadm = is_admin(u)
-    except Exception:
-        u = None
-        isadm = False
+def PAGE(inner_html):
+    u = current_user() if db else None
 
-    nav_right = '<a href="/rounds">Manches</a>'
+    # Bloc de droite de la nav
+    nav_parts = []
+
+    # Lien public "Manches"
+    nav_parts.append("<a href='/rounds'>Manches</a>")
+
+    # Lien Facebook (remplace l’URL par la tienne)
+    nav_parts.append(
+        "<a href='https://www.facebook.com/west.pistards' target='_blank' rel='noopener' title='Ouvrir notre page Facebook'>Facebook</a>"
+    )
+
+    # Tes liens selon l’état de connexion / admin
     if u:
-        nav_right += ' <a href="/profile">Mon profil</a>'
-        if isadm:
-            nav_right += ' <a href="/admin/rounds">Admin Manches</a>'
-            nav_right += ' <a href="/admin/times">Admin Chronos</a>'
-        nav_right += ' <a href="/logout">Déconnexion</a>'
+        # exemple: lien Profil + Déconnexion
+        nav_parts.append("<a href='/profile'>Profil</a>")
+        if getattr(u, 'is_admin', False):
+            nav_parts.append("<a href='/admin/rounds'>Admin</a>")
+        nav_parts.append("<a href='/logout'>Déconnexion</a>")
     else:
-        nav_right += ' <a href="/register">Inscription</a>'
-        nav_right += ' <a href="/login">Connexion</a>'
+        nav_parts.append("<a href='/register'>Inscription</a>")
+        nav_parts.append("<a href='/login'>Connexion</a>")
+
+    nav_right = " ".join(nav_parts)
 
     return f"""
 <!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>WP Challenge</title>
-  <style>
-    :root{{ --bg:#f9fafb; --card:#ffffff; --text:#111827; --muted:#6b7280; --primary:#2563eb; --danger:#dc2626; --border:#e5e7eb; }}
-    *{{ box-sizing:border-box; }} body{{ margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu; background:var(--bg); color:var(--text); }}
-    .container{{ max-width:980px; margin:0 auto; padding:16px; }}
-    .nav{{ display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; }}
-    .brand{{ font-weight:700; text-decoration:none; color:var(--text); }}
-    nav a{{ margin-left:12px; text-decoration:none; color:var(--text); }}
-    .grid2{{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }}
-    .card{{ background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px; }}
-    .form{{ display:grid; gap:12px; max-width:460px; }}
-    .form input, .form select, .form textarea{{ width:100%; padding:10px; border:1px solid var(--border); border-radius:8px; }}
-    .btn{{ background:var(--primary); color:white; border:none; padding:10px 14px; border-radius:8px; cursor:pointer; text-decoration:none; display:inline-block; }}
-    .btn.outline{{ background:white; color:var(--primary); border:1px solid var(--primary); }}
-    .btn.danger{{ background:var(--danger); }}
-    .muted{{ color:var(--muted); }}
-    .row{{ display:flex; gap:8px; align-items:center; }}
-    .cards{{ list-style:none; padding:0; display:grid; grid-template-columns:1fr 1fr; gap:16px; }}
-    .table{{ width:100%; border-collapse:collapse; background:var(--card); border:1px solid var(--border); }}
-    .table th, .table td{{ padding:10px; border-bottom:1px solid var(--border); }}
-    .table th{{ text-align:left; background:#f3f4f6; }}
-  </style>
+  <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
   <header class="container">
     <div class="nav">
       <div>
-  <a class="brand" href="/" title="Retour à l’accueil" aria-label="Retour à l’accueil">
-    🏠 <span>WP Challenge</span>
-  </a>
-</div>
-
+        <a class="brand" href="/" title="Retour à l’accueil" aria-label="Retour à l’accueil">
+          🏠 <span>WP Challenge</span>
+        </a>
+      </div>
       <nav>{nav_right}</nav>
     </div>
   </header>
   <main class="container">
     {inner_html}
   </main>
-  <footer class="container muted">© 2025 westpistards</footer>
+  <footer class="container muted">
+    © 2025 westpistards
+  </footer>
 </body>
 </html>
 """
+
 
 
 
