@@ -444,28 +444,29 @@ def admin_times():
         return PAGE("<h1>Admin — Chronos</h1><p class='muted'>Aucun chrono pour le moment.</p>")
 
     def row(e):
-    final_ms_val = final_time_ms(e.raw_time_ms, e.penalties)
-    yt = f"<a href='{e.youtube_link}' target='_blank' rel='noopener'>Vidéo</a>" if e.youtube_link else "—"
-    return f"""
-    <tr>
-      <td>{e.id}</td>
-      <td>{display_name(e.user)}</td>
-      <td>{e.round.name}</td>
-      <td>{ms_to_str(e.raw_time_ms)}</td>
-      <td>{e.penalties}</td>
-      <td><strong>{ms_to_str(final_ms_val)}</strong></td>
-      <td>{yt}</td>
-      <td>{e.status}</td>
-      <td>
-        <form method="post" action="/admin/times/{e.id}/approve" style="display:inline;">
-          <button class="btn" type="submit">Valider</button>
-        </form>
-        <form method="post" action="/admin/times/{e.id}/reject" style="display:inline;">
-          <button class="btn danger" type="submit">Refuser</button>
-        </form>
-      </td>
-    </tr>
-    """
+        final_ms_val = final_time_ms(e.raw_time_ms, e.penalties)
+        yt = f"<a href='{e.youtube_link}' target='_blank' rel='noopener'>Vidéo</a>" if e.youtube_link else "—"
+        return f"""
+        <tr>
+          <td>{e.id}</td>
+          <td>{display_name(e.user)}</td>
+          <td>{e.round.name}</td>
+          <td>{ms_to_str(e.raw_time_ms)}</td>
+          <td>{e.penalties}</td>
+          <td><strong>{ms_to_str(final_ms_val)}</strong></td>
+          <td>{yt}</td>
+          <td>{e.status}</td>
+          <td>
+            <form method="post" action="/admin/times/{e.id}/approve" style="display:inline;">
+              <button class="btn" type="submit">Valider</button>
+            </form>
+            <form method="post" action="/admin/times/{e.id}/reject" style="display:inline;">
+              <button class="btn danger" type="submit">Refuser</button>
+            </form>
+          </td>
+        </tr>
+        """
+
 
 
     rows = "".join(row(e) for e in entries)
@@ -532,13 +533,12 @@ def __selftest():
 @app.route("/submit", methods=["GET", "POST"])
 def submit_time():
     if not db:
-        return PAGE("<h1>Soumettre un chrono</h1><p class='muted'>DB non dispo.</p>")
+        return PAGE("<h1>Soumettre un chrono</h1><p class='muted'>DB non dispo.</p>"), 500
     u = current_user()
     if not u:
-        # doit être connecté
         return redirect(url_for("login"))
 
-    # Récupère les manches OUVERTES
+    # Récupère les manches ouvertes
     open_rounds = Round.query.filter_by(status="open").order_by(Round.created_at.desc()).all()
 
     if request.method == "POST":
@@ -585,40 +585,46 @@ def submit_time():
         )
         db.session.add(entry)
         db.session.commit()
-
         return redirect(url_for("profile"))
 
-    # GET → formulaire
+    # GET → formulaire (construction sans triple quotes)
     if not open_rounds:
         return PAGE("<h1>Soumettre un chrono</h1><p class='muted'>Aucune manche ouverte pour le moment.</p>")
 
-    opts = "".join(f"<option value='{r.id}'>{r.name}</option>" for r in open_rounds)
-    return PAGE(f"""
-      <h1>Soumettre un chrono</h1>
-      <form method="post" class="form">
-        <label>Manche
-          <select name="round_id" required>
-            {opts}
-          </select>
-        </label>
-        <label>Temps (mm:ss.mmm, mm:ss, ss.mmm ou ss)
-          <input type="text" name="time_input" placeholder="1:23.456 ou 83.456" required>
-        </label>
-        <label>Pénalités (1 pénalité = +1s)
-          <input type="number" name="penalties" min="0" step="1" value="0">
-        </label>
-        <label>Moto (facultatif)
-          <input type="text" name="bike" placeholder="Marque / Modèle">
-        </label>
-        <label>Lien YouTube (facultatif)
-          <input type="url" name="youtube_link" placeholder="https://...">
-        </label>
-        <label>Note (facultatif)
-          <textarea name="note" rows="3" placeholder="Remarque libre..."></textarea>
-        </label>
-        <button class="btn" type="submit">Envoyer</button>
-      </form>
-    """)
+    opts = "".join([f"<option value='{r.id}'>{r.name}</option>" for r in open_rounds])
+
+    html_lines = []
+    html_lines.append("<h1>Soumettre un chrono</h1>")
+    html_lines.append('<form method="post" class="form">')
+    html_lines.append("  <label>Manche")
+    html_lines.append('    <select name="round_id" required>')
+    html_lines.append(f"      {opts}")
+    html_lines.append("    </select>")
+    html_lines.append("  </label>")
+    html_lines.append("  <label>Temps (mm:ss.mmm, mm:ss, ss.mmm ou ss)")
+    html_lines.append('    <input type="text" name="time_input" placeholder="1:23.456 ou 83.456" required>')
+    html_lines.append("  </label>")
+    html_lines.append("  <label>Pénalités (1 pénalité = +1s)")
+    html_lines.append('    <input type="number" name="penalties" min="0" step="1" value="0">')
+    html_lines.append("  </label>")
+    html_lines.append("  <label>Moto (facultatif)")
+    html_lines.append('    <input type="text" name="bike" placeholder="Marque / Modèle">')
+    html_lines.append("  </label>")
+    html_lines.append("  <label>Lien YouTube (facultatif)")
+    html_lines.append('    <input type="url" name="youtube_link" placeholder="https://...">')
+    html_lines.append("  </label>")
+    html_lines.append("  <label>Note (facultatif)")
+    html_lines.append('    <textarea name="note" rows="3" placeholder="Remarque libre..."></textarea>')
+    html_lines.append("  </label>")
+    html_lines.append('  <button class="btn" type="submit">Envoyer</button>')
+    html_lines.append("</form>")
+
+    return PAGE("\n".join(html_lines))
+
+
+
+
+
 
 @app.get("/profile")
 def profile():
@@ -628,93 +634,43 @@ def profile():
     if not u:
         return redirect(url_for("login"))
 
-    # Construire un petit résumé lisible
     role = "Administrateur" if u.is_admin else "Pilote"
     pseudo = u.pseudo or "—"
     nationality = u.nationality or "—"
     email = u.email
 
-    # Récupérer les chronos de l'utilisateur
-    entries = (
-        TimeEntry.query.filter_by(user_id=u.id)
-        .order_by(TimeEntry.created_at.desc())
-        .all()
-    )
-
-    # Section chronos
-    if not entries:
-        chronos_html = "<p class='muted'>Aucun chrono pour l’instant.</p>"
-    else:
-        def row(e):
-            raw = ms_to_str(e.raw_time_ms)
-            final_ms = final_time_ms(e.raw_time_ms, e.penalties)
-            final_s = ms_to_str(final_ms)
-            yt = f"<a href='{e.youtube_link}' target='_blank'>Vidéo</a>" if e.youtube_link else "—"
-            return f"""
-            <tr>
-              <td>{e.round.name}</td>
-              <td>{raw}</td>
-              <td>{e.penalties}</td>
-              <td><strong>{final_s}</strong></td>
-              <td>{e.bike or '—'}</td>
-              <td>{yt}</td>
-              <td>{e.status}</td>
-            </tr>
-            """
-        rows = "".join(row(e) for e in entries)
-        chronos_html = f"""
-        <table class="table">
-          <thead>
-            <tr>
-              <th>Manche</th><th>Brut</th><th>Pén.</th>
-              <th>Final</th><th>Moto</th><th>YouTube</th><th>Statut</th>
-            </tr>
-          </thead>
-          <tbody>{rows}</tbody>
-        </table>
-        """
-
-    # Liens admin (uniquement si admin)
     admin_links = ""
     if is_admin(u):
-        admin_links = """
-        <div class="row" style="gap:8px; margin-top:8px;">
-          <a class="btn" href="/admin/rounds">Admin — Manches</a>
-          <a class="btn outline" href="/admin/times">Admin — Chronos</a>
-        </div>
-        """
+        admin_links = (
+            "<div class='row' style='gap:8px; margin-top:8px;'>"
+            "<a class='btn' href='/admin/rounds'>Admin — Manches</a>"
+            "<a class='btn outline' href='/admin/times'>Admin — Chronos</a>"
+            "</div>"
+        )
 
-    # Boutons actions pilote
-    actions_html = """
-      <div class="row" style="gap:8px;">
-        <a class="btn" href="/submit">Soumettre un chrono</a>
-        <a class="btn outline" href="/logout">Se déconnecter</a>
-      </div>
-    """
+    actions_html = (
+        "<div class='row' style='gap:8px;'>"
+        "<a class='btn' href='/submit'>Soumettre un chrono</a>"
+        "<a class='btn outline' href='/logout'>Se déconnecter</a>"
+        "</div>"
+    )
 
-    # Rendu final propre
-    return PAGE(f"""
-      <h1>Mon profil</h1>
+    html = []
+    html.append("<h1>Mon profil</h1>")
+    html.append("<section class='card'>")
+    html.append("<h2 style='margin-top:0;'>Infos pilote</h2>")
+    html.append(f"<p><strong>Pseudo :</strong> {pseudo}</p>")
+    html.append(f"<p><strong>Email :</strong> {email}</p>")
+    html.append(f"<p><strong>Nationalité :</strong> {nationality}</p>")
+    html.append(f"<p><strong>Rôle :</strong> {role}</p>")
+    html.append(admin_links)
+    html.append("</section>")
+    html.append("<section style='margin-top:16px;' class='card'>")
+    html.append("<h2 style='margin-top:0;'>Mes actions</h2>")
+    html.append(actions_html)
+    html.append("</section>")
+    return PAGE("\n".join(html))
 
-      <section class="card">
-        <h2 style="margin-top:0;">Infos pilote</h2>
-        <p><strong>Pseudo :</strong> {pseudo}</p>
-        <p><strong>Email :</strong> {email}</p>
-        <p><strong>Nationalité :</strong> {nationality}</p>
-        <p><strong>Rôle :</strong> {role}</p>
-        {admin_links}
-      </section>
-
-      <section style="margin-top:16px;" class="card">
-        <h2 style="margin-top:0;">Mes actions</h2>
-        {actions_html}
-      </section>
-
-      <section style="margin-top:16px;" class="card">
-        <h2 style="margin-top:0;">Mes chronos</h2>
-        {chronos_html}
-      </section>
-    """)
 
 
 
