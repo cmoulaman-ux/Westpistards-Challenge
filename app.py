@@ -61,9 +61,9 @@ if db:
         name = db.Column(db.String(200), nullable=False)
         status = db.Column(db.String(20), default='open')  # open | closed
         created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    plan_data = db.Column(db.LargeBinary)      # contenu binaire (image/PDF)
-    plan_mime = db.Column(db.String(120))      # ex: image/png, application/pdf
-    plan_name = db.Column(db.String(255))      # nom de fichier d'origine
+        plan_data = db.Column(db.LargeBinary)      # contenu binaire (image/PDF)
+        plan_mime = db.Column(db.String(120))      # ex: image/png, application/pdf
+        plan_name = db.Column(db.String(255))      # nom de fichier d'origine
 
 
     class TimeEntry(db.Model):
