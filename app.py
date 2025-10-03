@@ -488,18 +488,6 @@ def __selftest():
         return PAGE(f"<pre>SELFTEST FAIL: {e.__class__.__name__}\n{e}</pre>"), 500
 
 
-# --- Init DB temporaire (si besoin) ---
-@app.get("/__init_db")
-def __init_db():
-    if not db:
-        return "DB non dispo", 500
-    from flask import request, abort
-    token = request.args.get("token")
-    if token != app.config.get("SECRET_KEY"):
-        abort(403)
-    db.create_all()
-    return "DB OK"
-
 # --- Run local ---
 @app.route("/submit", methods=["GET", "POST"])
 def submit_time():
