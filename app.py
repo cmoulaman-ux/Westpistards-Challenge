@@ -645,6 +645,49 @@ def profile():
     nationality = u.nationality or "—"
     email = u.email
 
+    # Récupère tous les chronos de l'utilisateur
+    entries = (
+        TimeEntry.query
+        .filter_by(user_id=u.id)
+        .order_by(TimeEntry.created_at.desc())
+        .all()
+    )
+
+    # Construit le tableau des chronos (une seule table avec la colonne Statut)
+    if not entries:
+        chronos_html = "<p class='muted'>Aucun chrono pour l’instant.</p>"
+    else:
+        def row(e):
+            raw = ms_to_str(e.raw_time_ms)
+            final_ms_val = final_time_ms(e.raw_time_ms, e.penalties)
+            final_s = ms_to_str(final_ms_val)
+            yt = f"<a href='{e.youtube_link}' target='_blank' rel='noopener'>Vidéo</a>" if e.youtube_link else "—"
+            created = e.created_at.strftime("%Y-%m-%d %H:%M") if getattr(e, "created_at", None) else "—"
+            return (
+                "<tr>"
+                f"<td>{e.round.name}</td>"
+                f"<td>{raw}</td>"
+                f"<td>{e.penalties}</td>"
+                f"<td><strong>{final_s}</strong></td>"
+                f"<td>{e.bike or '—'}</td>"
+                f"<td>{yt}</td>"
+                f"<td>{e.status}</td>"
+                f"<td>{created}</td>"
+                "</tr>"
+            )
+
+        rows = "".join(row(e) for e in entries)
+        chronos_html = (
+            "<table class='table'>"
+            "<thead><tr>"
+            "<th>Manche</th><th>Brut</th><th>Pén.</th><th>Final</th>"
+            "<th>Moto</th><th>YouTube</th><th>Statut</th><th>Ajouté</th>"
+            "</tr></thead>"
+            f"<tbody>{rows}</tbody>"
+            "</table>"
+        )
+
+    # Liens admin (uniquement si admin)
     admin_links = ""
     if is_admin(u):
         admin_links = (
@@ -654,6 +697,7 @@ def profile():
             "</div>"
         )
 
+    # Actions pilote
     actions_html = (
         "<div class='row' style='gap:8px;'>"
         "<a class='btn' href='/submit'>Soumettre un chrono</a>"
@@ -661,6 +705,7 @@ def profile():
         "</div>"
     )
 
+    # Page finale (sans triple guillemets)
     html = []
     html.append("<h1>Mon profil</h1>")
     html.append("<section class='card'>")
@@ -675,7 +720,12 @@ def profile():
     html.append("<h2 style='margin-top:0;'>Mes actions</h2>")
     html.append(actions_html)
     html.append("</section>")
-    return PAGE("\n".join(html))
+    html.append("<section style='margin-top:16px;' class='card'>")
+    html.append("<h2 style='margin-top:0;'>Mes chronos</h2>")
+    html.append(chronos_html)
+    html.append("</section>")
+    return PAGE("".join(html))
+
 
 
 
