@@ -369,62 +369,22 @@ def admin_rounds():
         return PAGE("<h1>Accès refusé</h1><p class='muted'>Réservé aux administrateurs.</p>"), 403
 
     if request.method == "POST":
-        try:
-            name = (request.form.get("name") or "").strip()
-            if not name:
-                return PAGE("<h1>Admin — Manches</h1><p class='muted'>Nom obligatoire.</p>"), 400
-
-            # Récupération éventuelle du plan
-            f = request.files.get("plan")
-            plan_data = plan_mime = plan_name = None
-
-            if f and getattr(f, "filename", ""):
-                data = f.read()  # peut lever si gros fichier ou upload cassé
-                if data:
-                    # Optionnel: filtre simple de MIME pour éviter des surprises
-                    allowed_prefixes = ("image/", "application/pdf")
-                    mime = (f.mimetype or "").lower()
-                    if not (mime.startswith(allowed_prefixes)):
-                        return PAGE("<h1>Admin — Manches</h1><p class='muted'>Type de fichier non autorisé. Image ou PDF uniquement.</p>"), 400
-
-                    # Limite 8 Mo (adapter si besoin)
-                    if len(data) > 8 * 1024 * 1024:
-                        return PAGE("<h1>Admin — Manches</h1><p class='muted'>Fichier trop volumineux (&gt; 8 Mo).</p>"), 400
-
-                    plan_data = data
-                    plan_mime = mime or "application/octet-stream"
-                    plan_name = f.filename
-
-            r = Round(
-                name=name,
-                status="open",
-                plan_data=plan_data,
-                plan_mime=plan_mime,
-                plan_name=plan_name,
-            )
-            db.session.add(r)
-            db.session.commit()
-            return redirect(url_for("admin_rounds"))
-
-        except Exception as e:
-            # Affiche l’erreur au lieu d’une 500 opaque
-            return PAGE(f"<h1>Admin — Manches</h1><p class='muted'>Erreur création : {e.__class__.__name__}: {e}</p>"), 500
-
-
+        name = (request.form.get("name") or "").strip()
+        if not name:
+            return PAGE("<h1>Admin — Manches</h1><p class='muted'>Nom obligatoire.</p>"), 400
+        r = Round(name=name, status="open")
+        db.session.add(r)
+        db.session.commit()
+        return redirect(url_for("admin_rounds"))
 
     rounds = Round.query.order_by(Round.created_at.desc()).all()
 
     def row_html(r):
         status_label = "ouverte" if r.status == "open" else "clôturée"
-        # lien plan robuste même si l'attribut n'est pas mappé/lisible
-        has_plan = hasattr(r, "plan_data") and bool(getattr(r, "plan_data"))
-        plan_link = f"<a href='/rounds/{r.id}/plan' target='_blank' rel='noopener'>Plan</a>" if has_plan else "—"
-
-        # 3 formulaires (POST) pour close / open / delete
         return f"""
         <li class="card">
           <div class="row" style="justify-content:space-between;">
-            <div><strong>{r.name}</strong> — <span class="muted">{status_label}</span> — {plan_link}</div>
+            <div><strong>{r.name}</strong> — <span class="muted">{status_label}</span></div>
             <div class="row">
               <form method="post" action="/admin/rounds/{r.id}/close">
                 <button class="btn outline" {'disabled' if r.status=='closed' else ''} type="submit">Clôturer</button>
@@ -443,19 +403,17 @@ def admin_rounds():
     items = "".join(row_html(r) for r in rounds) or "<p class='muted'>Aucune manche pour l’instant.</p>"
 
     return PAGE(f"""
-      <form method="post" action="/admin/rounds" enctype="multipart/form-data" class="form">
+      <h1>Admin — Manches</h1>
+      <form method="post" class="form">
         <label>Nom de la manche
           <input type="text" name="name" placeholder="Ex: Manche 1 — Circuit X" required>
         </label>
-
-        <label>Plan de la manche (image ou PDF)
-          <input type="file" name="plan" accept="image/*,application/pdf">
-        </label>
-
         <button class="btn" type="submit">Créer la manche</button>
       </form>
-
+      <h2 style="margin-top:16px;">Liste</h2>
+      <ul class="cards">{items}</ul>
     """)
+
 
 @app.post("/admin/rounds/<int:round_id>/close")
 def admin_round_close(round_id):
@@ -928,14 +886,7 @@ def __migrate_add_pseudo():
         return f"Erreur migration: {e.__class__.__name__}: {e}", 500
 
 
-@app.get("/rounds/<int:round_id>/plan")
-def round_plan(round_id):
-    r = db.session.get(Round, round_id)
-    if not r or not r.plan_data:
-        return PAGE("<h1>Plan</h1><p class='muted'>Aucun plan disponible pour cette manche.</p>"), 404
-    disp_name = r.plan_name or f"plan_manche_{r.id}"
-    headers = {"Content-Disposition": f'inline; filename="{disp_name}"'}
-    return Response(r.plan_data, mimetype=(r.plan_mime or "application/octet-stream"), headers=headers)
+
 
 
 
