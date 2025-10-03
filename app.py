@@ -621,7 +621,7 @@ def profile():
             raw = ms_to_str(e.raw_time_ms)
             final_ms = final_time_ms(e.raw_time_ms, e.penalties)
             final_s = ms_to_str(final_ms)
-            yt = f\"<a href='{e.youtube_link}' target='_blank'>Vidéo</a>\" if e.youtube_link else \"—\"
+            yt = f"<a href='{e.youtube_link}' target='_blank'>Vidéo</a>" if e.youtube_link else "—"
             return f"""
             <tr>
               <td>{e.round.name}</td>
