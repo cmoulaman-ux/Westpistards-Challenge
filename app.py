@@ -1,11 +1,13 @@
 import os
 from datetime import datetime
 from flask import Flask, request, redirect, url_for, session, render_template_string
+from flask_sqlalchemy import SQLAlchemy
 
 # --- App ---
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 app = Flask(__name__)
-# --- Config secrète & base de données ---
+
+# --- Secrets & DB config ---
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "dev-only-change-me")
 
 DATABASE_URL = os.getenv("DATABASE_URL", "")
@@ -15,18 +17,20 @@ if DATABASE_URL and "sslmode=" not in DATABASE_URL:
     sep = "&" if "?" in DATABASE_URL else "?"
     DATABASE_URL = f"{DATABASE_URL}{sep}sslmode=require"
 
-app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL or "sqlite:///local.db"
+# Utilise Postgres si DATABASE_URL est défini, sinon SQLite local pour le dev
+app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL or f"sqlite:///{os.path.join(BASE_DIR, 'wp_challenge.sqlite3')}"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
+# --- DB ---
+db = SQLAlchemy(app)
 
-# --- DB (SQLite) ---
-try:
-    from flask_sqlalchemy import SQLAlchemy
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(BASE_DIR, 'wp_challenge.sqlite3')
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    db = SQLAlchemy(app)
-except Exception:
-    db = None
+# (optionnel) créer les tables si absentes
+with app.app_context():
+    try:
+        db.create_all()
+    except Exception as e:
+        app.logger.error(f"DB init error: {e}")
+
 
 # --- Modèle minimal ---
 if db:
@@ -880,22 +884,7 @@ def __init_db():
     db.create_all()
     return "DB OK"
 
-@app.get("/__dbinfo")
-def __dbinfo():
-    if not db:
-        return "DB: not configured", 500
-    try:
-        url = str(db.engine.url)
-        # masquer user:pass
-        if "@” in url:
-            left, right = url.split("@", 1)
-            url_safe = "postgresql://****:****@" + right if left.startswith("postgresql://") else url
-        else:
-            url_safe = url
-        tables = db.inspect(db.engine).get_table_names()
-        return f"URL: {url_safe}<br>Tables: {tables}"
-    except Exception as e:
-        return f"DB error: {e}", 500
+
 
 
 if __name__ == "__main__":
