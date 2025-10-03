@@ -880,6 +880,22 @@ def __init_db():
     db.create_all()
     return "DB OK"
 
+@app.get("/__dbinfo")
+def __dbinfo():
+    if not db:
+        return "DB: not configured", 500
+    try:
+        url = str(db.engine.url)
+        # masquer user:pass
+        if "@” in url:
+            left, right = url.split("@", 1)
+            url_safe = "postgresql://****:****@" + right if left.startswith("postgresql://") else url
+        else:
+            url_safe = url
+        tables = db.inspect(db.engine).get_table_names()
+        return f"URL: {url_safe}<br>Tables: {tables}"
+    except Exception as e:
+        return f"DB error: {e}", 500
 
 
 if __name__ == "__main__":
