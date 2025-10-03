@@ -254,10 +254,10 @@ def index():
 
       <div class="logo-grid" style="margin-top:12px;">
         <a class="partner" href="https://www.coneaddict.com" target="_blank" rel="noopener" title="Cone Addict">
-          <img src="/static/img/partners/partner1.png" alt="Partenaire 1">
+          <img src="/static/img/partners/partner1.jpg" alt="Partenaire 1">
         </a>
         <a class="partner" href="https://www.instagram.com/lou_etheve/" target="_blank" rel="noopener" title="Sellerie Lou Ethève">
-          <img src="/static/img/partners/partner2.png" alt="Partenaire 2">
+          <img src="/static/img/partners/partner2.jpg" alt="Partenaire 2">
         </a>
         <!-- Tu peux dupliquer ces blocs pour ajouter d'autres logos -->
       </div>
