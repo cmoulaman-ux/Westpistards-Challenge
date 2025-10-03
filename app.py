@@ -221,28 +221,32 @@ def index():
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if not db:
-        return PAGE("<h1>Inscription</h1><p class='muted'>DB non dispo.</p>")
+        return PAGE("<h1>Inscription</h1><p class='muted'>DB non dispo.</p>"), 500
 
     if request.method == "POST":
-        email = (request.form.get("email") or "").strip().lower()
-        nat = (request.form.get("nationality") or "").strip()
-        pseudo = (request.form.get("pseudo") or "").strip()
+        try:
+            email = (request.form.get("email") or "").strip().lower()
+            nat = (request.form.get("nationality") or "").strip()
+            pseudo = (request.form.get("pseudo") or "").strip()
 
-        if not email:
-            return PAGE("<h1>Inscription</h1><p class='muted'>Email obligatoire.</p>"), 400
-        if not pseudo:
-            return PAGE("<h1>Inscription</h1><p class='muted'>Pseudo obligatoire.</p>"), 400
+            if not email:
+                return PAGE("<h1>Inscription</h1><p class='muted'>Email obligatoire.</p>"), 400
+            if not pseudo:
+                return PAGE("<h1>Inscription</h1><p class='muted'>Pseudo obligatoire.</p>"), 400
 
-        u = User.query.filter_by(email=email).first()
-        if u:
-            return redirect(url_for("login"))
+            u = User.query.filter_by(email=email).first()
+            if u:
+                return redirect(url_for("login"))
 
-        is_admin = email in ADMIN_EMAILS
-        u = User(email=email, nationality=nat, is_admin=is_admin, pseudo=pseudo)
-        db.session.add(u)
-        db.session.commit()
-        session["user_id"] = u.id
-        return redirect(url_for("index"))
+            is_admin = email in ADMIN_EMAILS
+            u = User(email=email, nationality=nat, is_admin=is_admin, pseudo=pseudo)
+            db.session.add(u)
+            db.session.commit()
+            session["user_id"] = u.id
+            return redirect(url_for("profile"))
+        except Exception as e:
+            # Message explicite au lieu d'une 500
+            return PAGE(f"<h1>Inscription</h1><p class='muted'>Erreur DB : {e}</p><p>Essaie de (re)créer les tables : <code>/__init_db?token=please-change-me</code></p>"), 500
 
     return PAGE("""
       <h1>Inscription</h1>
@@ -263,17 +267,28 @@ def register():
 
 
 
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if not db:
-        return PAGE("<h1>Erreur</h1><p class='muted'>DB non initialisée.</p>")
+        return PAGE("<h1>Connexion</h1><p class='muted'>DB non dispo.</p>"), 500
+
     if request.method == "POST":
-        email = (request.form.get("email") or "").strip().lower()
-        u = User.query.filter_by(email=email).first()
-        if not u:
-            return redirect(url_for("register"))
-        session["user_id"] = u.id
-        return redirect(url_for("index"))
+        try:
+            email = (request.form.get("email") or "").strip().lower()
+            if not email:
+                return PAGE("<h1>Connexion</h1><p class='muted'>Email obligatoire.</p>"), 400
+
+            u = User.query.filter_by(email=email).first()
+            if not u:
+                # pas de compte -> renvoi vers inscription
+                return redirect(url_for("register"))
+
+            session["user_id"] = u.id
+            return redirect(url_for("profile"))
+        except Exception as e:
+            return PAGE(f"<h1>Connexion</h1><p class='muted'>Erreur DB : {e}</p><p>Essaie de (re)créer les tables : <code>/__init_db?token=please-change-me</code></p>"), 500
+
     return PAGE("""
       <h1>Connexion (sans mot de passe)</h1>
       <form method="post" class="form">
@@ -284,6 +299,7 @@ def login():
       </form>
       <p class="muted" style="margin-top:12px;">Pas encore de compte ? <a href="/register">Inscription</a></p>
     """)
+
 
 @app.get("/logout")
 def logout():
