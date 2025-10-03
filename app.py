@@ -789,6 +789,17 @@ def __reset_db():
     db.create_all()
     return "DB RESET OK"
 
+@app.get("/__init_db")
+def __init_db():
+    if not db:
+        return "DB non dispo", 500
+    from flask import request, abort
+    token = request.args.get("token")
+    if token != app.config.get("SECRET_KEY"):
+        abort(403)
+    db.create_all()
+    return "DB OK"
+
 
 
 if __name__ == "__main__":
