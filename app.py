@@ -224,7 +224,7 @@ def PAGE(inner_html):
 # --- Pages ---
 @app.get("/")
 def index():
-    # Lister les manches "open" (plus récentes en premier)
+    # Manches ouvertes (plus récentes d’abord)
     open_list_html = "<p class='muted'>Aucune manche ouverte pour le moment.</p>"
     if db:
         open_rounds = (
@@ -240,8 +240,25 @@ def index():
                 f"</li>"
                 for r in open_rounds
             )
-            open_list_html = f"<ul style='list-style:none; padding-left:0; margin:0;'>{items}</ul>"
+            open_list_html = (
+                "<ul style='list-style:none; padding-left:0; margin:0;'>"
+                f"{items}"
+                "</ul>"
+            )
 
+    # Liens partenaires (remplace par tes vraies pages FB)
+    partners_html = """
+    <section class="card" style="margin-top:24px;">
+      <h2>Partenaires</h2>
+      <p class="muted" style="margin-top:-4px;">Merci à nos partenaires pour leur soutien.</p>
+      <ul class="links">
+        <li><a href="https://www.facebook.com/coneaddict" target="_blank" rel="noopener">Facebook Partenaire 1</a></li>
+        <li><a href="https://www.facebook.com/search/top?q=sellerie%20lou%20ethève" target="_blank" rel="noopener">Facebook Partenaire 2</a></li>
+      </ul>
+    </section>
+    """
+
+    # On place Partenaires à la toute fin du contenu (avant le footer)
     return PAGE(f"""
       <h1>Bienvenue sur WP Challenge</h1>
       <p>Entre tes chronos, partage ton lien YouTube et grimpe au classement !</p>
@@ -250,7 +267,10 @@ def index():
         <h2>Manches ouvertes</h2>
         {open_list_html}
       </section>
+
+      {partners_html}
     """)
+
 
 
 

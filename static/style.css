@@ -52,4 +52,25 @@ body{
   box-shadow:0 0 0 3px rgba(37,99,235,.35);
 }
 
+/* Liens partenaires en "pills" */
+.links{
+  list-style:none;
+  padding:0;
+  margin:8px 0 0 0;
+  display:flex;
+  gap:12px;
+  flex-wrap:wrap;
+}
+.links a{
+  text-decoration:none;
+  border:1px solid var(--border);
+  border-radius:999px;
+  padding:8px 12px;
+  color:var(--text);
+}
+.links a:hover{
+  background:var(--text);
+  color:#fff;
+  border-color:var(--text);
+}
 
