@@ -23,8 +23,11 @@ nav a{ margin-left:12px; text-decoration:none; color:var(--text); }
 .flash li.error{ background:#fee2e2; }
 .flash li.info{ background:#dbeafe; }
 .muted{ color:var(--muted); }
-body {
-  background: pink !important;
+body{
+  margin:0;
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu;
+  background:var(--bg);
+  color:var(--text);
 }
 /* Bouton d’accueil plus visible (WP Challenge) */
 .brand{
