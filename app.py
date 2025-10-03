@@ -801,16 +801,20 @@ def round_leaderboard(round_id):
         best = min(finals) if finals else 0
 
         def row(i, e, fm):
-            # % par rapport au meilleur
+            # % vs leader (leader = 100)
             pct = (fm / best * 100.0) if fm > 0 and best > 0 else 0.0
-            # nom affiché robuste
+            # nom + nationalité
             name = display_name(getattr(e, "user", None)) if hasattr(e, "user") else "—"
+            nat = "—"
+            if hasattr(e, "user") and getattr(e.user, "nationality", None):
+                nat = (e.user.nationality or "—").upper()
             # lien vidéo
             yt = f"<a target=\"_blank\" rel=\"noopener\" href=\"{e.youtube_link}\">Vidéo</a>" if (e.youtube_link or "").strip() else "—"
             return (
                 "<tr>"
                 f"<td>{i}</td>"
                 f"<td>{name}</td>"
+                f"<td>{nat}</td>"
                 f"<td>{ms_to_str(e.raw_time_ms)}</td>"
                 f"<td>{e.penalties}</td>"
                 f"<td><strong>{ms_to_str(fm)}</strong></td>"
@@ -827,7 +831,7 @@ def round_leaderboard(round_id):
         table = (
             "<table class='table'>"
             "<thead><tr>"
-            "<th>#</th><th>Pilote</th><th>Brut</th><th>Pén.</th><th>Final</th>"
+            "<th>#</th><th>Pilote</th><th>Nation</th><th>Brut</th><th>Pén.</th><th>Final</th>"
             "<th>% du meilleur</th><th>Moto</th><th>YouTube</th>"
             "</tr></thead>"
             f"<tbody>{rows}</tbody>"
@@ -835,6 +839,8 @@ def round_leaderboard(round_id):
         )
 
         return PAGE(f"<h1>{r.name}</h1>" + table)
+
+
 
     except Exception as e:
         # Dernier filet de sécurité : on affiche l'erreur lisiblement au lieu d'une 500 blanche
