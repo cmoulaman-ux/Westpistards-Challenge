@@ -42,19 +42,7 @@ with app.app_context():
     except Exception as e:
         app.logger.error(f"DB init error: {e}")
 
-# --- Route diagnostic (temporaire) ---
-@app.get("/__dbinfo")
-def __dbinfo():
-    try:
-        url = str(db.engine.url)
-        # masquer identifiants si Postgres
-        if url.startswith("postgresql+psycopg://") and "@" in url:
-            left, right = url.split("@", 1)
-            url = "postgresql+psycopg://****:****@" + right
-        tables = db.inspect(db.engine).get_table_names()
-        return f"URL: {url}<br>Tables: {tables}"
-    except Exception as e:
-        return f"DB error: {e}", 500
+
 
 
 
