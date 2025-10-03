@@ -470,18 +470,24 @@ def admin_times():
 
 
     rows = "".join(row(e) for e in entries)
-    table = f"""
-    <table class="table">
-  <thead>
-    <tr>
-      <th>ID</th><th>Pilote</th><th>Manche</th><th>Brut</th><th>Pén.</th><th>Final</th><th>YouTube</th><th>Statut</th><th>Actions</th>
-    </tr>
-  </thead>
-  <tbody>{rows}</tbody>
-</table>
+    table = (
+        "<table class='table'>"
+        "<thead>"
+        "<tr>"
+        "<th>ID</th><th>Pilote</th><th>Manche</th><th>Brut</th>"
+        "<th>Pén.</th><th>Final</th><th>YouTube</th><th>Statut</th><th>Actions</th>"
+        "</tr>"
+        "</thead>"
+        f"<tbody>{rows}</tbody>"
+        "</table>"
+    )
 
+    return PAGE(
+        "<h1>Admin — Chronos</h1>"
+        + table +
+        "<p style='margin-top:12px'><a class='btn outline' href='/rounds'>Voir les manches</a></p>"
+    )
 
-    return PAGE(f"<h1>Admin — Chronos</h1>{table}<p style='margin-top:12px'><a class='btn outline' href='/rounds'>Voir les manches</a></p>")
 
 @app.post("/admin/times/<int:time_id>/approve")
 def admin_time_approve(time_id):
@@ -698,35 +704,39 @@ def round_leaderboard(round_id):
     finals = [final_time_ms(e.raw_time_ms, e.penalties) for e in entries]
     best = min(finals)
 
-    def row(i, e):
-        final_ms_val = final_time_ms(e.raw_time_ms, e.penalties)
-        pct = (final_ms_val / best - 1.0) * 100.0 if best > 0 else 0.0
-        return f"""
-        <tr>
-          <td>{i}</td>
-          <td>{display_name(e.user)}</td>
-          <td>{ms_to_str(e.raw_time_ms)}</td>
-          <td>{e.penalties}</td>
-          <td><strong>{ms_to_str(final_ms_val)}</strong></td>
-          <td>{pct:.2f}%</td>
-          <td>{e.bike or '—'}</td>
-          <td>{('<a target="_blank" href="'+e.youtube_link+'">Vidéo</a>') if e.youtube_link else '—'}</td>
-        </tr>
-        """
+def row(i, e):
+    final_ms_val = final_time_ms(e.raw_time_ms, e.penalties)
+    pct = (final_ms_val / best - 1.0) * 100.0 if best > 0 else 0.0
+    yt = f"<a target=\"_blank\" href=\"{e.youtube_link}\">Vidéo</a>" if e.youtube_link else "—"
+    return (
+        "<tr>"
+        f"<td>{i}</td>"
+        f"<td>{display_name(e.user)}</td>"
+        f"<td>{ms_to_str(e.raw_time_ms)}</td>"
+        f"<td>{e.penalties}</td>"
+        f"<td><strong>{ms_to_str(final_ms_val)}</strong></td>"
+        f"<td>{pct:.2f}%</td>"
+        f"<td>{e.bike or '—'}</td>"
+        f"<td>{yt}</td>"
+        "</tr>"
+    )
+
 
     rows = "".join(row(i+1, e) for i, e in enumerate(entries))
-    table = f"""
-    <table class="table">
-      <thead>
-        <tr>
-          <th>#</th><th>Pilote</th><th>Brut</th><th>Pén.</th><th>Final</th><th>% du meilleur</th><th>Moto</th><th>YouTube</th>
-        </tr>
-      </thead>
-      <tbody>{rows}</tbody>
-    </table>
-    """
+    table = (
+        "<table class='table'>"
+        "<thead>"
+        "<tr>"
+        "<th>#</th><th>Pilote</th><th>Brut</th><th>Pén.</th><th>Final</th>"
+        "<th>% du meilleur</th><th>Moto</th><th>YouTube</th>"
+        "</tr>"
+        "</thead>"
+        f"<tbody>{rows}</tbody>"
+        "</table>"
+    )
 
-    return PAGE(f"<h1>{r.name}</h1>{table}")
+    return PAGE(f"<h1>{r.name}</h1>" + table)
+
 
 @app.get("/__migrate_add_pseudo")
 def __migrate_add_pseudo():
