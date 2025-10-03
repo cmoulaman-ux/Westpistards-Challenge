@@ -8,33 +8,54 @@ BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 app = Flask(__name__)
 
 # --- Secrets & DB config ---
+# SECRET_KEY vient des variables d'environnement Render (fallback seulement pour dev local)
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "dev-only-change-me")
 
+# DATABASE_URL (Render → Environment)
 DATABASE_URL = os.getenv("DATABASE_URL", "")
-# Render donne souvent "postgres://..."; SQLAlchemy + Psycopg 3 attend "postgresql+psycopg://..."
+
+# Driver SQLAlchemy pour Psycopg 3
+# Render donne souvent "postgres://..."; on veut "postgresql+psycopg://..."
 if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg://", 1)
 elif DATABASE_URL.startswith("postgresql://"):
     DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg://", 1)
 
-# Forcer SSL côté Render si manquant
+# Forcer SSL sur Render si manquant
 if DATABASE_URL and "sslmode=" not in DATABASE_URL:
     sep = "&" if "?" in DATABASE_URL else "?"
     DATABASE_URL = f"{DATABASE_URL}{sep}sslmode=require"
 
-app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL or f"sqlite:///{os.path.join(BASE_DIR, 'wp_challenge.sqlite3')}"
+# Utiliser Postgres si dispo, sinon SQLite local pour le dev
+app.config["SQLALCHEMY_DATABASE_URI"] = (
+    DATABASE_URL or f"sqlite:///{os.path.join(BASE_DIR, 'wp_challenge.sqlite3')}"
+)
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-
 
 # --- DB ---
 db = SQLAlchemy(app)
 
-# (optionnel) créer les tables si absentes
+# (optionnel) créer les tables si absentes; n'efface rien si elles existent
 with app.app_context():
     try:
         db.create_all()
     except Exception as e:
         app.logger.error(f"DB init error: {e}")
+
+# --- Route diagnostic (temporaire) ---
+@app.get("/__dbinfo")
+def __dbinfo():
+    try:
+        url = str(db.engine.url)
+        # masquer identifiants si Postgres
+        if url.startswith("postgresql+psycopg://") and "@" in url:
+            left, right = url.split("@", 1)
+            url = "postgresql+psycopg://****:****@" + right
+        tables = db.inspect(db.engine).get_table_names()
+        return f"URL: {url}<br>Tables: {tables}"
+    except Exception as e:
+        return f"DB error: {e}", 500
+
 
 
 # --- Modèle minimal ---
