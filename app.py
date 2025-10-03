@@ -1,6 +1,6 @@
 import os
 from datetime import datetime
-from flask import Flask, request, redirect, url_for, session, render_template_string
+from flask import Flask, request, redirect, url_for, session, render_template_string, Response
 from flask_sqlalchemy import SQLAlchemy
 
 # --- App ---
@@ -61,6 +61,10 @@ if db:
         name = db.Column(db.String(200), nullable=False)
         status = db.Column(db.String(20), default='open')  # open | closed
         created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    plan_data = db.Column(db.LargeBinary)      # contenu binaire (image/PDF)
+    plan_mime = db.Column(db.String(120))      # ex: image/png, application/pdf
+    plan_name = db.Column(db.String(255))      # nom de fichier d'origine
+
 
     class TimeEntry(db.Model):
         id = db.Column(db.Integer, primary_key=True)
@@ -368,19 +372,40 @@ def admin_rounds():
         name = (request.form.get("name") or "").strip()
         if not name:
             return PAGE("<h1>Admin — Manches</h1><p class='muted'>Nom obligatoire.</p>"), 400
-        r = Round(name=name, status="open")
-        db.session.add(r); db.session.commit()
+
+        # Récupération éventuelle du plan
+        f = request.files.get("plan")
+        plan_data = plan_mime = plan_name = None
+        if f and getattr(f, "filename", ""):
+            data = f.read()
+            if data and len(data) <= 8 * 1024 * 1024:  # 8 Mo max
+                plan_data = data
+                plan_mime = f.mimetype or "application/octet-stream"
+                plan_name = f.filename
+
+        r = Round(
+            name=name,
+            status="open",
+            plan_data=plan_data,
+            plan_mime=plan_mime,
+            plan_name=plan_name,
+        )
+        db.session.add(r)
+        db.session.commit()
         return redirect(url_for("admin_rounds"))
+
 
     rounds = Round.query.order_by(Round.created_at.desc()).all()
 
     def row_html(r):
         status_label = "ouverte" if r.status == "open" else "clôturée"
+        plan_link = f"<a href='/rounds/{r.id}/plan' target='_blank' rel='noopener'>Plan</a>" if r.plan_data else "—"
+
         # 3 formulaires (POST) pour close / open / delete
         return f"""
         <li class="card">
           <div class="row" style="justify-content:space-between;">
-            <div><strong>{r.name}</strong> — <span class="muted">{status_label}</span></div>
+            <div><strong>{r.name}</strong> — <span class="muted">{status_label}</span> — {plan_link}</div>
             <div class="row">
               <form method="post" action="/admin/rounds/{r.id}/close">
                 <button class="btn outline" {'disabled' if r.status=='closed' else ''} type="submit">Clôturer</button>
@@ -399,15 +424,18 @@ def admin_rounds():
     items = "".join(row_html(r) for r in rounds) or "<p class='muted'>Aucune manche pour l’instant.</p>"
 
     return PAGE(f"""
-      <h1>Admin — Manches</h1>
-      <form method="post" class="form">
+      <form method="post" action="/admin/rounds" enctype="multipart/form-data" class="form">
         <label>Nom de la manche
           <input type="text" name="name" placeholder="Ex: Manche 1 — Circuit X" required>
         </label>
+
+        <label>Plan de la manche (image ou PDF)
+          <input type="file" name="plan" accept="image/*,application/pdf">
+        </label>
+
         <button class="btn" type="submit">Créer la manche</button>
       </form>
-      <h2 style="margin-top:16px;">Liste</h2>
-      <ul class="cards">{items}</ul>
+
     """)
 
 @app.post("/admin/rounds/<int:round_id>/close")
@@ -881,6 +909,14 @@ def __migrate_add_pseudo():
         return f"Erreur migration: {e.__class__.__name__}: {e}", 500
 
 
+@app.get("/rounds/<int:round_id>/plan")
+def round_plan(round_id):
+    r = db.session.get(Round, round_id)
+    if not r or not r.plan_data:
+        return PAGE("<h1>Plan</h1><p class='muted'>Aucun plan disponible pour cette manche.</p>"), 404
+    disp_name = r.plan_name or f"plan_manche_{r.id}"
+    headers = {"Content-Disposition": f'inline; filename="{disp_name}"'}
+    return Response(r.plan_data, mimetype=(r.plan_mime or "application/octet-stream"), headers=headers)
 
 
 
