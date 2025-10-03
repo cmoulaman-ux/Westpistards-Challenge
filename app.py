@@ -132,16 +132,18 @@ def final_time_ms(raw_ms: int, penalties: int) -> int:
 
 # --- Layout inline réutilisable ---
 def PAGE(inner_html: str) -> str:
-    # On détecte l'utilisateur connecté et son rôle
-    u = current_user()
-    isadm = is_admin(u)
+    # Nav ultra-safe (aucune 500 si la DB / session pose problème)
+    try:
+        u = current_user()
+        isadm = is_admin(u)
+    except Exception:
+        u = None
+        isadm = False
 
-    # Construire la partie droite de la nav selon le contexte
     nav_right = '<a href="/rounds">Manches</a>'
     if u:
         nav_right += ' <a href="/profile">Mon profil</a>'
         if isadm:
-            # raccourcis admin visibles seulement pour les admins
             nav_right += ' <a href="/admin/rounds">Admin Manches</a>'
             nav_right += ' <a href="/admin/times">Admin Chronos</a>'
         nav_right += ' <a href="/logout">Déconnexion</a>'
@@ -191,6 +193,7 @@ def PAGE(inner_html: str) -> str:
 </body>
 </html>
 """
+
 
 
 # --- Pages ---
