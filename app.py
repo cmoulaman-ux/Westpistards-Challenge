@@ -443,15 +443,18 @@ def admin_round_open(round_id):
     db.session.commit()
     return redirect(url_for("admin_rounds"))
 
+@app.post("/admin/rounds/<int:round_id>/delete")
+def admin_round_delete(round_id):
+    if not db:
+        return PAGE("<h1>Admin</h1><p class='muted'>DB non dispo.</p>")
     u = current_user()
     if not is_admin(u):
-        return ("", 403)
-
+        return PAGE("<h1>Accès refusé</h1><p class='muted'>Réservé aux administrateurs.</p>"), 403
     r = db.session.get(Round, round_id)
     if not r:
-        return ("", 404)
+        return PAGE("<h1>Erreur</h1><p class='muted'>Manche introuvable.</p>"), 404
 
-    # Supprimer d'abord les chronos liés pour éviter la violation de contrainte
+    # Supprimer d'abord les chronos liés (évite l'erreur de contrainte)
     try:
         from sqlalchemy import delete
         db.session.execute(delete(TimeEntry).where(TimeEntry.round_id == round_id))
