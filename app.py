@@ -369,30 +369,47 @@ def admin_rounds():
         return PAGE("<h1>Accès refusé</h1><p class='muted'>Réservé aux administrateurs.</p>"), 403
 
     if request.method == "POST":
-        name = (request.form.get("name") or "").strip()
-        if not name:
-            return PAGE("<h1>Admin — Manches</h1><p class='muted'>Nom obligatoire.</p>"), 400
+        try:
+            name = (request.form.get("name") or "").strip()
+            if not name:
+                return PAGE("<h1>Admin — Manches</h1><p class='muted'>Nom obligatoire.</p>"), 400
 
-        # Récupération éventuelle du plan
-        f = request.files.get("plan")
-        plan_data = plan_mime = plan_name = None
-        if f and getattr(f, "filename", ""):
-            data = f.read()
-            if data and len(data) <= 8 * 1024 * 1024:  # 8 Mo max
-                plan_data = data
-                plan_mime = f.mimetype or "application/octet-stream"
-                plan_name = f.filename
+            # Récupération éventuelle du plan
+            f = request.files.get("plan")
+            plan_data = plan_mime = plan_name = None
 
-        r = Round(
-            name=name,
-            status="open",
-            plan_data=plan_data,
-            plan_mime=plan_mime,
-            plan_name=plan_name,
-        )
-        db.session.add(r)
-        db.session.commit()
-        return redirect(url_for("admin_rounds"))
+            if f and getattr(f, "filename", ""):
+                data = f.read()  # peut lever si gros fichier ou upload cassé
+                if data:
+                    # Optionnel: filtre simple de MIME pour éviter des surprises
+                    allowed_prefixes = ("image/", "application/pdf")
+                    mime = (f.mimetype or "").lower()
+                    if not (mime.startswith(allowed_prefixes)):
+                        return PAGE("<h1>Admin — Manches</h1><p class='muted'>Type de fichier non autorisé. Image ou PDF uniquement.</p>"), 400
+
+                    # Limite 8 Mo (adapter si besoin)
+                    if len(data) > 8 * 1024 * 1024:
+                        return PAGE("<h1>Admin — Manches</h1><p class='muted'>Fichier trop volumineux (&gt; 8 Mo).</p>"), 400
+
+                    plan_data = data
+                    plan_mime = mime or "application/octet-stream"
+                    plan_name = f.filename
+
+            r = Round(
+                name=name,
+                status="open",
+                plan_data=plan_data,
+                plan_mime=plan_mime,
+                plan_name=plan_name,
+            )
+            db.session.add(r)
+            db.session.commit()
+            return redirect(url_for("admin_rounds"))
+
+        except Exception as e:
+            # Affiche l’erreur au lieu d’une 500 opaque
+            return PAGE(f"<h1>Admin — Manches</h1><p class='muted'>Erreur création : {e.__class__.__name__}: {e}</p>"), 500
+
 
 
     rounds = Round.query.order_by(Round.created_at.desc()).all()
