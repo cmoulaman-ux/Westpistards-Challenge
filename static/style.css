@@ -146,3 +146,33 @@ nav a:hover{
 /* ===== Utilitaires ===== */
 .row{ display:flex; gap:8px; align-items:center; }
 .muted{ color:var(--muted); }
+
+/* Grille de logos partenaires */
+.logo-grid{
+  display:grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap:16px;
+}
+@media (max-width:900px){ .logo-grid{ grid-template-columns: repeat(3, 1fr); } }
+@media (max-width:640px){ .logo-grid{ grid-template-columns: repeat(2, 1fr); } }
+
+.partner{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#fff;
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:12px;
+  height:90px;           /* hauteur uniforme */
+}
+.partner img{
+  max-height:60px;       /* contrainte visuelle */
+  width:auto;
+  object-fit:contain;
+  filter: saturate(1);
+  transition: transform .12s ease, filter .12s ease, box-shadow .12s ease;
+}
+.partner:hover img{ transform:scale(1.04); }
+.partner:hover{ box-shadow:0 2px 10px rgba(16,24,40,.08); }
+
