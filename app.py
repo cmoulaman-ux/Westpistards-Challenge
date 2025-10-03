@@ -243,11 +243,13 @@ def index():
         )
         if open_rounds:
             items = "".join(
-                f"<li><a href='/rounds/{r.id}'>{r.name}</a> "
-                f"<span class='muted'>({r.created_at.strftime('%d/%m/%Y')})</span></li>"
+                f"<li class='row' style='justify-content:space-between;'>"
+                f"  <span><a href='/rounds/{r.id}'>{r.name}</a></span>"
+                f"  <span class='muted'>{r.created_at.strftime('%d/%m/%Y')}</span>"
+                f"</li>"
                 for r in open_rounds
             )
-            open_list_html = f"<ul>{items}</ul>"
+            open_list_html = f"<ul style='list-style:none; padding-left:0; margin:0;'>{items}</ul>"
 
     return PAGE(f"""
       <h1>Bienvenue sur WP Challenge</h1>
@@ -257,18 +259,8 @@ def index():
         <h2>Manches ouvertes</h2>
         {open_list_html}
       </section>
-
-      <section class="grid2" style="margin-top:16px">
-        <div class="card">
-          <h3>Inscription</h3>
-          <p><a class="btn" href="/register">Créer mon compte</a></p>
-        </div>
-        <div class="card">
-          <h3>Connexion</h3>
-          <p><a class="btn outline" href="/login">Me connecter</a></p>
-        </div>
-      </section>
     """)
+
 
 
 @app.route("/register", methods=["GET", "POST"])
