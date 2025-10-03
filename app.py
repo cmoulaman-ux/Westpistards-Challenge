@@ -11,15 +11,20 @@ app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "dev-only-change-me")
 
 DATABASE_URL = os.getenv("DATABASE_URL", "")
+# Render donne souvent "postgres://..."; SQLAlchemy + Psycopg 3 attend "postgresql+psycopg://..."
 if DATABASE_URL.startswith("postgres://"):
-    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg://", 1)
+elif DATABASE_URL.startswith("postgresql://"):
+    DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg://", 1)
+
+# Forcer SSL côté Render si manquant
 if DATABASE_URL and "sslmode=" not in DATABASE_URL:
     sep = "&" if "?" in DATABASE_URL else "?"
     DATABASE_URL = f"{DATABASE_URL}{sep}sslmode=require"
 
-# Utilise Postgres si DATABASE_URL est défini, sinon SQLite local pour le dev
 app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL or f"sqlite:///{os.path.join(BASE_DIR, 'wp_challenge.sqlite3')}"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
 
 # --- DB ---
 db = SQLAlchemy(app)
