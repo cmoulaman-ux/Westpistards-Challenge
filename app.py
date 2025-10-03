@@ -168,29 +168,25 @@ def final_time_ms(raw_ms: int, penalties: int) -> int:
 def PAGE(inner_html):
     u = current_user() if db else None
 
-    # Bloc de droite de la nav
+    # --- NAV DROITE (simple et claire) ---
     nav_parts = []
-
-    # Lien public "Manches"
+    # Public
     nav_parts.append("<a href='/rounds'>Manches</a>")
-
-    # Lien Facebook (remplace l’URL par la tienne)
     nav_parts.append(
         "<a href='https://www.facebook.com/west.pistards' target='_blank' rel='noopener' title='Ouvrir notre page Facebook'>Facebook</a>"
     )
 
-    # Tes liens selon l’état de connexion / admin
+    # Connexion / Profil
     if u:
-        # exemple: lien Profil + Déconnexion
         nav_parts.append("<a href='/profile'>Profil</a>")
-        if getattr(u, 'is_admin', False):
-            nav_parts.append("<a href='/admin/rounds'>Admin</a>")
+        # 👇 plus de lien Admin ici (tu gères l’admin depuis le profil)
         nav_parts.append("<a href='/logout'>Déconnexion</a>")
     else:
         nav_parts.append("<a href='/register'>Inscription</a>")
         nav_parts.append("<a href='/login'>Connexion</a>")
 
     nav_right = " ".join(nav_parts)
+
 
     return f"""
 <!doctype html>
