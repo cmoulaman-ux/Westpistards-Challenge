@@ -230,8 +230,9 @@ def PAGE(inner_html):
 # --- Pages ---
 @app.get("/")
 def index():
-    # Manches ouvertes (plus récentes d’abord)
     open_list_html = "<p class='muted'>Aucune manche ouverte pour le moment.</p>"
+    countdown_script = ""  # on l'ajoutera si au moins une manche a une deadline
+
     if db:
         open_rounds = (
             Round.query.filter_by(status="open")
@@ -239,18 +240,72 @@ def index():
             .all()
         )
         if open_rounds:
-            items = "".join(
-                f"<li class='row' style='justify-content:space-between;'>"
-                f"  <span><a href='/rounds/{r.id}'>{r.name}</a></span>"
-                f"  <span class='muted'>{r.created_at.strftime('%d/%m/%Y')}</span>"
-                f"</li>"
-                for r in open_rounds
-            )
+            items = []
+            for r in open_rounds:
+                date_str = r.created_at.strftime('%d/%m/%Y')
+                # Si une date de clôture existe, on ajoute une pastille avec data-deadline
+                if getattr(r, "closes_at", None):
+                    deadline_iso = r.closes_at.isoformat(sep=" ", timespec="minutes")
+                    cd = (
+                        f"<span class='cd-badge' "
+                        f"data-deadline='{deadline_iso}' "
+                        f"id='cd-{r.id}'>calcul...</span>"
+                    )
+                    items.append(
+                        f"<li class='row' style='justify-content:space-between;'>"
+                        f"  <span><a href='/rounds/{r.id}'>{r.name}</a> {cd}</span>"
+                        f"  <span class='muted'>{date_str}</span>"
+                        f"</li>"
+                    )
+                else:
+                    # pas de clôture : pas de pastille
+                    items.append(
+                        f"<li class='row' style='justify-content:space-between;'>"
+                        f"  <span><a href='/rounds/{r.id}'>{r.name}</a></span>"
+                        f"  <span class='muted'>{date_str}</span>"
+                        f"</li>"
+                    )
+
             open_list_html = (
                 "<ul style='list-style:none; padding-left:0; margin:0;'>"
-                f"{items}"
+                + "".join(items) +
                 "</ul>"
             )
+
+            # Script unique pour mettre à jour toutes les pastilles .cd-badge
+            countdown_script = """
+            <script>
+            (function(){
+              function z(n){ return n<10 ? ('0'+n) : n; }
+              function tick(){
+                const now = new Date();
+                document.querySelectorAll('.cd-badge').forEach(el=>{
+                  const dl = el.getAttribute('data-deadline');
+                  if(!dl) return;
+                  const deadline = new Date(dl.replace(' ','T'));
+                  let diff = Math.floor((deadline - now)/1000);
+                  el.classList.remove('cd-warn','cd-danger');
+                  if(diff <= 0){
+                    el.textContent = 'Clôturée';
+                    el.classList.add('cd-danger');
+                    return;
+                  }
+                  const d = Math.floor(diff/86400); diff %= 86400;
+                  const h = Math.floor(diff/3600);  diff %= 3600;
+                  const m = Math.floor(diff/60);
+                  // Affichage compact : si d>0 on montre 'dj HH:MM', sinon 'HH:MM'
+                  el.textContent = (d>0 ? (d+'j ') : '') + z(h)+':'+z(m);
+                  const totalSec = (deadline - now)/1000;
+                  if (totalSec < 3600) el.classList.add('cd-danger');   // < 1h
+                  else if (totalSec < 86400) el.classList.add('cd-warn'); // < 24h
+                });
+              }
+              tick();
+              setInterval(tick, 30000); // maj toutes les 30s (suffisant pour la home)
+            })();
+            </script>
+            """
+
 
     # Liens partenaires (remplace par tes vraies pages FB)
     partners_html = """
@@ -288,7 +343,7 @@ def index():
         <h2>Manches ouvertes</h2>
         {open_list_html}
       </section>
-
+      {countdown_script}
       {partners_html}
     """)
 

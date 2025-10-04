@@ -207,5 +207,20 @@ nav a:hover{
   border-color:var(--danger); background:#fef2f2; color:#991b1b; /* < 1h */
 }
 
+/* Mini compte à rebours (home) */
+.cd-badge{
+  display:inline-block;
+  margin-left:8px;
+  padding:2px 8px;
+  border-radius:999px;
+  font-size:.85rem;
+  font-weight:700;
+  border:1px solid var(--border);
+  background:#fff;
+  color:var(--text);
+}
+.cd-warn{ background:#fffbeb; border-color:#fde68a; color:#7c2d12; }   /* < 24h */
+.cd-danger{ background:#fef2f2; border-color:#fecaca; color:#991b1b; } /* < 1h  */
+
 
 
