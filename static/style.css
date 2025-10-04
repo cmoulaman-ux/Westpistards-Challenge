@@ -298,12 +298,13 @@ nav a:hover{
   line-height:1.1;
 }
 
-/* Logo de droite (WP Challenge) — plus grand */
+/* Logo de droite (WP Challenge) — +30% */
 .logo-main{
-  height:clamp(56px, 9vw, 110px);  /* ⇦ ajuste la taille max ici si tu veux encore plus grand */
-  width:auto;
-  object-fit:contain;
+  height: clamp(72px, 12vw, 144px); /* avant: clamp(56px, 9vw, 110px) */
+  width: auto;
+  object-fit: contain;
 }
+
 
 /* Logo de gauche (Moto Gymkhana) — un peu plus discret */
 .logo-secondary{
