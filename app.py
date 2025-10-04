@@ -937,6 +937,49 @@ def __migrate_add_pseudo():
         return f"Erreur migration: {e.__class__.__name__}: {e}", 500
 
 
+@app.route("/admin/banner", methods=["GET", "POST"])
+def admin_banner():
+    if not db:
+        return PAGE("<h1>Admin</h1><p class='muted'>DB non dispo.</p>")
+    u = current_user()
+    if not is_admin(u):
+        return PAGE("<h1>Accès refusé</h1><p class='muted'>Réservé aux administrateurs.</p>"), 403
+
+    if request.method == "POST":
+        content = (request.form.get("content") or "").strip()
+        is_active = True if request.form.get("is_active") == "on" else False
+        if not content:
+            return PAGE("<h1>Bandeau</h1><p class='muted'>Le contenu est obligatoire.</p>"), 400
+        # on crée une nouvelle annonce (la plus récente active sera affichée)
+        ann = Announcement(content=content, is_active=is_active)
+        db.session.add(ann)
+        db.session.commit()
+        return redirect(url_for("admin_banner"))
+
+    latest = Announcement.query.order_by(Announcement.created_at.desc()).limit(10).all()
+    rows = "".join(
+        f"<tr><td>{a.id}</td><td>{a.created_at:%d/%m/%Y %H:%M}</td><td>{'✅' if a.is_active else '—'}</td><td>{a.content}</td></tr>"
+        for a in latest
+    ) or "<tr><td colspan='4' class='muted'>Aucune annonce.</td></tr>"
+
+    return PAGE(f"""
+      <h1>Admin — Bandeau d'annonces</h1>
+      <form method="post" class="form">
+        <label>Contenu (HTML simple autorisé)
+          <textarea name="content" rows="3" placeholder="Ex : <strong>WP Challenge</strong> — Manche 2 ce samedi, briefing à 9h." required></textarea>
+        </label>
+        <label class="row" style="gap:8px;">
+          <input type="checkbox" name="is_active" checked> Activer cette annonce
+        </label>
+        <button class="btn" type="submit">Publier</button>
+      </form>
+
+      <h2 style="margin-top:16px;">Dernières annonces</h2>
+      <table class="table">
+        <thead><tr><th>#</th><th>Date</th><th>Active</th><th>Contenu</th></tr></thead>
+        <tbody>{rows}</tbody>
+      </table>
+    """)
 
 
 
