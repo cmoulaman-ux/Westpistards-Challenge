@@ -187,4 +187,25 @@ nav a:hover{
 }
 .banner strong { color:#7c2d12; }
 
+/* Compte à rebours (manche) */
+.countdown-box.card{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.countdown-meta{ color:var(--muted); margin:0; }
+.countdown{
+  display:inline-block;
+  font-weight:800;
+  font-size:1.15rem;
+  border:2px solid var(--primary);
+  border-radius:12px;
+  padding:6px 10px;
+  background:#fff;
+  color:var(--text);
+}
+#countdown-wrap.warn .countdown{
+  border-color:#f59e0b; background:#fffbeb; color:#7c2d12; /* < 24h */
+}
+#countdown-wrap.danger .countdown{
+  border-color:var(--danger); background:#fef2f2; color:#991b1b; /* < 1h */
+}
+
+
 

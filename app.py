@@ -836,19 +836,59 @@ def profile():
     return PAGE("".join(html))
 
 
-
-
-
-
 @app.get("/rounds/<int:round_id>")
 def round_leaderboard(round_id):
     if not db:
         return PAGE("<h1>Classement</h1><p class='muted'>DB non dispo.</p>")
     r = db.session.get(Round, round_id)
-
-
     if not r:
         return PAGE("<h1>Classement</h1><p class='muted'>Manche introuvable.</p>"), 404
+
+        # Compte à rebours si une date de clôture existe
+        countdown_html = ""
+        if getattr(r, "closes_at", None):
+            deadline_iso = r.closes_at.isoformat(sep=" ", timespec="minutes")
+            deadline_human = r.closes_at.strftime("%d/%m/%Y %H:%M")
+            countdown_html = f"""
+            <section class="countdown-box card" id="countdown-wrap" style="margin-bottom:16px;">
+              <div>
+                <h2 style="margin:0;">Clôture de la manche</h2>
+                <p class="countdown-meta">La manche se clôture le <strong>{deadline_human}</strong>.</p>
+              </div>
+              <div class="countdown" id="countdown" data-deadline="{deadline_iso}">—:—:—</div>
+            </section>
+            <script>
+            (function(){{
+              const el = document.getElementById('countdown');
+              if(!el) return;
+              const deadline = new Date(el.dataset.deadline.replace(' ', 'T'));
+              const wrap = document.getElementById('countdown-wrap');
+              function z(n){{ return n<10 ? '0'+n : n; }}
+              function tick(){{
+                const now = new Date();
+                let diff = Math.floor((deadline - now)/1000);
+                if (diff <= 0) {{
+                  el.textContent = 'Clôturée';
+                  wrap.classList.add('danger');
+                  return;
+                }}
+                const d = Math.floor(diff/86400); diff %= 86400;
+                const h = Math.floor(diff/3600);  diff %= 3600;
+                const m = Math.floor(diff/60);
+                const s = diff % 60;
+                el.textContent = (d>0 ? (d+'j ') : '') + z(h)+':'+z(m)+':'+z(s);
+
+                const totalSec = (deadline - now)/1000;
+                wrap.classList.remove('warn','danger');
+                if (totalSec < 3600) wrap.classList.add('danger');      // < 1h
+                else if (totalSec < 86400) wrap.classList.add('warn');  // < 24h
+
+                setTimeout(tick, 500);
+              }}
+              tick();
+            }})();
+            </script>
+            """
 
     try:
         # On ne prend que les chronos VALIDÉS
@@ -919,51 +959,7 @@ def round_leaderboard(round_id):
             "</table>"
         )
 
-        # Compte à rebours si une date de clôture existe
-        countdown_html = ""
-        if getattr(r, "closes_at", None):
-            deadline_iso = r.closes_at.isoformat(sep=" ", timespec="minutes")
-            deadline_human = r.closes_at.strftime("%d/%m/%Y %H:%M")
-            countdown_html = f"""
-            <section class="countdown-box card" id="countdown-wrap" style="margin-bottom:16px;">
-              <div>
-                <h2 style="margin:0;">Clôture de la manche</h2>
-                <p class="countdown-meta">La manche se clôture le <strong>{deadline_human}</strong>.</p>
-              </div>
-              <div class="countdown" id="countdown" data-deadline="{deadline_iso}">—:—:—</div>
-            </section>
-            <script>
-            (function(){{
-              const el = document.getElementById('countdown');
-              if(!el) return;
-              const deadline = new Date(el.dataset.deadline.replace(' ', 'T'));
-              const wrap = document.getElementById('countdown-wrap');
-              function z(n){{ return n<10 ? '0'+n : n; }}
-              function tick(){{
-                const now = new Date();
-                let diff = Math.floor((deadline - now)/1000);
-                if (diff <= 0) {{
-                  el.textContent = 'Clôturée';
-                  wrap.classList.add('danger');
-                  return;
-                }}
-                const d = Math.floor(diff/86400); diff %= 86400;
-                const h = Math.floor(diff/3600);  diff %= 3600;
-                const m = Math.floor(diff/60);
-                const s = diff % 60;
-                el.textContent = (d>0 ? (d+'j ') : '') + z(h)+':'+z(m)+':'+z(s);
 
-                const totalSec = (deadline - now)/1000;
-                wrap.classList.remove('warn','danger');
-                if (totalSec < 3600) wrap.classList.add('danger');      // < 1h
-                else if (totalSec < 86400) wrap.classList.add('warn');  // < 24h
-
-                setTimeout(tick, 500);
-              }}
-              tick();
-            }})();
-            </script>
-            """
 
         return PAGE(f"""
           <h1>{r.name}</h1>
