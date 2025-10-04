@@ -781,6 +781,7 @@ def profile():
         <div class="row" style="gap:8px; margin-top:8px;">
           <a class="btn" href="/admin/rounds">Admin — Manches</a>
           <a class="btn outline" href="/admin/times">Admin — Chronos</a>
+          <a class="btn" href="/admin/banner">Admin — Bannière</a>
         </div>
         """
 
