@@ -246,18 +246,22 @@ nav a:hover{
   border-color:var(--primary);
 }
 
-/* Logo accueil : plus petit */
+/* Logo accueil : plus petit et mieux contraint */
 .hero-logo{
-  height:72px;    /* ⇦ ajuste ici (ex: 64 / 56) */
-  width:auto;
-  object-fit:contain;
-  background:transparent;
-  border:none;
-  box-shadow:none;
+  height: clamp(40px, 5.5vw, 56px); /* ⇦ plus petit partout */
+  width: auto;                      /* garde le ratio */
+  max-width: 220px;                 /* limite si le logo est très horizontal */
+  object-fit: contain;
+  background: transparent;
+  border: none;
+  box-shadow: none;
 }
 
 @media (max-width:640px){
-  .hero-logo{ height:56px; }  /* taille mobile */
+  .hero-logo{
+    height: 44px;    /* encore plus petit sur mobile */
+    max-width: 180px;
+  }
 }
 
 
