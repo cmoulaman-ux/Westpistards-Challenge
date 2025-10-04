@@ -246,4 +246,19 @@ nav a:hover{
   border-color:var(--primary);
 }
 
+/* Logo accueil : plus petit */
+.hero-logo{
+  height:72px;    /* ⇦ ajuste ici (ex: 64 / 56) */
+  width:auto;
+  object-fit:contain;
+  background:transparent;
+  border:none;
+  box-shadow:none;
+}
+
+@media (max-width:640px){
+  .hero-logo{ height:56px; }  /* taille mobile */
+}
+
+
 
