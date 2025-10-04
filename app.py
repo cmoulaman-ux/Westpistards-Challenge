@@ -840,55 +840,56 @@ def profile():
 def round_leaderboard(round_id):
     if not db:
         return PAGE("<h1>Classement</h1><p class='muted'>DB non dispo.</p>")
+
     r = db.session.get(Round, round_id)
     if not r:
         return PAGE("<h1>Classement</h1><p class='muted'>Manche introuvable.</p>"), 404
 
-        # Compte à rebours si une date de clôture existe
-        countdown_html = ""
-        if getattr(r, "closes_at", None):
-            deadline_iso = r.closes_at.isoformat(sep=" ", timespec="minutes")
-            deadline_human = r.closes_at.strftime("%d/%m/%Y %H:%M")
-            countdown_html = f"""
-            <section class="countdown-box card" id="countdown-wrap" style="margin-bottom:16px;">
-              <div>
-                <h2 style="margin:0;">Clôture de la manche</h2>
-                <p class="countdown-meta">La manche se clôture le <strong>{deadline_human}</strong>.</p>
-              </div>
-              <div class="countdown" id="countdown" data-deadline="{deadline_iso}">—:—:—</div>
-            </section>
-            <script>
-            (function(){{
-              const el = document.getElementById('countdown');
-              if(!el) return;
-              const deadline = new Date(el.dataset.deadline.replace(' ', 'T'));
-              const wrap = document.getElementById('countdown-wrap');
-              function z(n){{ return n<10 ? '0'+n : n; }}
-              function tick(){{
-                const now = new Date();
-                let diff = Math.floor((deadline - now)/1000);
-                if (diff <= 0) {{
-                  el.textContent = 'Clôturée';
-                  wrap.classList.add('danger');
-                  return;
-                }}
-                const d = Math.floor(diff/86400); diff %= 86400;
-                const h = Math.floor(diff/3600);  diff %= 3600;
-                const m = Math.floor(diff/60);
-                const s = diff % 60;
-                el.textContent = (d>0 ? (d+'j ') : '') + z(h)+':'+z(m)+':'+z(s);
+    # --- Compte à rebours (hors du if not r, et initialisé) ---
+    countdown_html = ""
+    if getattr(r, "closes_at", None):
+        deadline_iso = r.closes_at.isoformat(sep=" ", timespec="minutes")
+        deadline_human = r.closes_at.strftime("%d/%m/%Y %H:%M")
+        countdown_html = f"""
+        <section class="countdown-box card" id="countdown-wrap" style="margin-bottom:16px;">
+          <div>
+            <h2 style="margin:0;">Clôture de la manche</h2>
+            <p class="countdown-meta">La manche se clôture le <strong>{deadline_human}</strong>.</p>
+          </div>
+          <div class="countdown" id="countdown" data-deadline="{deadline_iso}">—:—:—</div>
+        </section>
+        <script>
+        (function(){{
+          const el = document.getElementById('countdown');
+          if(!el) return;
+          const deadline = new Date(el.dataset.deadline.replace(' ', 'T'));
+          const wrap = document.getElementById('countdown-wrap');
+          function z(n){{ return n<10 ? '0'+n : n; }}
+          function tick(){{
+            const now = new Date();
+            let diff = Math.floor((deadline - now)/1000);
+            if (diff <= 0) {{
+              el.textContent = 'Clôturée';
+              wrap.classList.add('danger');
+              return;
+            }}
+            const d = Math.floor(diff/86400); diff %= 86400;
+            const h = Math.floor(diff/3600);  diff %= 3600;
+            const m = Math.floor(diff/60);
+            const s = diff % 60;
+            el.textContent = (d>0 ? (d+'j ') : '') + z(h)+':'+z(m)+':'+z(s);
 
-                const totalSec = (deadline - now)/1000;
-                wrap.classList.remove('warn','danger');
-                if (totalSec < 3600) wrap.classList.add('danger');      // < 1h
-                else if (totalSec < 86400) wrap.classList.add('warn');  // < 24h
+            const totalSec = (deadline - now)/1000;
+            wrap.classList.remove('warn','danger');
+            if (totalSec < 3600) wrap.classList.add('danger');      // < 1h
+            else if (totalSec < 86400) wrap.classList.add('warn');  // < 24h
 
-                setTimeout(tick, 500);
-              }}
-              tick();
-            }})();
-            </script>
-            """
+            setTimeout(tick, 500);
+          }}
+          tick();
+        }})();
+        </script>
+        """
 
     try:
         # On ne prend que les chronos VALIDÉS
@@ -900,11 +901,10 @@ def round_leaderboard(round_id):
         )
 
         if not entries:
-            return PAGE(f"<h1>{r.name}</h1><p class='muted'>Aucun chrono validé pour le moment.</p>")
+            return PAGE(f"<h1>{r.name}</h1>{countdown_html}<p class='muted'>Aucun chrono validé pour le moment.</p>")
 
-        # Sécuriser le calcul du final et ignorer tout enregistrement corrompu
-        safe_entries = []
-        finals = []
+        # Sécuriser le calcul du final
+        safe_entries, finals = [], []
         for e in entries:
             try:
                 raw_ms = int(e.raw_time_ms or 0)
@@ -913,23 +913,17 @@ def round_leaderboard(round_id):
                 safe_entries.append((e, fm))
                 finals.append(fm)
             except Exception:
-                # on skippe cette entrée si problème de données
                 continue
 
         if not safe_entries:
-            return PAGE(f"<h1>{r.name}</h1><p class='muted'>Aucun chrono exploitable.</p>")
+            return PAGE(f"<h1>{r.name}</h1>{countdown_html}<p class='muted'>Aucun chrono exploitable.</p>")
 
         best = min(finals) if finals else 0
 
         def row(i, e, fm):
-            # % vs leader (leader = 100)
             pct = (fm / best * 100.0) if fm > 0 and best > 0 else 0.0
-            # nom + nationalité
             name = display_name(getattr(e, "user", None)) if hasattr(e, "user") else "—"
-            nat = "—"
-            if hasattr(e, "user") and getattr(e.user, "nationality", None):
-                nat = (e.user.nationality or "—").upper()
-            # lien vidéo
+            nat = (getattr(e.user, "nationality", "") or "—").upper() if hasattr(e, "user") else "—"
             yt = f"<a target=\"_blank\" rel=\"noopener\" href=\"{e.youtube_link}\">Vidéo</a>" if (e.youtube_link or "").strip() else "—"
             return (
                 "<tr>"
@@ -945,7 +939,6 @@ def round_leaderboard(round_id):
                 "</tr>"
             )
 
-        # trier par temps final croissant
         safe_entries.sort(key=lambda t: t[1])
         rows = "".join(row(i + 1, e, fm) for i, (e, fm) in enumerate(safe_entries))
 
@@ -959,20 +952,14 @@ def round_leaderboard(round_id):
             "</table>"
         )
 
-
-
         return PAGE(f"""
           <h1>{r.name}</h1>
           {countdown_html}
           {table}
         """)
 
-
-
-
     except Exception as e:
-        # Dernier filet de sécurité : on affiche l'erreur lisiblement au lieu d'une 500 blanche
-        return PAGE(f"<h1>{r.name}</h1><p class='muted'>Erreur : {e.__class__.__name__}: {e}</p>"), 500
+        return PAGE(f"<h1>{r.name}</h1><p class='muted'>Erreur: {e}</p>"), 500
 
 
 
