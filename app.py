@@ -853,16 +853,16 @@ def profile():
         .all()
     )
 
-    # Construit le tableau des chronos (une seule table avec la colonne Statut)
+    # --- Section "Mes chronos" avec badges de statut ---
     if not entries:
         chronos_html = "<p class='muted'>Aucun chrono pour l’instant.</p>"
     else:
         def row(e):
             raw = ms_to_str(e.raw_time_ms)
-            final_ms_val = final_time_ms(e.raw_time_ms, e.penalties)
-            final_s = ms_to_str(final_ms_val)
-            yt = f"<a href='{e.youtube_link}' target='_blank' rel='noopener'>Vidéo</a>" if e.youtube_link else "—"
-            created = e.created_at.strftime("%Y-%m-%d %H:%M") if getattr(e, "created_at", None) else "—"
+            final_ms = final_time_ms(e.raw_time_ms, e.penalties)
+            final_s = ms_to_str(final_ms)
+            yt = f"<a href='{e.youtube_link}' target='_blank' rel='noopener'>Vidéo</a>" if (e.youtube_link or "").strip() else "—"
+            cls = "pending" if e.status == "pending" else ("approved" if e.status == "approved" else "rejected")
             return (
                 "<tr>"
                 f"<td>{e.round.name}</td>"
@@ -871,8 +871,7 @@ def profile():
                 f"<td><strong>{final_s}</strong></td>"
                 f"<td>{e.bike or '—'}</td>"
                 f"<td>{yt}</td>"
-                f"<td>{e.status}</td>"
-                f"<td>{created}</td>"
+                f"<td><span class='badge {cls}'>{e.status}</span></td>"
                 "</tr>"
             )
 
@@ -880,12 +879,12 @@ def profile():
         chronos_html = (
             "<table class='table'>"
             "<thead><tr>"
-            "<th>Manche</th><th>Brut</th><th>Pén.</th><th>Final</th>"
-            "<th>Moto</th><th>YouTube</th><th>Statut</th><th>Ajouté</th>"
+            "<th>Manche</th><th>Brut</th><th>Pén.</th><th>Final</th><th>Moto</th><th>YouTube</th><th>Statut</th>"
             "</tr></thead>"
             f"<tbody>{rows}</tbody>"
             "</table>"
         )
+
 
     # Liens admin (uniquement si admin)
     # Liens admin (uniquement si admin)
