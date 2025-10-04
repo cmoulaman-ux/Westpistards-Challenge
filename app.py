@@ -61,6 +61,7 @@ if db:
         name = db.Column(db.String(200), nullable=False)
         status = db.Column(db.String(20), default='open')  # open | closed
         created_at = db.Column(db.DateTime, default=datetime.utcnow)
+        closes_at = db.Column(db.DateTime, nullable=True)
         plan_data = db.Column(db.LargeBinary)      # contenu binaire (image/PDF)
         plan_mime = db.Column(db.String(120))      # ex: image/png, application/pdf
         plan_name = db.Column(db.String(255))      # nom de fichier d'origine
@@ -414,10 +415,26 @@ def admin_rounds():
         name = (request.form.get("name") or "").strip()
         if not name:
             return PAGE("<h1>Admin — Manches</h1><p class='muted'>Nom obligatoire.</p>"), 400
-        r = Round(name=name, status="open")
+
+        closes_at_val = request.form.get("closes_at") or ""
+        closes_at_dt = None
+        if closes_at_val:
+            from datetime import datetime
+            # format HTML5 de <input type="datetime-local">
+            try:
+                closes_at_dt = datetime.strptime(closes_at_val, "%Y-%m-%dT%H:%M")
+            except ValueError:
+                return PAGE("<h1>Admin — Manches</h1><p class='muted'>Format de date invalide. Utilise YYYY-MM-DDThh:mm</p>"), 400
+
+        r = Round(
+            name=name,
+            status="open",
+            closes_at=closes_at_dt,
+        )
         db.session.add(r)
         db.session.commit()
         return redirect(url_for("admin_rounds"))
+
 
     rounds = Round.query.order_by(Round.created_at.desc()).all()
 
@@ -449,6 +466,9 @@ def admin_rounds():
       <form method="post" class="form">
         <label>Nom de la manche
           <input type="text" name="name" placeholder="Ex: Manche 1 — Circuit X" required>
+        </label>
+        <label>Date de clôture (optionnelle)
+          <input type="datetime-local" name="closes_at" placeholder="YYYY-MM-DDThh:mm">
         </label>
         <button class="btn" type="submit">Créer la manche</button>
       </form>
