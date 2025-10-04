@@ -479,7 +479,23 @@ def admin_rounds():
         name = (request.form.get("name") or "").strip()
         if not name:
             return PAGE("<h1>Admin &mdash; Manches</h1><p class='muted'>Nom obligatoire.</p>"), 400
+
+        # Lecture optionnelle de la date de clôture (datetime-local HTML5)
+        closes_at_val = (request.form.get("closes_at") or "").strip()
+        closes_at_dt = None
+        if closes_at_val:
+            # Format attendu: YYYY-MM-DDTHH:MM (ex: 2025-10-05T18:00)
+            try:
+                from datetime import datetime
+                closes_at_dt = datetime.fromisoformat(closes_at_val)
+            except Exception:
+                # On ignore silencieusement si invalide, ou on pourrait renvoyer une erreur
+                closes_at_dt = None
+
         r = Round(name=name, status="open")
+        if hasattr(Round, "closes_at"):
+            r.closes_at = closes_at_dt
+
         db.session.add(r)
         db.session.commit()
         return redirect(url_for("admin_rounds"))
@@ -488,10 +504,13 @@ def admin_rounds():
 
     def row_html(r):
         status_label = "ouverte" if r.status == "open" else "clôturée"
+        close_info = ""
+        if hasattr(r, "closes_at") and r.closes_at:
+            close_info = f" &middot; <span class='muted'>clôture: {r.closes_at.strftime('%d/%m/%Y %H:%M')}</span>"
         return f"""
         <li class="card">
           <div class="row" style="justify-content:space-between;">
-            <div><strong>{r.name}</strong> &mdash; <span class="muted">{status_label}</span></div>
+            <div><strong>{r.name}</strong> &mdash; <span class="muted">{status_label}</span>{close_info}</div>
             <div class="row">
               <form method="post" action="/admin/rounds/{r.id}/close">
                 <button class="btn outline" {'disabled' if r.status=='closed' else ''} type="submit">Clôturer</button>
@@ -515,12 +534,16 @@ def admin_rounds():
         <label>Nom de la manche
           <input type="text" name="name" placeholder="Ex: Manche 1 — Circuit X" required>
         </label>
+        <label>Date/heure de clôture (optionnel)
+          <input type="datetime-local" name="closes_at">
+        </label>
         <button class="btn" type="submit">Créer la manche</button>
       </form>
 
       <h2 style="margin-top:16px;">Liste</h2>
       <ul class="cards">{items}</ul>
     """)
+
 
 
 
