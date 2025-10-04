@@ -333,10 +333,10 @@ def index():
 
     # --- Rendu de la page d'accueil ---
     return PAGE(f"""
-      <div class="hero" style="display:flex; align-items:center; gap:24px; flex-wrap:wrap;">
-        <img class="hero-logo" src="/static/img/logo_challenge.png" alt="Logo WP Challenge">
-        <img class="hero-logo-second" src="/static/img/logo_motogymkhana.jpg" alt="Logo Moto Gymkhana">
-        <h1 style="margin:0;">Bienvenue sur WP Challenge</h1>
+      <div class="hero-row">
+        <img class="logo-secondary" src="/static/img/logo_motogymkhana.jpg" alt="Moto Gymkhana">
+        <h1 class="hero-title">Bienvenue sur WP Challenge</h1>
+        <img class="logo-main" src="/static/img/logo_challenge.png" alt="WP Challenge">
       </div>
 
       <p>Entre tes chronos, partage ton lien YouTube et grimpe au classement !</p>
@@ -352,6 +352,7 @@ def index():
 
       {partners_html}
     """)
+
 
 
 

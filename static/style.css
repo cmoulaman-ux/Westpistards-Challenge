@@ -280,5 +280,45 @@ nav a:hover{
 }
 
 
+/* Bandeau d'accueil avec logos gauche / titre / logo droit */
+.hero-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  flex-wrap:wrap;
+  margin:0 0 8px 0;
+}
+
+/* Titre un peu plus costaud mais fluide */
+.hero-title{
+  margin:0;
+  font-size:clamp(22px, 3.2vw, 32px);
+  font-weight:800;
+  line-height:1.1;
+}
+
+/* Logo de droite (WP Challenge) — plus grand */
+.logo-main{
+  height:clamp(56px, 9vw, 110px);  /* ⇦ ajuste la taille max ici si tu veux encore plus grand */
+  width:auto;
+  object-fit:contain;
+}
+
+/* Logo de gauche (Moto Gymkhana) — un peu plus discret */
+.logo-secondary{
+  height:clamp(44px, 6vw, 72px);
+  width:auto;
+  object-fit:contain;
+}
+
+/* Sur mobile : on passe en colonne, logo droit sous le titre */
+@media (max-width:640px){
+  .hero-row{
+    flex-direction:column;
+    align-items:flex-start;
+  }
+  .logo-main{ align-self:flex-start; }
+}
 
 
