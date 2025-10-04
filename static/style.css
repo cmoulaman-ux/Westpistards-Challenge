@@ -388,3 +388,34 @@ nav a:hover{
   .logo-main{ height:clamp(64px, 16vw, 110px); }
 }
 
+/* Partenaires — agrandir le 2e logo */
+.logo-grid{
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 16px;
+  align-items: center;
+}
+.logo-grid .partner{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 8px;
+}
+.logo-grid .partner img{
+  max-width: 100%;
+  max-height: 70px;     /* taille “normale” */
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+
+/* 👉 2e logo plus grand (~+35%) */
+.logo-grid .partner:nth-child(2) img{
+  max-height: 95px;     /* ajuste ici (ex: 100px si tu veux encore + grand) */
+}
+
+/* Mobile : légère réduction pour garder l’équilibre */
+@media (max-width:640px){
+  .logo-grid .partner img{ max-height: 60px; }
+  .logo-grid .partner:nth-child(2) img{ max-height: 80px; }
+}
