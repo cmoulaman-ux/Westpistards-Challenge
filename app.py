@@ -470,7 +470,7 @@ def rounds_list():
 @app.route("/admin/rounds", methods=["GET", "POST"])
 def admin_rounds():
     if not db:
-        return PAGE("<h1>Admin</h1><p class='muted'>DB non dispo.</p>")
+        return PAGE("<h1>Admin</h1><p class='muted'>DB non dispo.</p>"), 500
     u = current_user()
     if not is_admin(u):
         return PAGE("<h1>Accès refusé</h1><p class='muted'>Réservé aux administrateurs.</p>"), 403
@@ -478,33 +478,17 @@ def admin_rounds():
     if request.method == "POST":
         name = (request.form.get("name") or "").strip()
         if not name:
-            return PAGE("<h1>Admin — Manches</h1><p class='muted'>Nom obligatoire.</p>"), 400
-
-        closes_at_val = request.form.get("closes_at") or ""
-        closes_at_dt = None
-        if closes_at_val:
-            from datetime import datetime
-            # format HTML5 de <input type="datetime-local">
-            try:
-                closes_at_dt = datetime.strptime(closes_at_val, "%Y-%m-%dT%H:%M")
-            except ValueError:
-                return PAGE("<h1>Admin — Manches</h1><p class='muted'>Format de date invalide. Utilise YYYY-MM-DDThh:mm</p>"), 400
-
-        r = Round(
-            name=name,
-            status="open",
-            closes_at=closes_at_dt,
-        )
+            return PAGE("<h1>Admin &mdash; Manches</h1><p class='muted'>Nom obligatoire.</p>"), 400
+        r = Round(name=name, status="open")
         db.session.add(r)
         db.session.commit()
         return redirect(url_for("admin_rounds"))
 
-
     rounds = Round.query.order_by(Round.created_at.desc()).all()
 
-def row_html(r):
-    status_label = "ouverte" if r.status == "open" else "clôturée"
-    return f"""
+    def row_html(r):
+        status_label = "ouverte" if r.status == "open" else "clôturée"
+        return f"""
         <li class="card">
           <div class="row" style="justify-content:space-between;">
             <div><strong>{r.name}</strong> &mdash; <span class="muted">{status_label}</span></div>
@@ -521,8 +505,7 @@ def row_html(r):
             </div>
           </div>
         </li>
-    """
-
+        """
 
     items = "".join(row_html(r) for r in rounds) or "<p class='muted'>Aucune manche pour l’instant.</p>"
 
@@ -538,6 +521,7 @@ def row_html(r):
       <h2 style="margin-top:16px;">Liste</h2>
       <ul class="cards">{items}</ul>
     """)
+
 
 
 
