@@ -88,6 +88,11 @@ if db:
         user = db.relationship('User', backref='time_entries', lazy=True)
         round = db.relationship('Round', backref='time_entries', lazy=True)
 
+class Announcement(db.Model):
+        id = db.Column(db.Integer, primary_key=True)
+        content = db.Column(db.Text, nullable=False)         # le texte du bandeau (HTML simple permis)
+        is_active = db.Column(db.Boolean, default=True)      # affiché ou non
+        created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 
 
@@ -266,9 +271,17 @@ def index():
 
 
     # On place Partenaires à la toute fin du contenu (avant le footer)
+    # Bandeau d'annonces (affiche la plus récente active)
+    banner_html = ""
+    if db:
+        ann = Announcement.query.filter_by(is_active=True).order_by(Announcement.created_at.desc()).first()
+        if ann:
+            banner_html = f"<div class='banner'>{ann.content}</div>"
+
     return PAGE(f"""
       <h1>Bienvenue sur WP Challenge</h1>
       <p>Entre tes chronos, partage ton lien YouTube et grimpe au classement !</p>
+      {banner_html}
 
       <section class="card">
         <h2>Manches ouvertes</h2>
