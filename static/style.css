@@ -246,12 +246,12 @@ nav a:hover{
   border-color:var(--primary);
 }
 
-/* Logo sur la page d'accueil */
+/* Logo sur la page d'accueil : même taille, aligné à gauche */
 .hero-logo {
   display: block;
-  margin: 0 auto 8px;
-  max-width: 420px;   /* couvre à peu près la largeur du titre */
-  width: 70%;         /* s’adapte à l’écran */
+  margin: 0 0 8px 0;   /* plus de centrage */
+  max-width: 420px;    /* taille que tu aimais */
+  width: 70%;
   height: auto;
   object-fit: contain;
   background: transparent;
@@ -259,10 +259,11 @@ nav a:hover{
 
 @media (max-width: 640px) {
   .hero-logo {
-    max-width: 300px;  /* réduit sur mobile */
+    max-width: 300px;
     width: 80%;
   }
 }
+
 
 
 
