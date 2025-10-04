@@ -177,10 +177,13 @@ def PAGE(inner_html):
     # --- NAV DROITE (simple et claire) ---
     nav_parts = []
     # Public
+    nav_parts.append("<a href='/static/docs/Reglement_WestPistardsChallenge.pdf' target='_blank' rel='noopener'>Règlement</a>")
     nav_parts.append("<a href='/rounds'>Manches</a>")
     nav_parts.append(
         "<a href='https://www.facebook.com/west.pistards' target='_blank' rel='noopener' title='Ouvrir notre page Facebook'>Facebook</a>"
     )
+
+
 
     # Connexion / Profil
     if u:
@@ -1135,7 +1138,6 @@ def admin_banner():
         <tbody>{rows}</tbody>
       </table>
     """)
-
 
 
 
