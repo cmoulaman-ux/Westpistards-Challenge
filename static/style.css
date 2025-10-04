@@ -300,7 +300,7 @@ nav a:hover{
 
 /* Logo de droite (WP Challenge) — +30% */
 .logo-main{
-  height: clamp(72px, 12vw, 144px); /* avant: clamp(56px, 9vw, 110px) */
+  height: clamp(80px, 13vw, 160px); /* avant: clamp(56px, 9vw, 110px) */
   width: auto;
   object-fit: contain;
 }
