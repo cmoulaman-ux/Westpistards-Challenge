@@ -774,14 +774,16 @@ def profile():
         )
 
     # Liens admin (uniquement si admin)
+    # Liens admin (uniquement si admin)
     admin_links = ""
     if is_admin(u):
-        admin_links = (
-            "<div class='row' style='gap:8px; margin-top:8px;'>"
-            "<a class='btn' href='/admin/rounds'>Admin — Manches</a>"
-            "<a class='btn outline' href='/admin/times'>Admin — Chronos</a>"
-            "</div>"
-        )
+        admin_links = """
+        <div class="row" style="gap:8px; margin-top:8px;">
+          <a class="btn" href="/admin/rounds">Admin — Manches</a>
+          <a class="btn outline" href="/admin/times">Admin — Chronos</a>
+        </div>
+        """
+
 
     # Actions pilote
     actions_html = (
