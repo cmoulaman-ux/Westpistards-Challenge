@@ -336,7 +336,7 @@ def index():
 
     return PAGE(f"""
       <div class="hero">
-        <img class="hero-logo" src="/static/img/logo_motogymkhana.jpg" alt="Moto Gymkhana">
+        <img class="hero-logo" src="/static/img/logo_challenge.png" alt="Moto Gymkhana">
         <h1>Bienvenue sur WP Challenge</h1>
       </div>
       <p>Entre tes chronos, partage ton lien YouTube et grimpe au classement !</p>
