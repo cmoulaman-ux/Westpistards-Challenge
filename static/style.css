@@ -264,6 +264,20 @@ nav a:hover{
   }
 }
 
+/* Deux logos en entête */
+.hero-logo{
+  height: 70px;  /* ajuste si tu veux */
+  width: auto;
+  object-fit: contain;
+}
+.hero-logo-second{
+  height: 70px;  /* même hauteur que le premier */
+  width: auto;
+  object-fit: contain;
+}
+@media (max-width: 640px){
+  .hero-logo, .hero-logo-second{ height: 56px; }
+}
 
 
 
