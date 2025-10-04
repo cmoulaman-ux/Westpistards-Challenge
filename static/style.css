@@ -322,4 +322,62 @@ nav a:hover{
   .logo-main{ align-self:flex-start; }
 }
 
+/* ===== Hero “fondu” dans la page ===== */
+.hero-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  flex-wrap:wrap;
+  margin:0 0 8px 0;
+}
+
+/* Variante “blend” : adoucit les logos pour mieux s’intégrer */
+.hero-row.blend{
+  border-bottom:1px solid var(--border);
+  padding-bottom:8px;
+}
+.hero-row.blend .logo-secondary,
+.hero-row.blend .logo-main{
+  opacity:.9;                 /* léger fondu */
+  filter: grayscale(12%);     /* très léger NB pour homogénéiser */
+  mix-blend-mode:multiply;    /* se “mélange” avec le fond clair */
+  transition: filter .2s ease, opacity .2s ease, transform .2s ease;
+}
+.hero-row.blend .logo-secondary:hover,
+.hero-row.blend .logo-main:hover{
+  opacity:1;
+  filter: grayscale(0%);
+  transform: translateY(-1px);
+}
+
+/* Titre fluide */
+.hero-title{
+  margin:0;
+  font-size:clamp(22px, 3.2vw, 32px);
+  font-weight:800;
+  line-height:1.1;
+}
+
+/* Logos: tailles cohérentes, ratio respecté */
+.logo-secondary{
+  height:clamp(44px, 6vw, 72px);
+  width:auto;
+  object-fit:contain;
+}
+.logo-main{
+  height:clamp(72px, 12vw, 144px); /* logo droit plus présent */
+  width:auto;
+  object-fit:contain;
+}
+
+/* Mobile: pile proprement, tout à gauche */
+@media (max-width:640px){
+  .hero-row{
+    flex-direction:column;
+    align-items:flex-start;
+    gap:10px;
+  }
+  .logo-main{ height:clamp(64px, 16vw, 110px); }
+}
 

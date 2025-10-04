@@ -336,7 +336,7 @@ def index():
 
     # --- Rendu de la page d'accueil ---
     return PAGE(f"""
-      <div class="hero-row">
+      <div class="hero-row blend">
         <img class="logo-secondary" src="/static/img/logo_motogymkhana.jpg" alt="Moto Gymkhana">
         <h1 class="hero-title">Bienvenue sur WP Challenge</h1>
         <img class="logo-main" src="/static/img/logo_challenge.png" alt="WP Challenge">
