@@ -307,7 +307,7 @@ def index():
             """
 
 
-    # Liens partenaires (remplace par tes vraies pages FB)
+     # Liens partenaires (remplace par tes vraies pages FB)
     partners_html = """
     <section class="card" style="margin-top:24px;">
       <h2>Partenaires</h2>
@@ -320,13 +320,10 @@ def index():
         <a class="partner" href="https://www.instagram.com/lou_etheve/" target="_blank" rel="noopener" title="Sellerie Lou Ethève">
           <img src="/static/img/partners/partner2.jpg" alt="Partenaire 2">
         </a>
-        <!-- Tu peux dupliquer ces blocs pour ajouter d'autres logos -->
       </div>
     </section>
     """
 
-
-    # On place Partenaires à la toute fin du contenu (avant le footer)
     # Bandeau d'annonces (affiche la plus récente active)
     banner_html = ""
     if db:
@@ -334,13 +331,14 @@ def index():
         if ann:
             banner_html = f"<div class='banner'>{ann.content}</div>"
 
-    return PAGE(f"""
+    # --- Rendu de la page d'accueil ---
     return PAGE(f"""
       <div class="hero" style="display:flex; align-items:center; gap:24px; flex-wrap:wrap;">
         <img class="hero-logo" src="/static/img/logo_challenge.png" alt="Logo WP Challenge">
         <img class="hero-logo-second" src="/static/img/logo_motogymkhana.jpg" alt="Logo Moto Gymkhana">
         <h1 style="margin:0;">Bienvenue sur WP Challenge</h1>
       </div>
+
       <p>Entre tes chronos, partage ton lien YouTube et grimpe au classement !</p>
 
       {banner_html}
@@ -358,55 +356,53 @@ def index():
 
 
 
+
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if not db:
-        return PAGE("<h1>Inscription</h1><p class='muted'>DB non dispo.</p>"), 500
+        return PAGE("<h1>Inscription</h1><p class='muted'>DB non dispo.</p>")
 
     if request.method == "POST":
-        try:
-            email = (request.form.get("email") or "").strip().lower()
-            nat = (request.form.get("nationality") or "").strip()
-            pseudo = (request.form.get("pseudo") or "").strip()
+        email = (request.form.get("email") or "").strip().lower()
+        nationality = (request.form.get("nationality") or "").strip().upper()
+        pseudo = (request.form.get("pseudo") or "").strip()
 
-            if not email:
-                return PAGE("<h1>Inscription</h1><p class='muted'>Email obligatoire.</p>"), 400
-            if not pseudo:
-                return PAGE("<h1>Inscription</h1><p class='muted'>Pseudo obligatoire.</p>"), 400
+        if not email or not nationality:
+            return PAGE("<h1>Inscription</h1><p class='muted'>Email et nationalité sont obligatoires.</p>"), 400
 
-            u = User.query.filter_by(email=email).first()
-            if u:
-                return redirect(url_for("login"))
-
-            is_admin = email in ADMIN_EMAILS
-            u = User(email=email, nationality=nat, is_admin=is_admin, pseudo=pseudo)
+        # Si l’utilisateur existe déjà, on le réutilise
+        u = User.query.filter_by(email=email).first()
+        if not u:
+            u = User(email=email, nationality=nationality, pseudo=pseudo or None)
             db.session.add(u)
             db.session.commit()
-            session["user_id"] = u.id
-            return redirect(url_for("profile"))
-        except Exception as e:
-            # Message explicite au lieu d'une 500
-            return PAGE(f"<h1>Inscription</h1><p class='muted'>Erreur DB : {e}</p><p>Essaie de (re)créer les tables : <code>/__init_db?token=please-change-me</code></p>"), 500
+        else:
+            # mettre à jour le pseudo/nationalité si fournis
+            if pseudo:
+                u.pseudo = pseudo
+            if nationality:
+                u.nationality = nationality
+            db.session.commit()
 
-    return PAGE("""
+        session["user_id"] = u.id
+        return redirect(url_for("profile"))
+
+    # GET -> formulaire
+    return PAGE(f"""
       <h1>Inscription</h1>
       <form method="post" class="form">
-        <label>Email
+        <label>Adresse e-mail
           <input type="email" name="email" required>
         </label>
         <label>Nationalité
-          <input type="text" name="nationality" placeholder="FR, BE, ...">
+          <input type="text" name="nationality" placeholder="FR, BE, ..." required>
         </label>
-        <label>Pseudo (affiché au classement)
-          <input type="text" name="pseudo" placeholder="Ton pseudo (obligatoire)" required>
+        <label>Pseudo (affiché dans les classements)
+          <input type="text" name="pseudo" placeholder="Votre pseudo public">
         </label>
-        <button class="btn" type="submit">S'inscrire</button>
+        <button class="btn" type="submit">Valider</button>
       </form>
-      <p class="muted" style="margin-top:12px;">Déjà inscrit ? <a href="/login">Connexion</a></p>
     """)
-
-
-
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -501,12 +497,12 @@ def admin_rounds():
 
     rounds = Round.query.order_by(Round.created_at.desc()).all()
 
-    def row_html(r):
-        status_label = "ouverte" if r.status == "open" else "clôturée"
-        return f"""
+def row_html(r):
+    status_label = "ouverte" if r.status == "open" else "clôturée"
+    return f"""
         <li class="card">
           <div class="row" style="justify-content:space-between;">
-            <div><strong>{r.name}</strong> — <span class="muted">{status_label}</span></div>
+            <div><strong>{r.name}</strong> &mdash; <span class="muted">{status_label}</span></div>
             <div class="row">
               <form method="post" action="/admin/rounds/{r.id}/close">
                 <button class="btn outline" {'disabled' if r.status=='closed' else ''} type="submit">Clôturer</button>
@@ -520,24 +516,24 @@ def admin_rounds():
             </div>
           </div>
         </li>
-        """
+    """
+
 
     items = "".join(row_html(r) for r in rounds) or "<p class='muted'>Aucune manche pour l’instant.</p>"
 
     return PAGE(f"""
-      <h1>Admin — Manches</h1>
+      <h1>Admin &mdash; Manches</h1>
       <form method="post" class="form">
         <label>Nom de la manche
           <input type="text" name="name" placeholder="Ex: Manche 1 — Circuit X" required>
         </label>
-        <label>Date de clôture (optionnelle)
-          <input type="datetime-local" name="closes_at" placeholder="YYYY-MM-DDThh:mm">
-        </label>
         <button class="btn" type="submit">Créer la manche</button>
       </form>
+
       <h2 style="margin-top:16px;">Liste</h2>
       <ul class="cards">{items}</ul>
     """)
+
 
 
 @app.post("/admin/rounds/<int:round_id>/close")
@@ -690,12 +686,10 @@ def admin_times():
     )
 
     return PAGE(f"""
-      <h1>Admin — Chronos</h1>
+      <h1>Admin &mdash; Chronos</h1>
       {tabs}
       {table}
     """)
-
-
 
 @app.post("/admin/times/<int:time_id>/approve")
 def admin_time_approve(time_id):
