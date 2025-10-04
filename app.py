@@ -586,27 +586,76 @@ def admin_round_delete(round_id):
 @app.get("/admin/times")
 def admin_times():
     if not db:
-        return PAGE("<h1>Admin — Chronos</h1><p class='muted'>DB non dispo.</p>")
+        return PAGE("<h1>Admin</h1><p class='muted'>DB non dispo.</p>")
     u = current_user()
     if not is_admin(u):
         return PAGE("<h1>Accès refusé</h1><p class='muted'>Réservé aux administrateurs.</p>"), 403
 
-    # Montrer d'abord les pending, puis approved puis rejected
-    entries = (
-        TimeEntry.query
-        .order_by(
-            db.case((TimeEntry.status == "pending", 0), (TimeEntry.status == "approved", 1), else_=2),
-            TimeEntry.created_at.desc()
-        )
+    from sqlalchemy import func
+
+    # --- Statut actif via ?status= (default: pending)
+    status = (request.args.get("status") or "pending").lower()
+    valid = {"pending", "approved", "rejected", "all"}
+    if status not in valid:
+        status = "pending"
+
+    # --- Compteurs par statut
+    counts = {"pending": 0, "approved": 0, "rejected": 0, "all": 0}
+    rows = (
+        db.session.query(TimeEntry.status, func.count(TimeEntry.id))
+        .group_by(TimeEntry.status)
         .all()
+    )
+    for st, cnt in rows:
+        counts[st] = cnt
+    counts["all"] = counts["pending"] + counts["approved"] + counts["rejected"]
+
+    # --- Requête filtrée
+    q = (
+        TimeEntry.query
+        .join(User, User.id == TimeEntry.user_id)
+        .order_by(TimeEntry.created_at.desc())
+    )
+    if status != "all":
+        q = q.filter(TimeEntry.status == status)
+    entries = q.all()
+
+    # --- Tabs
+    def tab(label, key):
+        active = " active" if status == key else ""
+        return f"<a class='tab{active}' href='/admin/times?status={key}'>{label} ({counts.get(key,0)})</a>"
+
+    tabs = (
+        "<div class='tabs'>"
+        f"{tab('En attente', 'pending')}"
+        f"{tab('Validés', 'approved')}"
+        f"{tab('Refusés', 'rejected')}"
+        f"{tab('Tous', 'all')}"
+        "</div>"
     )
 
     if not entries:
-        return PAGE("<h1>Admin — Chronos</h1><p class='muted'>Aucun chrono pour le moment.</p>")
+        return PAGE(f"""
+          <h1>Admin — Chronos</h1>
+          {tabs}
+          <p class='muted'>Aucun chrono pour ce filtre.</p>
+        """)
 
+    # --- Lignes du tableau
     def row(e):
         final_ms_val = final_time_ms(e.raw_time_ms, e.penalties)
         yt = f"<a href='{e.youtube_link}' target='_blank' rel='noopener'>Vidéo</a>" if e.youtube_link else "—"
+        actions = ""
+        # Montrer les boutons surtout pour 'pending'
+        if e.status == "pending":
+            actions = (
+                f"<form method='post' action='/admin/times/{e.id}/approve' style='display:inline;margin-right:6px;'>"
+                f"  <button class='btn' type='submit'>Valider</button>"
+                f"</form>"
+                f"<form method='post' action='/admin/times/{e.id}/reject' style='display:inline;'>"
+                f"  <button class='btn danger' type='submit'>Refuser</button>"
+                f"</form>"
+            )
         return f"""
         <tr>
           <td>{e.id}</td>
@@ -616,38 +665,28 @@ def admin_times():
           <td>{e.penalties}</td>
           <td><strong>{ms_to_str(final_ms_val)}</strong></td>
           <td>{yt}</td>
-          <td>{e.status}</td>
-          <td>
-            <form method="post" action="/admin/times/{e.id}/approve" style="display:inline;">
-              <button class="btn" type="submit">Valider</button>
-            </form>
-            <form method="post" action="/admin/times/{e.id}/reject" style="display:inline;">
-              <button class="btn danger" type="submit">Refuser</button>
-            </form>
-          </td>
+          <td><span class='badge {"pending" if e.status=="pending" else ("approved" if e.status=="approved" else "rejected")}'>{e.status}</span></td>
+          <td>{actions}</td>
         </tr>
         """
 
+    rows_html = "".join(row(e) for e in entries)
 
-
-    rows = "".join(row(e) for e in entries)
     table = (
         "<table class='table'>"
-        "<thead>"
-        "<tr>"
-        "<th>ID</th><th>Pilote</th><th>Manche</th><th>Brut</th>"
-        "<th>Pén.</th><th>Final</th><th>YouTube</th><th>Statut</th><th>Actions</th>"
-        "</tr>"
-        "</thead>"
-        f"<tbody>{rows}</tbody>"
+        "<thead><tr>"
+        "<th>ID</th><th>Pilote</th><th>Manche</th><th>Brut</th><th>Pén.</th><th>Final</th><th>YouTube</th><th>Statut</th><th>Actions</th>"
+        "</tr></thead>"
+        f"<tbody>{rows_html}</tbody>"
         "</table>"
     )
 
-    return PAGE(
-        "<h1>Admin — Chronos</h1>"
-        + table +
-        "<p style='margin-top:12px'><a class='btn outline' href='/rounds'>Voir les manches</a></p>"
-    )
+    return PAGE(f"""
+      <h1>Admin — Chronos</h1>
+      {tabs}
+      {table}
+    """)
+
 
 
 @app.post("/admin/times/<int:time_id>/approve")

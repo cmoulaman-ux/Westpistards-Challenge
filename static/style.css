@@ -222,5 +222,28 @@ nav a:hover{
 .cd-warn{ background:#fffbeb; border-color:#fde68a; color:#7c2d12; }   /* < 24h */
 .cd-danger{ background:#fef2f2; border-color:#fecaca; color:#991b1b; } /* < 1h  */
 
+/* Onglets admin times */
+.tabs{
+  display:flex;
+  gap:8px;
+  margin:8px 0 12px 0;
+  flex-wrap:wrap;
+}
+.tabs .tab{
+  display:inline-block;
+  padding:8px 12px;
+  border:1px solid var(--border);
+  border-radius:999px;
+  color:var(--text);
+  text-decoration:none;
+  background:#fff;
+  font-weight:600;
+}
+.tabs .tab:hover{ background:var(--primary-weak); text-decoration:none; }
+.tabs .tab.active{
+  background:var(--primary);
+  color:#fff;
+  border-color:var(--primary);
+}
 
 
