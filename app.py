@@ -338,7 +338,7 @@ def index():
           <img src="/static/img/assos/wp.jpg" alt="WP">
         </a>
         <a class="netw" href="https://www.instagram.com/maniacones360/" target="_blank" rel="noopener" title="Mania">
-          <img src="/static/img/assos/mania.png" alt="Mania">
+          <img src="/static/img/assos/mania2.png" alt="Mania">
         </a>
         <a class="netw" href="https://www.facebook.com/perfectionnement.maniabilite.gymkhana.moto" target="_blank" rel="noopener" title="Angle">
           <img src="/static/img/assos/angle.jpg" alt="Angle">
