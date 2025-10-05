@@ -4,6 +4,8 @@ from flask import Flask, request, redirect, url_for, session, render_template_st
 from flask_sqlalchemy import SQLAlchemy
 import csv, io
 from flask import Response
+from flask import send_from_directory
+
 
 
 # --- App ---
@@ -206,9 +208,9 @@ def PAGE(inner_html):
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" type="image/png" href="/static/img/icon.png">
-  <link rel="apple-touch-icon" href="/static/img/icon.png">
+  <link rel="icon" type="image/png" href="/static/img/icon-192.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/static/img/icon-180.png">
+  <link rel="manifest" href="/static/manifest.json">
   <meta name="theme-color" content="#d00000">
   <title>WP Challenge</title>
   <link rel="stylesheet" href="/static/style.css">
@@ -1277,6 +1279,16 @@ def privacy():
       <p>Aucune donnée n’est partagée à des tiers.</p>
       <p>Pour toute demande de suppression ou de modification, contactez <a href="mailto:westpistards@gmail.com">westpistards@gmail.com</a>.</p>
     """)
+
+@app.get("/apple-touch-icon.png")
+def apple_touch_icon_root():
+    # Sert l’icône iOS 180×180 depuis /static/img/
+    return send_from_directory(os.path.join(app.static_folder, "img"), "icon-180.png")
+
+@app.get("/favicon.ico")
+def favicon_root():
+    # Sert un favicon (on réutilise l’icône 192×192)
+    return send_from_directory(os.path.join(app.static_folder, "img"), "icon-192.png")
 
 
 
