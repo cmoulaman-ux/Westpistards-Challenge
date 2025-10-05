@@ -777,3 +777,26 @@ nav a.active {
   animation-duration: 10s; /* plus rapide (au lieu de 18s) */
 }
 
+
+/* --- Boost lisibilité mobile --- */
+@media (max-width: 560px){
+  html, body{ font-size:18px; line-height:1.6; }
+
+  h1{ font-size:28px; line-height:1.2; }
+  h2{ font-size:22px; }
+  h3{ font-size:18px; }
+
+  .nav{ gap:10px; }
+  .nav a{ font-size:16px; padding:6px 8px; }
+
+  .card{ padding:18px; border-radius:14px; }
+  .btn{ padding:12px 16px; font-size:16px; border-radius:10px; }
+  .table th, .table td{ padding:12px 10px; }
+
+  /* Bannière défilante un peu plus grande */
+  .banner .marquee{ padding:12px 18px; }
+}
+
+/* Un petit plus même sur desktop */
+body{ line-height:1.55; }
+
