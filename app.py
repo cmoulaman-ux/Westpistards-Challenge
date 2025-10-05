@@ -333,6 +333,10 @@ def index():
       <p class="muted" style="margin-top:-4px;">Où pratiquer en France — associations et collectifs.</p>
 
       <div class="networks-grid">
+        <!-- Nouveau logo en premier -->
+        <a class="netw" href="https://www.facebook.com/west.pistards" target="_blank" rel="noopener" title="WP">
+          <img src="/static/img/assos/wp.jpg" alt="WP">
+        </a>
         <a class="netw" href="https://www.instagram.com/maniacones360/" target="_blank" rel="noopener" title="Mania">
           <img src="/static/img/assos/mania.png" alt="Mania">
         </a>
