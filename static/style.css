@@ -483,54 +483,60 @@ nav a.active {
 //   filter: invert(1) brightness(1.1); /* transforme un logo noir en blanc */
 // }
 
-/* ===== Partenaires — bulles carrées, grandes et côte à côte ===== */
+/* ===== Partenaires — carrés arrondis, grands et côte à côte ===== */
 
-/* Grille : 2 colonnes fixes sur écran large */
+/* Grille : 2 colonnes fixes sur desktop */
 .logo-grid{
   display:grid;
-  grid-template-columns: repeat(2, minmax(200px, 1fr)); /* ⇦ plus grand qu’avant */
+  grid-template-columns: repeat(2, minmax(240px, 1fr));
   gap:24px;
   align-items:stretch;
-  justify-items:center; /* centre chaque bulle dans sa colonne */
+  justify-items:center;
 }
 
-/* Bulle carrée (ratio 1:1) */
+/* Bulle carrée garantie (fallback tous navigateurs) */
 .logo-grid .partner{
   position:relative;
-  aspect-ratio:1 / 1;           /* carré automatique */
   width:100%;
-  max-width:320px;              /* ⇦ taille max de chaque bulle */
+  max-width:360px;          /* ⇦ ajuste la taille max des carrés */
   border-radius:20px;
   overflow:hidden;
-  display:flex;
-  align-items:center;
-  justify-content:center;
   background:#fff;
   border:1px solid var(--border);
 }
 
-/* Bulle noire pour le 2e logo */
-.logo-grid .partner:nth-child(2){
-  background:#000;
-  border-color:#000;
+/* Carré forcé : crée une boîte avec ratio 1:1 */
+.logo-grid .partner::before{
+  content:"";
+  display:block;
+  padding-top:100%;         /* hauteur = 100% de la largeur */
 }
 
-/* Image bien visible dans la bulle */
+/* Contenu centré et contenu dans le carré */
 .logo-grid .partner img{
-  width:88%;                    /* ⇦ plus grand qu’avant */
+  position:absolute;
+  inset:0;                  /* top/right/bottom/left: 0 */
+  margin:auto;
+  width:88%;
   height:88%;
   object-fit:contain;
   display:block;
 }
 
-/* Responsive : passe en 1 colonne sur mobile */
+/* 2e bulle en noir */
+.logo-grid .partner:nth-child(2){
+  background:#000;
+  border-color:#000;
+}
+
+/* Mobile : 1 colonne, un peu plus grand si tu veux */
 @media (max-width:720px){
   .logo-grid{
     grid-template-columns: 1fr;
     gap:20px;
   }
   .logo-grid .partner{
-    max-width:360px;            /* un peu plus grand en mobile si tu veux */
+    max-width:380px;
   }
   .logo-grid .partner img{
     width:90%;
