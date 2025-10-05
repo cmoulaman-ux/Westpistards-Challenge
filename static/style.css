@@ -671,4 +671,31 @@ nav a.active {
   }
 }
 
+/* Overrides réseaux — remettre WP en fond blanc + tailles harmonisées */
+
+/* 1) wp.jpg : fond blanc (reset) */
+.networks-grid .netw:nth-child(1){
+  background: #fff !important;
+  border-color: var(--border) !important;
+}
+
+/* 2) mania2.png : on garde le fond noir tel quel */
+
+/* Harmoniser la taille des 4 logos */
+.networks-grid .netw:nth-child(1) img,
+.networks-grid .netw:nth-child(2) img,
+.networks-grid .netw:nth-child(3) img,
+.networks-grid .netw:nth-child(4) img{
+  max-height: 110px !important;  /* même taille que Angle/Gravity */
+}
+
+@media (max-width: 640px){
+  .networks-grid .netw:nth-child(1) img,
+  .networks-grid .netw:nth-child(2) img,
+  .networks-grid .netw:nth-child(3) img,
+  .networks-grid .netw:nth-child(4) img{
+    max-height: 96px !important;
+  }
+}
+
 
