@@ -385,6 +385,21 @@ def index():
 
     # --- Rendu de la page d'accueil ---
     return PAGE(f"""
+    <section class="bg-hero">
+      <div class="bg-hero-yt">
+        <iframe
+          src="https://www.youtube-nocookie.com/embed/iFJrbnlDePs?autoplay=1&mute=1&controls=0&rel=0&loop=1&playlist=iFJrbnlDePs&modestbranding=1&playsinline=1"
+          title="Background video" allow="autoplay; fullscreen" referrerpolicy="no-referrer">
+        </iframe>
+      </div>
+      <div class="bg-hero-overlay"></div>
+
+      <div class="hero-content">
+        <!-- Petit texte d’accroche optionnel dans la vidéo -->
+        <h2 style="margin:0;">WestPistards Challenge</h2>
+      </div>
+    </section>
+
       <div class="hero-row blend">
         <img class="logo-secondary" src="/static/img/logo_motogymkhana.jpg" alt="Moto Gymkhana">
         <h1 class="hero-title">Bienvenue sur WP Challenge</h1>
