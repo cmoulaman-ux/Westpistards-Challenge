@@ -839,4 +839,62 @@ body{ line-height:1.55; }
   .bg-hero{ height: 260px; }
 }
 
+/* --- Hero vidéo : couvre sans bandes noires --- */
+.bg-hero{
+  position: relative;
+  height: 360px;              /* ajuste 300–480px si tu veux */
+  overflow: hidden;
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+
+/* On centre et on SURdimensionne l'iframe pour couvrir le bloc */
+.bg-hero-yt{
+  position: absolute; inset: 0;
+  z-index: 0;
+  overflow: hidden;
+}
+.bg-hero-yt iframe{
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  /* “cover” pour 16:9 : on fait plus grand que le conteneur */
+  width: 120vw;               /* large sur desktop, évite les bandes */
+  height: 67.5vw;             /* = 120 * 9/16 */
+  min-width: 100%;            /* ne jamais être plus petit que le conteneur */
+  min-height: 100%;
+  transform: translate(-50%, -50%);
+  border: 0;
+  display: block;
+}
+
+/* Voile plus léger pour que la vidéo paraisse moins sombre */
+.bg-hero-overlay{
+  position: absolute; inset: 0;
+  background: linear-gradient(to bottom, rgba(255,255,255,.12), rgba(249,250,251,.86));
+  z-index: 1;
+}
+
+.hero-content{
+  position: relative;
+  z-index: 2;
+  padding: 16px;
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+}
+
+/* Mobile : hauteur plus compacte, zoom adapté */
+@media (max-width: 640px){
+  .bg-hero{ height: 260px; }
+  .bg-hero-yt iframe{
+    width: 200vw;            /* plus de zoom sur mobile */
+    height: 112.5vw;         /* = 200 * 9/16 */
+  }
+}
+
+/* Respecte la préférence “réduire les animations” */
+@media (prefers-reduced-motion: reduce){
+  .bg-hero-yt{ display:none; }
+  .bg-hero-overlay{ background:#f9fafb; }
+}
+
 
