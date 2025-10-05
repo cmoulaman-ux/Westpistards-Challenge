@@ -546,7 +546,9 @@ def admin_rounds():
           <div class="row" style="justify-content:space-between;">
             <div><strong>{r.name}</strong> &mdash; <span class="muted">{status_label}</span>{close_info}</div>
             <div class="row">
-              <a class="btn outline" href="/admin/rounds/{r.id}/export.csv">Exporter CSV</a>
+            <a class="icon-btn green" href="/admin/rounds/{r.id}/export.csv" title="Télécharger CSV" aria-label="Télécharger CSV">
+              <span class="i">⬇️</span>
+            </a>
               <form method="post" action="/admin/rounds/{r.id}/close">
                 <button class="btn outline" {'disabled' if r.status=='closed' else ''} type="submit">Clôturer</button>
               </form>

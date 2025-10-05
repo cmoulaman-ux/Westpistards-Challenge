@@ -727,3 +727,22 @@ nav a.active {
 
 
 .center { text-align: center; }
+
+/* Bouton icône compact (download) */
+.icon-btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:36px;
+  height:36px;
+  border-radius:10px;
+  border:1px solid var(--border);
+  background:#fff;
+  text-decoration:none;
+  transition:.15s ease;
+}
+.icon-btn:hover{ box-shadow:0 6px 14px rgba(0,0,0,.06); transform:translateY(-1px); }
+.icon-btn:active{ transform:translateY(0); }
+.icon-btn.green{ border-color:#059669; }
+.icon-btn.green:hover{ background:#ecfdf5; }
+.icon-btn .i{ font-size:18px; line-height:1; }
