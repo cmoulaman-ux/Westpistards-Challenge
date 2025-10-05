@@ -2,6 +2,9 @@ import os
 from datetime import datetime
 from flask import Flask, request, redirect, url_for, session, render_template_string, Response
 from flask_sqlalchemy import SQLAlchemy
+import csv, io
+from flask import Response
+
 
 # --- App ---
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -543,6 +546,7 @@ def admin_rounds():
           <div class="row" style="justify-content:space-between;">
             <div><strong>{r.name}</strong> &mdash; <span class="muted">{status_label}</span>{close_info}</div>
             <div class="row">
+              <a class="btn outline" href="/admin/rounds/{r.id}/export.csv">Exporter CSV</a>
               <form method="post" action="/admin/rounds/{r.id}/close">
                 <button class="btn outline" {'disabled' if r.status=='closed' else ''} type="submit">Clôturer</button>
               </form>
@@ -1082,6 +1086,95 @@ def round_leaderboard(round_id):
 
     except Exception as e:
         return PAGE(f"<h1>{r.name}</h1><p class='muted'>Erreur: {e}</p>"), 500
+
+
+@app.get("/admin/rounds/<int:round_id>/export.csv")
+def admin_round_export_csv(round_id):
+    if not db:
+        return PAGE("<h1>Admin</h1><p class='muted'>DB non dispo.</p>"), 500
+    u = current_user()
+    if not is_admin(u):
+        return PAGE("<h1>Accès refusé</h1><p class='muted'>Réservé aux administrateurs.</p>"), 403
+
+    r = db.session.get(Round, round_id)
+    if not r:
+        return PAGE("<h1>Erreur</h1><p class='muted'>Manche introuvable.</p>"), 404
+
+    # Récupère les chronos VALIDÉS uniquement
+    entries = (
+        TimeEntry.query
+        .filter_by(round_id=r.id, status="approved")
+        .order_by(TimeEntry.created_at.asc())
+        .all()
+    )
+    if not entries:
+        # CSV vide avec juste l’entête
+        headers = ["Rang", "Pilote", "Nation", "Brut", "Pénalités", "Final", "% du meilleur", "Moto"]
+        out = io.StringIO()
+        writer = csv.writer(out)
+        writer.writerow(headers)
+        filename = f"resultats_round_{r.id}.csv"
+        return Response(out.getvalue(), mimetype="text/csv",
+                        headers={"Content-Disposition": f"attachment; filename={filename}"})
+
+    # Calcule les finals, tri par temps final croissant
+    safe = []
+    for e in entries:
+        try:
+            raw_ms = int(e.raw_time_ms or 0)
+            pen = int(e.penalties or 0)
+            fm = final_time_ms(raw_ms, pen)
+            safe.append((e, fm))
+        except Exception:
+            continue
+
+    if not safe:
+        headers = ["Rang", "Pilote", "Nation", "Brut", "Pénalités", "Final", "% du meilleur", "Moto", "YouTube"]
+        out = io.StringIO()
+        csv.writer(out).writerow(headers)
+        filename = f"resultats_round_{r.id}.csv"
+        return Response(out.getvalue(), mimetype="text/csv",
+                        headers={"Content-Disposition": f"attachment; filename={filename}"})
+
+    safe.sort(key=lambda t: t[1])
+    best = safe[0][1] if safe else 0
+
+    # Écriture CSV
+    headers = ["Rang", "Pilote", "Nation", "Brut", "Pénalités", "Final", "% du meilleur", "Moto", "YouTube"]
+    out = io.StringIO()
+    writer = csv.writer(out)
+    writer.writerow(headers)
+
+    for i, (e, fm) in enumerate(safe, start=1):
+        name = display_name(getattr(e, "user", None)) if hasattr(e, "user") else "—"
+        nat = "—"
+        if hasattr(e, "user") and getattr(e.user, "nationality", None):
+            nat = (e.user.nationality or "—").upper()
+        pct = (fm / best * 100.0) if best > 0 else 0.0
+        writer.writerow([
+            i,
+            name,
+            nat,
+            ms_to_str(e.raw_time_ms),
+            e.penalties,
+            ms_to_str(fm),
+            f"{pct:.2f}%",
+            e.bike or "",
+        ])
+
+    # Nom de fichier propre
+    base = f"resultats_round_{r.id}"
+    try:
+        # petit slug du nom
+        slug = "".join(c if c.isalnum() else "_" for c in (r.name or ""))
+        if slug:
+            base = f"resultats_{slug}"
+    except Exception:
+        pass
+
+    filename = f"{base}.csv"
+    return Response(out.getvalue(), mimetype="text/csv",
+                    headers={"Content-Disposition": f"attachment; filename={filename}"})
 
 
 
