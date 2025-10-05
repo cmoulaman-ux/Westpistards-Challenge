@@ -483,28 +483,30 @@ nav a.active {
 //   filter: invert(1) brightness(1.1); /* transforme un logo noir en blanc */
 // }
 
-/* ===== Partenaires — bulles carrées arrondies ===== */
+/* ===== Partenaires — bulles carrées, grandes et côte à côte ===== */
 
-/* Grille */
+/* Grille : 2 colonnes fixes sur écran large */
 .logo-grid{
   display:grid;
-  grid-template-columns:repeat(auto-fit, minmax(140px, 1fr));
-  gap:16px;
+  grid-template-columns: repeat(2, minmax(200px, 1fr)); /* ⇦ plus grand qu’avant */
+  gap:24px;
   align-items:stretch;
+  justify-items:center; /* centre chaque bulle dans sa colonne */
 }
 
 /* Bulle carrée (ratio 1:1) */
 .logo-grid .partner{
   position:relative;
-  aspect-ratio:1 / 1;          /* carré automatique */
-  border-radius:16px;           /* coins arrondis */
-  overflow:hidden;              /* coupe ce qui dépasse */
+  aspect-ratio:1 / 1;           /* carré automatique */
+  width:100%;
+  max-width:320px;              /* ⇦ taille max de chaque bulle */
+  border-radius:20px;
+  overflow:hidden;
   display:flex;
   align-items:center;
   justify-content:center;
-  background:#fff;              /* bulle claire par défaut */
+  background:#fff;
   border:1px solid var(--border);
-  padding:0;                    /* pas besoin de padding, on scale l'image */
 }
 
 /* Bulle noire pour le 2e logo */
@@ -513,22 +515,27 @@ nav a.active {
   border-color:#000;
 }
 
-/* Image responsive bien centrée dans la bulle carrée */
+/* Image bien visible dans la bulle */
 .logo-grid .partner img{
-  width:80%;
-  height:80%;
-  object-fit:contain;          /* garde le ratio sans dépasser */
+  width:88%;                    /* ⇦ plus grand qu’avant */
+  height:88%;
+  object-fit:contain;
   display:block;
 }
 
-/* Mobile : un peu plus d’air */
-@media (max-width:640px){
+/* Responsive : passe en 1 colonne sur mobile */
+@media (max-width:720px){
   .logo-grid{
-    grid-template-columns:repeat(auto-fit, minmax(120px, 1fr));
+    grid-template-columns: 1fr;
+    gap:20px;
+  }
+  .logo-grid .partner{
+    max-width:360px;            /* un peu plus grand en mobile si tu veux */
   }
   .logo-grid .partner img{
-    width:85%;
-    height:85%;
+    width:90%;
+    height:90%;
   }
 }
+
 
