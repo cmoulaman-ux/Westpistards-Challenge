@@ -698,4 +698,25 @@ nav a.active {
   }
 }
 
+/* Zoom uniquement sur angle2 (3) et gravity2 (4), sans changer la bulle */
+.networks-grid .netw:nth-child(3) img,
+.networks-grid .netw:nth-child(4) img{
+  transform: scale(1.15);      /* ≈ +15% */
+  transform-origin: center;
+}
+
+/* Optionnel: un peu plus sur desktop, un peu moins sur mobile */
+@media (min-width: 721px){
+  .networks-grid .netw:nth-child(3) img,
+  .networks-grid .netw:nth-child(4) img{
+    transform: scale(1.2);     /* ≈ +20% sur grand écran */
+  }
+}
+@media (max-width: 640px){
+  .networks-grid .netw:nth-child(3) img,
+  .networks-grid .netw:nth-child(4) img{
+    transform: scale(1.1);     /* ≈ +10% sur mobile */
+  }
+}
+
 
