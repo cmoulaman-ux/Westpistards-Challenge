@@ -483,64 +483,67 @@ nav a.active {
 //   filter: invert(1) brightness(1.1); /* transforme un logo noir en blanc */
 // }
 
-/* ===== Partenaires — carrés arrondis, grands et côte à côte ===== */
+/* ===== Partenaires — carrés arrondis, grands et côte à côte (override) ===== */
 
-/* Grille : 2 colonnes fixes sur desktop */
+/* Grille: 2 colonnes fixes sur desktop */
 .logo-grid{
-  display:grid;
-  grid-template-columns: repeat(2, minmax(240px, 1fr));
-  gap:24px;
-  align-items:stretch;
-  justify-items:center;
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(260px, 1fr)) !important;
+  gap: 24px !important;
+  align-items: stretch !important;
+  justify-items: center !important;
 }
 
-/* Bulle carrée garantie (fallback tous navigateurs) */
-.logo-grid .partner{
-  position:relative;
-  width:100%;
-  max-width:360px;          /* ⇦ ajuste la taille max des carrés */
-  border-radius:20px;
-  overflow:hidden;
-  background:#fff;
-  border:1px solid var(--border);
+/* Bulle carrée verrouillée */
+.logo-grid > .partner{
+  position: relative !important;
+  display: block !important;      /* écrase un éventuel display:flex */
+  width: 100% !important;
+  max-width: 380px !important;     /* ⇦ augmente si tu veux plus grand */
+  border-radius: 20px !important;
+  overflow: hidden !important;
+  background: #fff !important;
+  border: 1px solid var(--border) !important;
+  padding: 0 !important;           /* supprime tout padding ancien */
+  margin: 0 !important;
 }
 
-/* Carré forcé : crée une boîte avec ratio 1:1 */
-.logo-grid .partner::before{
-  content:"";
-  display:block;
-  padding-top:100%;         /* hauteur = 100% de la largeur */
+/* Carré garanti (fallback si aspect-ratio est ignoré) */
+.logo-grid > .partner::before{
+  content: "" !important;
+  display: block !important;
+  padding-top: 100% !important;    /* hauteur = largeur => carré */
 }
 
-/* Contenu centré et contenu dans le carré */
-.logo-grid .partner img{
-  position:absolute;
-  inset:0;                  /* top/right/bottom/left: 0 */
-  margin:auto;
-  width:88%;
-  height:88%;
-  object-fit:contain;
-  display:block;
+/* Image centrée et contenue dans le carré */
+.logo-grid > .partner > img{
+  position: absolute !important;
+  inset: 0 !important;             /* top/right/bottom/left: 0 */
+  margin: auto !important;
+  width: 90% !important;           /* ajuste 85–95% si besoin */
+  height: 90% !important;
+  object-fit: contain !important;
+  display: block !important;
 }
 
-/* 2e bulle en noir */
-.logo-grid .partner:nth-child(2){
-  background:#000;
-  border-color:#000;
+/* 2e bulle en noir (ton logo foncé) */
+.logo-grid > .partner:nth-child(2){
+  background: #000 !important;
+  border-color: #000 !important;
 }
 
-/* Mobile : 1 colonne, un peu plus grand si tu veux */
-@media (max-width:720px){
+/* Mobile: 1 colonne */
+@media (max-width: 720px){
   .logo-grid{
-    grid-template-columns: 1fr;
-    gap:20px;
+    grid-template-columns: 1fr !important;
+    gap: 20px !important;
   }
-  .logo-grid .partner{
-    max-width:380px;
+  .logo-grid > .partner{
+    max-width: 400px !important;
   }
-  .logo-grid .partner img{
-    width:90%;
-    height:90%;
+  .logo-grid > .partner > img{
+    width: 92% !important;
+    height: 92% !important;
   }
 }
 
