@@ -725,3 +725,5 @@ nav a.active {
   border-color: var(--border) !important;
 }
 
+
+.center { text-align: center; }

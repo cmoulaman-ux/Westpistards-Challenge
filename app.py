@@ -347,6 +347,9 @@ def index():
           <img src="/static/img/assos/gravity2.png" alt="Gravity">
         </a>
       </div>
+      <p class="muted center" style="margin-top:8px;">
+        Vous souhaitez faire apparaître votre asso ou collectif ? Contactez-nous via la page WestPistards.
+      </p>
     </section>
     """
 
