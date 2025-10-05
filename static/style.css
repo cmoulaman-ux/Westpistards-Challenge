@@ -644,4 +644,31 @@ nav a.active {
   .networks-grid .netw img{ max-height: 70px; }
 }
 
+/* Réseaux — styles spécifiques par tuile (ordre actuel) */
+
+/* 1) wp.jpg : fond rouge */
+.networks-grid .netw:nth-child(1){
+  background: #dc2626;         /* rouge vif */
+  border-color: #dc2626;
+}
+
+/* 2) mania2.png : fond noir */
+.networks-grid .netw:nth-child(2){
+  background: #000;
+  border-color: #000;
+}
+
+/* 3) angle.jpg & 4) gravity.jpg : logos plus grands */
+.networks-grid .netw:nth-child(3) img,
+.networks-grid .netw:nth-child(4) img{
+  max-height: 110px;           /* ↑ au lieu de 80px */
+}
+
+@media (max-width: 640px){
+  .networks-grid .netw:nth-child(3) img,
+  .networks-grid .netw:nth-child(4) img{
+    max-height: 96px;          /* un poil moins grand en mobile */
+  }
+}
+
 
