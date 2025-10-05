@@ -327,6 +327,26 @@ def index():
       </div>
     </section>
     """
+    networks_html = """
+    <section class="card" style="margin-top:24px;">
+      <h2>Les réseaux du gymkhana français</h2>
+      <p class="muted" style="margin-top:-4px;">Où pratiquer en France — associations et collectifs.</p>
+
+      <div class="networks-grid">
+        <a class="netw" href="https://www.instagram.com/maniacones360/" target="_blank" rel="noopener" title="Mania">
+          <img src="/static/img/assos/mania.png" alt="Mania">
+        </a>
+        <a class="netw" href="https://www.facebook.com/perfectionnement.maniabilite.gymkhana.moto" target="_blank" rel="noopener" title="Angle">
+          <img src="/static/img/assos/angle.jpg" alt="Angle">
+        </a>
+        <a class="netw" href="https://www.facebook.com/SpectacleMotoGymkhana" target="_blank" rel="noopener" title="Gravity">
+          <img src="/static/img/assos/gravity.jpg" alt="Gravity">
+        </a>
+      </div>
+    </section>
+    """
+
+
 
     # Bandeau d'annonces (affiche la plus récente active)
     banner_html = ""
@@ -355,6 +375,9 @@ def index():
       {countdown_script}
 
       {partners_html}
+
+      {networks_html}
+
     """)
 
 

@@ -609,4 +609,39 @@ nav a.active {
   }
 }
 
+/* Réseaux du gymkhana français — grille de logos */
+.networks-grid{
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 16px;
+  align-items: center;
+  justify-items: center;
+  margin-top: 12px;
+}
+.networks-grid .netw{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fff;
+  width: 100%;
+  max-width: 260px;
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+.networks-grid .netw:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(0,0,0,0.06);
+}
+.networks-grid .netw img{
+  display: block;
+  max-width: 100%;
+  max-height: 80px;   /* augmente à 90–100px si besoin */
+  object-fit: contain;
+}
+@media (max-width:640px){
+  .networks-grid .netw img{ max-height: 70px; }
+}
+
 
