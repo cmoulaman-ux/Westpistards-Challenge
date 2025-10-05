@@ -338,13 +338,13 @@ def index():
           <img src="/static/img/assos/wp.jpg" alt="WP">
         </a>
         <a class="netw" href="https://www.instagram.com/maniacones360/" target="_blank" rel="noopener" title="Mania">
-          <img src="/static/img/assos/mania2.png" alt="Mania">
+          <img src="/static/img/assos/mania3.jpg" alt="Mania">
         </a>
         <a class="netw" href="https://www.facebook.com/perfectionnement.maniabilite.gymkhana.moto" target="_blank" rel="noopener" title="Angle">
-          <img src="/static/img/assos/angle.jpg" alt="Angle">
+          <img src="/static/img/assos/angle2.png" alt="Angle">
         </a>
         <a class="netw" href="https://www.facebook.com/SpectacleMotoGymkhana" target="_blank" rel="noopener" title="Gravity">
-          <img src="/static/img/assos/gravity.jpg" alt="Gravity">
+          <img src="/static/img/assos/gravity2.png" alt="Gravity">
         </a>
       </div>
     </section>
