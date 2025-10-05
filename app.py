@@ -388,12 +388,13 @@ def index():
     <section class="bg-hero">
       <div class="bg-hero-yt">
         <iframe
-          src="https://www.youtube-nocookie.com/embed/iFJrbnlDePs?autoplay=1&mute=1&controls=0&rel=0&loop=1&playlist=iFJrbnlDePs&modestbranding=1&playsinline=1"
-          title="Background video" allow="autoplay; fullscreen" referrerpolicy="no-referrer">
+          src="https://www.youtube.com/embed/iFJrbnlDePs?autoplay=1&mute=1&controls=0&rel=0&loop=1&playlist=iFJrbnlDePs&modestbranding=1&playsinline=1&enablejsapi=1&origin=https://westpistards-challenge.onrender.com"
+          title="Background video"
+          allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+          frameborder="0">
         </iframe>
       </div>
       <div class="bg-hero-overlay"></div>
-
       <div class="hero-content">
         <!-- Petit texte d’accroche optionnel dans la vidéo -->
         <h2 style="margin:0;">French Gymkhana Cup</h2>
