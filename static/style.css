@@ -800,27 +800,40 @@ nav a.active {
 /* Un petit plus même sur desktop */
 body{ line-height:1.55; }
 
-/* --- Background YouTube --- */
-.bg-video-wrap{ position: relative; isolation: isolate; }
-.bg-yt{
-  position: fixed; inset: 0;
+/* --- Hero vidéo (hauteur limitée) --- */
+.bg-hero{
+  position: relative;
+  height: 360px;          /* ajuste 300–480px selon ton goût */
+  overflow: hidden;
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+.bg-hero-yt{
+  position: absolute; inset: 0;
   width: 100%; height: 100%;
   pointer-events: none;
-  z-index: -2;
+  z-index: 0;
 }
-.bg-yt iframe{
+.bg-hero-yt iframe{
   width: 100%; height: 100%;
   border: 0; display: block;
 }
-.bg-overlay{
-  position: fixed; inset: 0;
-  background: radial-gradient(ellipse at top, rgba(255,255,255,.6), transparent 60%),
-              linear-gradient(to bottom, rgba(255,255,255,.65), rgba(249,250,251,.9));
-  z-index: -1;
+.bg-hero-overlay{
+  position: absolute; inset: 0;
+  background: linear-gradient(to bottom, rgba(255,255,255,.2), rgba(249,250,251,.92));
+  z-index: 1;
 }
-/* Couper la vidéo sur mobile / perf */
+.hero-content{
+  position: relative;
+  z-index: 2;
+  padding: 16px;
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+}
+
+/* Sur mobile / réduction de mouvement : on masque la vidéo */
 @media (max-width: 640px), (prefers-reduced-motion: reduce){
-  .bg-yt, .bg-yt iframe{ display: none; }
-  .bg-overlay{ background:#f9fafb; }
+  .bg-hero-yt{ display:none; }
+  .bg-hero-overlay{ background:#f9fafb; }
 }
+
 

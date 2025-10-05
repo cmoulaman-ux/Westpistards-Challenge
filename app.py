@@ -227,15 +227,6 @@ def PAGE(inner_html):
     </div>
   </header>
   <main class="container">
-    <div class="bg-video-wrap">
-      <div class="bg-yt">
-        <iframe
-          src="https://www.youtube-nocookie.com/embed/iFJrbnlDePs?autoplay=1&mute=1&controls=0&rel=0&loop=1&playlist=iFJrbnlDePs&modestbranding=1&playsinline=1"
-          title="Background video" allow="autoplay; fullscreen" referrerpolicy="no-referrer">
-        </iframe>
-      </div>
-      <div class="bg-overlay"></div>
-    </div>
     {inner_html}
   </main>
   <footer class="container muted">
