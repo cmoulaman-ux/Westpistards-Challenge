@@ -547,4 +547,66 @@ nav a.active {
   }
 }
 
+/* ===== Partenaires (CSS-only) — carrés arrondis, grands, 2 colonnes ===== */
+
+/* Grille dans la carte Partenaires */
+.card .logo-grid{
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(260px, 1fr)) !important;
+  gap: 24px !important;
+  align-items: stretch !important;
+  justify-items: center !important;
+}
+
+/* Tuile carrée verrouillée */
+.card .logo-grid > .partner{
+  position: relative !important;
+  width: 100% !important;
+  max-width: 380px !important;     /* ↑ augmente si tu veux plus grand */
+  border-radius: 20px !important;
+  overflow: hidden !important;
+  background: #fff !important;
+  border: 1px solid var(--border) !important;
+  padding: 0 !important;
+}
+
+/* Carré garanti (hauteur = largeur) */
+.card .logo-grid > .partner::before{
+  content: "" !important;
+  display: block !important;
+  padding-top: 100% !important;
+}
+
+/* Image centrée et contenue dans le carré */
+.card .logo-grid > .partner > img{
+  position: absolute !important;
+  inset: 0 !important;            /* top/right/bottom/left: 0 */
+  margin: auto !important;
+  width: 90% !important;          /* ajuste 85–95% si besoin */
+  height: 90% !important;
+  object-fit: contain !important;
+  display: block !important;
+}
+
+/* 2e bulle en noir */
+.card .logo-grid > .partner:nth-child(2){
+  background: #000 !important;
+  border-color: #000 !important;
+}
+
+/* Mobile: 1 colonne, un peu plus grand si tu veux */
+@media (max-width: 720px){
+  .card .logo-grid{
+    grid-template-columns: 1fr !important;
+    gap: 20px !important;
+  }
+  .card .logo-grid > .partner{
+    max-width: 400px !important;
+  }
+  .card .logo-grid > .partner > img{
+    width: 92% !important;
+    height: 92% !important;
+  }
+}
+
 
