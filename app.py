@@ -222,6 +222,7 @@ def PAGE(inner_html):
     {inner_html}
   </main>
   <footer class="container muted">
+    <a href="/privacy" style="color:inherit; text-decoration:underline;">Politique et Confidentialité</a><br>
     © 2025 westpistards
   </footer>
 </body>
@@ -1161,6 +1162,14 @@ def admin_banner():
       </table>
     """)
 
+@app.get("/privacy")
+def privacy():
+    return PAGE("""
+      <h1>Politique de Confidentialité</h1>
+      <p>Ce site collecte uniquement les données nécessaires au bon déroulement du challenge (adresse e-mail, nationalité et chronos).</p>
+      <p>Aucune donnée n’est partagée à des tiers.</p>
+      <p>Pour toute demande de suppression ou de modification, contactez <a href="mailto:westpistards@gmail.com">westpistards@gmail.com</a>.</p>
+    """)
 
 
 
