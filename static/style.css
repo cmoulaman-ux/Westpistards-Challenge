@@ -719,4 +719,9 @@ nav a.active {
   }
 }
 
+/* Réseaux — remettre la 2e bulle (Mania) en fond blanc */
+.networks-grid .netw:nth-child(2){
+  background: #fff !important;
+  border-color: var(--border) !important;
+}
 
