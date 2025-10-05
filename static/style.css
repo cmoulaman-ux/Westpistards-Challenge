@@ -772,3 +772,8 @@ nav a.active {
   100% { transform: translateX(-50%); }
 }
 
+/* Accélérer la bannière défilante */
+.banner .marquee{
+  animation-duration: 10s; /* plus rapide (au lieu de 18s) */
+}
+
