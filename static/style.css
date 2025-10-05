@@ -483,3 +483,52 @@ nav a.active {
 //   filter: invert(1) brightness(1.1); /* transforme un logo noir en blanc */
 // }
 
+/* ===== Partenaires — bulles carrées arrondies ===== */
+
+/* Grille */
+.logo-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(140px, 1fr));
+  gap:16px;
+  align-items:stretch;
+}
+
+/* Bulle carrée (ratio 1:1) */
+.logo-grid .partner{
+  position:relative;
+  aspect-ratio:1 / 1;          /* carré automatique */
+  border-radius:16px;           /* coins arrondis */
+  overflow:hidden;              /* coupe ce qui dépasse */
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#fff;              /* bulle claire par défaut */
+  border:1px solid var(--border);
+  padding:0;                    /* pas besoin de padding, on scale l'image */
+}
+
+/* Bulle noire pour le 2e logo */
+.logo-grid .partner:nth-child(2){
+  background:#000;
+  border-color:#000;
+}
+
+/* Image responsive bien centrée dans la bulle carrée */
+.logo-grid .partner img{
+  width:80%;
+  height:80%;
+  object-fit:contain;          /* garde le ratio sans dépasser */
+  display:block;
+}
+
+/* Mobile : un peu plus d’air */
+@media (max-width:640px){
+  .logo-grid{
+    grid-template-columns:repeat(auto-fit, minmax(120px, 1fr));
+  }
+  .logo-grid .partner img{
+    width:85%;
+    height:85%;
+  }
+}
+
