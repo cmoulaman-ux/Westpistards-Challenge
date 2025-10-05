@@ -632,76 +632,59 @@ def admin_round_delete(round_id):
 @app.get("/admin/times")
 def admin_times():
     if not db:
-        return PAGE("<h1>Admin</h1><p class='muted'>DB non dispo.</p>")
+        return PAGE("<h1>Admin</h1><p class='muted'>DB non dispo.</p>"), 500
     u = current_user()
     if not is_admin(u):
         return PAGE("<h1>Accès refusé</h1><p class='muted'>Réservé aux administrateurs.</p>"), 403
 
-    from sqlalchemy import func
+    # Filtre par onglet
+    tab = (request.args.get("status") or "pending").lower()
+    if tab not in ("pending", "approved", "rejected"):
+        tab = "pending"
 
-    # --- Statut actif via ?status= (default: pending)
-    status = (request.args.get("status") or "pending").lower()
-    valid = {"pending", "approved", "rejected", "all"}
-    if status not in valid:
-        status = "pending"
-
-    # --- Compteurs par statut
-    counts = {"pending": 0, "approved": 0, "rejected": 0, "all": 0}
-    rows = (
-        db.session.query(TimeEntry.status, func.count(TimeEntry.id))
-        .group_by(TimeEntry.status)
-        .all()
-    )
-    for st, cnt in rows:
-        counts[st] = cnt
-    counts["all"] = counts["pending"] + counts["approved"] + counts["rejected"]
-
-    # --- Requête filtrée
     q = (
         TimeEntry.query
         .join(User, User.id == TimeEntry.user_id)
-        .order_by(TimeEntry.created_at.desc())
+        .join(Round, Round.id == TimeEntry.round_id)
     )
-    if status != "all":
-        q = q.filter(TimeEntry.status == status)
-    entries = q.all()
+    q = q.filter(TimeEntry.status == tab) if tab in ("pending", "approved", "rejected") else q
+    entries = q.order_by(TimeEntry.created_at.desc()).all()
 
-    # --- Tabs
-    def tab(label, key):
-        active = " active" if status == key else ""
-        return f"<a class='tab{active}' href='/admin/times?status={key}'>{label} ({counts.get(key,0)})</a>"
+    # Onglets
+    def tab_link(label, key):
+        cls = "btn" + ("" if tab == key else " outline")
+        return f"<a class='{cls}' href='/admin/times?status={key}'>{label}</a>"
 
     tabs = (
-        "<div class='tabs'>"
-        f"{tab('En attente', 'pending')}"
-        f"{tab('Validés', 'approved')}"
-        f"{tab('Refusés', 'rejected')}"
-        f"{tab('Tous', 'all')}"
+        "<div class='row' style='gap:8px; margin-bottom:12px;'>"
+        f"{tab_link('En attente', 'pending')}"
+        f"{tab_link('Validés', 'approved')}"
+        f"{tab_link('Rejetés', 'rejected')}"
         "</div>"
     )
 
     if not entries:
-        return PAGE(f"""
-          <h1>Admin — Chronos</h1>
-          {tabs}
-          <p class='muted'>Aucun chrono pour ce filtre.</p>
-        """)
+        mapping = {"pending":"en attente", "approved":"validés", "rejected":"rejetés"}
+        return PAGE(f"<h1>Admin &mdash; Chronos</h1>{tabs}<p class='muted'>Aucun chrono {mapping.get(tab,'')}.</p>")
 
-    # --- Lignes du tableau
+    # Lignes du tableau : actions selon statut
     def row(e):
         final_ms_val = final_time_ms(e.raw_time_ms, e.penalties)
-        yt = f"<a href='{e.youtube_link}' target='_blank' rel='noopener'>Vidéo</a>" if e.youtube_link else "—"
-        actions = ""
-        # Montrer les boutons surtout pour 'pending'
+        yt = f"<a href='{e.youtube_link}' target='_blank' rel='noopener'>Vidéo</a>" if (e.youtube_link or "").strip() else "—"
+        badge = "pending" if e.status == "pending" else ("approved" if e.status == "approved" else "rejected")
+
+        # Actions selon statut (pas de "remettre en attente")
+        actions = []
         if e.status == "pending":
-            actions = (
-                f"<form method='post' action='/admin/times/{e.id}/approve' style='display:inline;margin-right:6px;'>"
-                f"  <button class='btn' type='submit'>Valider</button>"
-                f"</form>"
-                f"<form method='post' action='/admin/times/{e.id}/reject' style='display:inline;'>"
-                f"  <button class='btn danger' type='submit'>Refuser</button>"
-                f"</form>"
-            )
+            actions.append(f"<form method='post' action='/admin/times/{e.id}/approve' style='display:inline;'><button class='btn' type='submit'>Valider</button></form>")
+            actions.append(f"<form method='post' action='/admin/times/{e.id}/reject' style='display:inline; margin-left:6px;'><button class='btn danger' type='submit'>Rejeter</button></form>")
+        elif e.status == "approved":
+            actions.append(f"<form method='post' action='/admin/times/{e.id}/reject' style='display:inline;'><button class='btn danger' type='submit'>Rejeter</button></form>")
+        elif e.status == "rejected":
+            actions.append(f"<form method='post' action='/admin/times/{e.id}/approve' style='display:inline;'><button class='btn' type='submit'>Valider</button></form>")
+
+        actions_html = "".join(actions)
+
         return f"""
         <tr>
           <td>{e.id}</td>
@@ -711,8 +694,8 @@ def admin_times():
           <td>{e.penalties}</td>
           <td><strong>{ms_to_str(final_ms_val)}</strong></td>
           <td>{yt}</td>
-          <td><span class='badge {"pending" if e.status=="pending" else ("approved" if e.status=="approved" else "rejected")}'>{e.status}</span></td>
-          <td>{actions}</td>
+          <td><span class='badge {badge}'>{e.status}</span></td>
+          <td>{actions_html}</td>
         </tr>
         """
 
@@ -732,6 +715,7 @@ def admin_times():
       {tabs}
       {table}
     """)
+
 
 @app.post("/admin/times/<int:time_id>/approve")
 def admin_time_approve(time_id):
