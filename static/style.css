@@ -831,9 +831,12 @@ body{ line-height:1.55; }
 }
 
 /* Sur mobile / réduction de mouvement : on masque la vidéo */
-@media (max-width: 640px), (prefers-reduced-motion: reduce){
+@media (prefers-reduced-motion: reduce){
   .bg-hero-yt{ display:none; }
   .bg-hero-overlay{ background:#f9fafb; }
+}
+@media (max-width: 640px){
+  .bg-hero{ height: 260px; }
 }
 
 

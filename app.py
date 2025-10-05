@@ -396,7 +396,7 @@ def index():
 
       <div class="hero-content">
         <!-- Petit texte d’accroche optionnel dans la vidéo -->
-        <h2 style="margin:0;">WestPistards Challenge</h2>
+        <h2 style="margin:0;">French Gymkhana Cup</h2>
       </div>
     </section>
 
