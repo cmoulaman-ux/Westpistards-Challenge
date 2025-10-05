@@ -746,3 +746,29 @@ nav a.active {
 .icon-btn.green{ border-color:#059669; }
 .icon-btn.green:hover{ background:#ecfdf5; }
 .icon-btn .i{ font-size:18px; line-height:1; }
+
+/* Bandeau défilant (annonce) */
+.banner{
+  background:#dbeafe;
+  border:1px solid var(--border);
+  border-radius:12px;
+  overflow:hidden;
+  padding:0;
+}
+.banner .marquee{
+  display:flex;
+  gap:48px;
+  white-space:nowrap;
+  padding:10px 16px;
+  animation: marquee-scroll 18s linear infinite;
+  will-change: transform;
+}
+.banner:hover .marquee{ animation-play-state: paused; }
+.banner .marquee__chunk{ display:inline-block; }
+
+/* Défilement simple (2 blocs clonés) */
+@keyframes marquee-scroll{
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+

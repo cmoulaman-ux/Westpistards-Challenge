@@ -364,7 +364,16 @@ def index():
     if db:
         ann = Announcement.query.filter_by(is_active=True).order_by(Announcement.created_at.desc()).first()
         if ann:
-            banner_html = f"<div class='banner'>{ann.content}</div>"
+            msg = ann.content  # peut contenir <strong> etc.
+            banner_html = f"""
+            <div class="banner" aria-live="polite">
+              <div class="marquee" role="marquee" aria-label="Annonce défilante">
+                <span class="marquee__chunk">{msg}</span>
+                <span class="marquee__chunk" aria-hidden="true">{msg}</span>
+              </div>
+            </div>
+            """
+
 
     # --- Rendu de la page d'accueil ---
     return PAGE(f"""
