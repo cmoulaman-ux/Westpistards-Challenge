@@ -919,6 +919,7 @@ def profile():
     )
 
     # --- Section "Mes chronos" avec badges de statut ---
+    # Section chronos
     if not entries:
         chronos_html = "<p class='muted'>Aucun chrono pour l’instant.</p>"
     else:
@@ -926,8 +927,15 @@ def profile():
             raw = ms_to_str(e.raw_time_ms)
             final_ms = final_time_ms(e.raw_time_ms, e.penalties)
             final_s = ms_to_str(final_ms)
-            yt = f"<a href='{e.youtube_link}' target='_blank' rel='noopener'>Vidéo</a>" if (e.youtube_link or "").strip() else "—"
-            cls = "pending" if e.status == "pending" else ("approved" if e.status == "approved" else "rejected")
+            yt = f"<a href='{e.youtube_link}' target='_blank' rel='noopener'>Vidéo</a>" if e.youtube_link else "—"
+            badge = f"<span class='badge {'approved' if e.status=='approved' else ('rejected' if e.status=='rejected' else 'pending')}'>{e.status}</span>"
+            actions = (
+                f"<form method='post' action='/my/times/{e.id}/delete' "
+                "onsubmit=\"return confirm('Supprimer ce chrono ?');\" style='display:inline;'>"
+                "<button class='btn danger icon' type='submit' "
+                "title='Supprimer ce chrono' aria-label='Supprimer'>×</button>"
+                "</form>"
+            )
             return (
                 "<tr>"
                 f"<td>{e.round.name}</td>"
@@ -936,7 +944,8 @@ def profile():
                 f"<td><strong>{final_s}</strong></td>"
                 f"<td>{e.bike or '—'}</td>"
                 f"<td>{yt}</td>"
-                f"<td><span class='badge {cls}'>{e.status}</span></td>"
+                f"<td>{badge}</td>"
+                f"<td>{actions}</td>"
                 "</tr>"
             )
 
@@ -944,11 +953,12 @@ def profile():
         chronos_html = (
             "<table class='table'>"
             "<thead><tr>"
-            "<th>Manche</th><th>Brut</th><th>Pén.</th><th>Final</th><th>Moto</th><th>YouTube</th><th>Statut</th>"
+            "<th>Manche</th><th>Brut</th><th>Pén.</th><th>Final</th><th>Moto</th><th>YouTube</th><th>Statut</th><th>Actions</th>"
             "</tr></thead>"
             f"<tbody>{rows}</tbody>"
             "</table>"
         )
+
 
 
     # Liens admin (uniquement si admin)
@@ -1306,6 +1316,30 @@ def favicon_root():
     # Sert un favicon (on réutilise l’icône 192×192)
     return send_from_directory(os.path.join(app.static_folder, "img"), "icon-192.png")
 
+@app.post("/my/times/<int:time_id>/delete")
+def my_time_delete(time_id):
+    if not db:
+        return PAGE("<h1>Erreur</h1><p class='muted'>DB non dispo.</p>"), 500
+
+    u = current_user()
+    if not u:
+        return redirect(url_for("login"))
+
+    e = db.session.get(TimeEntry, time_id)
+    if not e:
+        return PAGE("<h1>Erreur</h1><p class='muted'>Chrono introuvable.</p>"), 404
+
+    # Sécurité: seul le propriétaire OU un admin peut supprimer
+    if e.user_id != u.id and not is_admin(u):
+        return PAGE("<h1>Accès refusé</h1><p class='muted'>Action non autorisée.</p>"), 403
+
+    try:
+        db.session.delete(e)
+        db.session.commit()
+        return redirect(url_for("profile"))
+    except Exception as ex:
+        db.session.rollback()
+        return PAGE(f"<h1>Erreur</h1><p class='muted'>Suppression impossible : {ex.__class__.__name__}</p>"), 500
 
 
 if __name__ == "__main__":
