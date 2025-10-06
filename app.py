@@ -227,8 +227,8 @@ def PAGE(inner_html):
     {inner_html}
   </main>
   <footer class="container muted">
-    <a href="/privacy" style="color:inherit; text-decoration:underline;">Politique et Confidentialité</a><br>
     <a href="/credits">Crédits photo & vidéo</a><br>
+    <a href="/privacy" style="color:inherit; text-decoration:underline;">Politique et Confidentialité</a><br>
     © 2025 westpistards
   </footer>
 </body>
