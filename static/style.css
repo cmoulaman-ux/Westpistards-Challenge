@@ -1023,3 +1023,10 @@ body{ line-height:1.55; }
   .bg-photo-bottom{ height: 220px; }
 }
 
+@media (max-width: 680px){
+  .bg-photo img{
+    object-fit: contain;
+    background:#000; /* ou #fff */
+  }
+}
+
