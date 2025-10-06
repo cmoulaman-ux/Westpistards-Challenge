@@ -1097,3 +1097,61 @@ body{ line-height:1.55; }
   }
 }
 
+
+/* === HARMONIE MOBILE (≤ 680px) === */
+@media (max-width: 680px){
+
+  /* Typo & rythme */
+  html { font-size: 16px; }                /* base lisible */
+  body { line-height: 1.5; }
+
+  /* Titres clés */
+  .hero-content h1 { font-size: 28px; margin: 0; }
+  h2 { font-size: 20px; margin: 12px 0 8px; }
+  h3 { font-size: 18px; margin: 10px 0 6px; }
+
+  /* Logos du hero */
+  .hero-content { gap: 14px; }
+  .hero-content .hero-logo,
+  .hero-logo-second { height: 90px !important; }
+
+  /* Nav (onglets du haut) */
+  .nav { gap: 8px 10px; }
+  .nav a {
+    display: inline-block;
+    font-size: 15px;
+    padding: 8px 10px;
+    border-radius: 10px;
+  }
+  .brand { font-size: 22px; }
+
+  /* Bannière (marquee) */
+  .banner .marquee {
+    font-size: 18px;
+    padding: 12px 14px;
+  }
+
+  /* Cartes & sections */
+  .card { border-radius: 12px; padding: 14px; }
+
+  /* Tableaux (classements / chronos) */
+  .table th, .table td { padding: 8px; font-size: 14px; }
+  .badge { font-size: 12px; padding: 3px 8px; }
+
+  /* Boutons */
+  .btn { padding: 10px 14px; border-radius: 10px; font-size: 15px; }
+  .btn.icon { width: 34px; height: 34px; padding: 0; }
+
+  /* Hero vidéo / overlay (évite l’effet trop sombre sur petit écran) */
+  .bg-hero { height: 300px; }
+  .bg-hero-yt iframe { width: 180vw; height: 101.25vw; } /* moins de zoom */
+  .bg-hero-overlay { background: linear-gradient(to bottom, rgba(255,255,255,.10), rgba(249,250,251,.90)); }
+
+  /* Galerie défilante du bas */
+  .marquee-photos { --h: 130px; }
+  .marquee-photos .marquee-track { animation-duration: 45s; } /* vitesse modérée */
+
+  /* Bandeau photo (si encore utilisé quelque part) */
+  .bg-photo-bottom { height: 220px; }
+}
+
