@@ -884,30 +884,6 @@ def submit_time():
         )
 
         db.session.add(entry)
-
-        # --- Option pilote: remplacer l'ancien chrono validé de cette manche ---
-        replace_flag = (request.form.get("replace") == "1")
-
-        if replace_flag:
-            old = (
-                TimeEntry.query
-                .filter_by(user_id=u.id, round_id=round_id, status="approved")
-                .first()
-            )
-            if old:
-                # on désactive l'ancien et on valide le nouveau
-                old.status = "superseded"
-                entry.status = "approved"
-                from flask import flash
-                flash("Ton nouveau chrono remplace l’ancien validé (l’ancien reste visible dans l’historique).", "success")
-            else:
-                # aucun validé à remplacer → on laisse le circuit normal
-                from flask import flash
-                flash("Aucun chrono validé à remplacer pour cette manche. Soumission enregistrée.", "info")
-        else:
-            # circuit normal (si tu veux laisser 'pending' par défaut)
-            pass
-
         db.session.commit()
         return redirect(url_for("profile"))
 
@@ -940,12 +916,6 @@ def submit_time():
     html_lines.append("  <label>Note (facultatif)")
     html_lines.append('    <textarea name="note" rows="3" placeholder="Remarque libre..."></textarea>')
     html_lines.append("  </label>")
-    html_lines.append('  <label class="row" style="gap:8px; align-items:center; margin-top:8px;">')
-    html_lines.append('    <input type="checkbox" name="replace" value="1">')
-    html_lines.append('    <span>Remplacer mon chrono valide (si existant)</span>')
-    html_lines.append('  </label>')
-
-
     html_lines.append('  <button class="btn" type="submit">Envoyer</button>')
     html_lines.append("</form>")
 
