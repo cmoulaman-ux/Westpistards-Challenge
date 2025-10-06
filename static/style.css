@@ -1074,7 +1074,7 @@ body{ line-height:1.55; }
 }
 @media (max-width: 680px){
   .marquee-photos{ --h: 130px; }
-  .marquee-photos .marquee-track{ animation-duration: 30s; }
+  .marquee-photos .marquee-track{ animation-duration: 10s; }
 }
 
 /* moins de zoom = moins recadrée */
