@@ -957,13 +957,27 @@ def profile():
             final_ms = final_time_ms(e.raw_time_ms, e.penalties)
             final_s = ms_to_str(final_ms)
             yt = f"<a href='{e.youtube_link}' target='_blank' rel='noopener'>Vidéo</a>" if e.youtube_link else "—"
-            badge = f"<span class='badge { 'approved' if e.status=='approved' else ('rejected' if e.status=='rejected' else ('superseded' if e.status=='superseded' else 'pending')) }'>{e.status}</span>"
-            actions = (
-                f"<form method='post' action='/my/times/{e.id}/delete' "
-                "onsubmit=\"return confirm('Supprimer ce chrono ?');\" style='display:inline;'>"
-                "<button class='btn danger icon' type='submit' "
-                "title='Supprimer ce chrono' aria-label='Supprimer'>×</button>"
-                "</form>"
+            badge = f"<span class='badge { 'approved' if e.status=='approved' else ('rejected' if e.status=='rejected' else ('inactive' if e.status=='inactive' else 'pending')) }'>{e.status}</span>"
+            if e.status == "approved":
+                actions = (
+                    f"<form method='post' action='/my/times/{e.id}/deactivate' "
+                    "onsubmit=\"return confirm('Désactiver ce chrono ? Il ne comptera plus dans les classements.');\" "
+                    "style='display:inline; margin-right:6px;'>"
+                    "<button class='btn reverse icon' type='submit' title='Désactiver ce chrono' aria-label='Désactiver'>↺</button>"
+                    "</form>"
+                    f"<form method='post' action='/my/times/{e.id}/delete' "
+                    "onsubmit=\"return confirm('Supprimer ce chrono ?');\" style='display:inline;'>"
+                    "<button class='btn danger icon' type='submit' title='Supprimer ce chrono' aria-label='Supprimer'>×</button>"
+                    "</form>"
+                )
+            else:
+                actions = (
+                    f"<form method='post' action='/my/times/{e.id}/delete' "
+                    "onsubmit=\"return confirm('Supprimer ce chrono ?');\" style='display:inline;'>"
+                    "<button class='btn danger icon' type='submit' title='Supprimer ce chrono' aria-label='Supprimer'>×</button>"
+                    "</form>"
+                )
+
             )
             return (
                 "<tr>"
@@ -1378,6 +1392,29 @@ def credits():
       <p>Vidéos : <a href="https://youtu.be/iFJrbnlDePs?si=5pspowwHNpqH6M7O">Dav 4780</a></p>
     """)
 
+@app.post("/my-times/<int:time_id>/deactivate")
+def my_time_deactivate(time_id):
+    if not db:
+        return PAGE("<h1>Erreur</h1><p class='muted'>DB non dispo.</p>"), 500
+    u = current_user()
+    if not u:
+        return redirect(url_for("login"))
+
+    e = db.session.get(TimeEntry, time_id)
+    if not e or e.user_id != u.id:
+        return PAGE("<h1>Refusé</h1><p class='muted'>Chrono introuvable ou non autorisé.</p>"), 403
+
+    if e.status != "approved":
+        # On ne désactive que les chronos validés
+        from flask import flash
+        flash("Seuls les chronos validés peuvent être désactivés.", "error")
+        return redirect(url_for("profile"))
+
+    e.status = "inactive"
+    db.session.commit()
+    from flask import flash
+    flash("Chrono désactivé. Il ne compte plus dans les classements.", "success")
+    return redirect(url_for("profile"))
 
 
 
