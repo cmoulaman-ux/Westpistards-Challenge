@@ -229,6 +229,7 @@ def PAGE(inner_html):
   <footer class="container muted">
     <a href="/privacy" style="color:inherit; text-decoration:underline;">Politique et Confidentialité</a><br>
     © 2025 westpistards
+    <a href="/credits">Crédits photo & vidéo</a>
   </footer>
 </body>
 </html>
@@ -1367,6 +1368,17 @@ def my_time_delete(time_id):
     except Exception as ex:
         db.session.rollback()
         return PAGE(f"<h1>Erreur</h1><p class='muted'>Suppression impossible : {ex.__class__.__name__}</p>"), 500
+
+@app.get("/credits")
+def credits():
+    return PAGE("""
+      <h1>Crédits photo & vidéo</h1>
+      <p>Photos : <a href="https://www.facebook.com/profile.php?id=100062921426923" target="_blank">Suzie Fontaine Photos</a></p>
+      <p>Vidéos : <a href="www.youtube.com/@DavSKRR" target="_blank">Dav 4780</a></p>
+    """)
+
+
+
 
 
 if __name__ == "__main__":
