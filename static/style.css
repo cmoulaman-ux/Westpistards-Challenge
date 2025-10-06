@@ -1030,3 +1030,50 @@ body{ line-height:1.55; }
   }
 }
 
+/* --- Bandeau photos défilantes (bas de page) --- */
+.marquee-photos{
+  --h: 160px;
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+  margin-top: 16px;
+  background: #fff;
+}
+.marquee-photos .marquee-track{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: var(--h);
+  animation: slide-left 45s linear infinite;
+  will-change: transform;
+}
+.marquee-photos img{
+  height: 100%;
+  width: auto;
+  object-fit: cover;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0,0,0,.08);
+}
+.marquee-photos::before,
+.marquee-photos::after{
+  content:"";
+  position: absolute; top: 0; bottom: 0; width: 48px; pointer-events: none;
+  z-index: 2;
+}
+.marquee-photos::before{
+  left: 0;
+  background: linear-gradient(to right, #fff, rgba(255,255,255,0));
+}
+.marquee-photos::after{
+  right: 0;
+  background: linear-gradient(to left, #fff, rgba(255,255,255,0));
+}
+@keyframes slide-left{
+  from{ transform: translateX(0); }
+  to{   transform: translateX(-50%); }
+}
+@media (max-width: 680px){
+  .marquee-photos{ --h: 130px; }
+  .marquee-photos .marquee-track{ animation-duration: 50s; }
+}
+
