@@ -1374,7 +1374,7 @@ def credits():
     return PAGE("""
       <h1>Crédits photo & vidéo</h1>
       <p>Photos : <a href="https://www.facebook.com/profile.php?id=100062921426923" target="_blank">Suzie Fontaine Photos</a></p>
-      <p>Vidéos : <a href="www.youtube.com/@DavSKRR" target="_blank">Dav 4780</a></p>
+      <p>Vidéos : <a href="https://youtu.be/iFJrbnlDePs?si=5pspowwHNpqH6M7O">Dav 4780</a></p>
     """)
 
 
