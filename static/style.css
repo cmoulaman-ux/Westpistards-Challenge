@@ -1074,6 +1074,26 @@ body{ line-height:1.55; }
 }
 @media (max-width: 680px){
   .marquee-photos{ --h: 130px; }
-  .marquee-photos .marquee-track{ animation-duration: 50s; }
+  .marquee-photos .marquee-track{ animation-duration: 30s; }
+}
+
+/* moins de zoom = moins recadrée */
+.bg-hero-yt iframe{
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 110vw;        /* avant 120vw */
+  height: 61.875vw;    /* 110 * 9/16 (avant 67.5vw) */
+  min-width: 100%;
+  min-height: 100%;
+  transform: translate(-50%, -50%);
+  border: 0;
+  display: block;
+}
+@media (max-width: 640px){
+  .bg-hero-yt iframe{
+    width: 180vw;      /* avant 200vw */
+    height: 101.25vw;  /* 180 * 9/16 (avant 112.5vw) */
+  }
 }
 
