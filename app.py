@@ -1384,6 +1384,29 @@ def credits():
       <p>Vidéos : <a href="https://youtu.be/iFJrbnlDePs?si=5pspowwHNpqH6M7O">Dav 4780</a></p>
     """)
 
+@app.post("/my-times/<int:time_id>/deactivate")
+def my_time_deactivate(time_id):
+    if not db:
+        return PAGE("<h1>Erreur</h1><p class='muted'>DB non dispo.</p>"), 500
+    u = current_user()
+    if not u:
+        return redirect(url_for("login"))
+
+    e = db.session.get(TimeEntry, time_id)
+    if not e or e.user_id != u.id:
+        return PAGE("<h1>Refusé</h1><p class='muted'>Chrono introuvable ou non autorisé.</p>"), 403
+
+    if e.status != "approved":
+        # On ne désactive que les chronos validés
+        from flask import flash
+        flash("Seuls les chronos validés peuvent être désactivés.", "error")
+        return redirect(url_for("profile"))
+
+    e.status = "inactive"
+    db.session.commit()
+    from flask import flash
+    flash("Chrono désactivé. Il ne compte plus dans les classements.", "success")
+    return redirect(url_for("profile"))
 
 
 
