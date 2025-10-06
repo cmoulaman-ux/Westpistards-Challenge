@@ -897,4 +897,40 @@ body{ line-height:1.55; }
   .bg-hero-overlay{ background:#f9fafb; }
 }
 
+/* Banner + confort mobile */
+@media (max-width: 680px){
+  .banner{ margin: 14px 0; }
+  .banner .marquee{
+    font-size: 20px;     /* texte plus grand */
+    padding: 14px 18px;  /* plus d’air autour */
+    line-height: 1.5;
+  }
+}
+
+/* Nav plus grande sur mobile */
+@media (max-width: 680px){
+  .nav{ gap: 10px 12px; }
+  .nav a{
+    display: inline-block;
+    font-size: 16px;      /* + lisible */
+    padding: 10px 12px;   /* + grande zone tactile */
+    border-radius: 10px;  /* look bouton léger */
+  }
+  .brand{ font-size: 24px; } /* Titre un poil plus grand */
+}
+
+/* Hero + titre plus grands (mobile) */
+@media (max-width: 680px){
+  .hero{ gap: 14px; }
+  .hero-logo{ height: 90px !important; }           /* avant ~72px */
+  .hero-logo-second{ height: 90px !important; }    /* le 2e logo */
+  .hero h1{ font-size: 28px; line-height: 1.2; margin: 0; }
+}
+
+/* Un petit boost aussi sur écrans moyens */
+@media (min-width: 681px) and (max-width: 1024px){
+  .hero-logo, .hero-logo-second{ height: 88px !important; }
+  .hero h1{ font-size: 30px; }
+}
+
 
