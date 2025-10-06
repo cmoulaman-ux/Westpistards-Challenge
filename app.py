@@ -230,7 +230,6 @@ def PAGE(inner_html):
     <a href="/privacy" style="color:inherit; text-decoration:underline;">Politique et Confidentialité</a><br>
     <a href="/credits">Crédits photo & vidéo</a>
     © 2025 westpistards
-    <a href="/credits">Crédits photo & vidéo</a>
   </footer>
 </body>
 </html>
