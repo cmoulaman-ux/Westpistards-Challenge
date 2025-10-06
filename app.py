@@ -940,10 +940,12 @@ def submit_time():
     html_lines.append("  <label>Note (facultatif)")
     html_lines.append('    <textarea name="note" rows="3" placeholder="Remarque libre..."></textarea>')
     html_lines.append("  </label>")
-    html.append('      <label class="row" style="gap:8px; align-items:center; margin-top:8px;">')
-    html.append('        <input type="checkbox" name="replace" value="1">')
-    html.append('        <span>Remplacer mon chrono validé (si existant)</span>')
-    html.append('      </label>')
+    html_lines.append('  <label class="row" style="gap:8px; align-items:center; margin-top:8px;">')
+    html_lines.append('    <input type="checkbox" name="replace" value="1">')
+    html_lines.append('    <span>Remplacer mon chrono valide (si existant)</span>')
+    html_lines.append('  </label>')
+
+
     html_lines.append('  <button class="btn" type="submit">Envoyer</button>')
     html_lines.append("</form>")
 
