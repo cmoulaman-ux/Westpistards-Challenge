@@ -209,9 +209,6 @@ def PAGE(inner_html):
 <head>
   <meta charset="utf-8">
   <link rel="icon" type="image/png" href="/static/img/icon-192.png">
-  <link rel="apple-touch-icon" sizes="180x180" href="/static/img/icon-180.png">
-  <link rel="manifest" href="/static/manifest.json">
-  <meta name="theme-color" content="#d00000">
   <title>WP Challenge</title>
   <link rel="stylesheet" href="/static/style.css">
 </head>
