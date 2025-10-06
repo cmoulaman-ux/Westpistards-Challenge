@@ -975,5 +975,20 @@ body{ line-height:1.55; }
   justify-content: center;
 }
 
+/* Banner plus grande (desktop + mobile) */
+.banner { margin: 16px 0; }
+.banner .marquee {
+  font-size: 20px;      /* ↑ taille du texte */
+  padding: 16px 20px;   /* ↑ hauteur/épaisseur */
+  line-height: 1.6;
+}
+
+/* Un peu plus grand encore sur mobile */
+@media (max-width: 680px){
+  .banner .marquee{
+    font-size: 22px;
+    padding: 18px 22px;
+  }
+}
 
 
