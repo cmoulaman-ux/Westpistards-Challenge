@@ -991,4 +991,33 @@ body{ line-height:1.55; }
   }
 }
 
+/* Bandeau photo bas de page */
+.bg-photo{
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+  margin-top: 16px;
+}
+.bg-photo img{
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;         /* couvre sans déformer */
+  z-index: 0;
+}
+.bg-photo-overlay{
+  position: absolute; inset: 0;
+  background: linear-gradient(to bottom, rgba(255,255,255,.12), rgba(249,250,251,.86));
+  z-index: 1;
+}
+.bg-photo .hero-content{
+  position: relative;
+  z-index: 2;
+  padding: 16px;
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+}
+.bg-photo-bottom{ height: 300px; }        /* ajuste 260–360px si besoin */
+
+@media (max-width: 640px){
+  .bg-photo-bottom{ height: 220px; }
+}
 

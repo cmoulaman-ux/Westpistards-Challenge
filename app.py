@@ -419,6 +419,15 @@ def index():
 
       {networks_html}
 
+    <!-- Bandeau photo bas de page -->
+    <section class="bg-photo bg-photo-bottom">
+      <img src="/static/img/bottom_hero.jpg" alt="WestPistards — Photo" loading="lazy">
+      <div class="bg-photo-overlay"></div>
+      <div class="hero-content">
+      </div>
+    </section>
+
+
     """)
 
 
