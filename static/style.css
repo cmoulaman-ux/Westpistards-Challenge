@@ -933,4 +933,34 @@ body{ line-height:1.55; }
   .hero h1{ font-size: 30px; }
 }
 
+/* --- Boost mobile: hero + nav + bannière --- */
+@media (max-width: 768px){
+  .hero-content{ gap:16px; }
+  .hero-content .hero-logo{ height:100px !important; }   /* logo gauche */
+  .hero-logo-second{ height:100px !important; }          /* logo droit si présent */
+  .hero-content h1{ font-size:30px; line-height:1.2; margin:0; }
+
+  .nav{ gap: 10px 12px; }
+  .nav a{
+    display:inline-block;
+    font-size:16px;
+    padding:10px 12px;
+    border-radius:10px;
+  }
+  .brand{ font-size:24px; }
+
+  .banner .marquee{
+    font-size:18px;
+    padding:14px 18px;
+    line-height:1.5;
+  }
+}
+
+/* ultra-petits écrans: évite que ça déborde */
+@media (max-width: 360px){
+  .hero-content .hero-logo,
+  .hero-logo-second{ height:88px !important; }
+  .hero-content h1{ font-size:28px; }
+}
+
 
