@@ -231,7 +231,7 @@ def PAGE(inner_html):
     <a href="/privacy">Politique et Confidentialité</a><br>
     © 2025 westpistards
   </footer>
-  <!-- Script pour la boucle continue de la bannière -->
+  <!-- Script Option D : duplication x3 pour une boucle ultra fluide -->
   <script>
     document.addEventListener('DOMContentLoaded', function () {{
       const el = document.querySelector('[data-marquee]');
@@ -240,13 +240,15 @@ def PAGE(inner_html):
       const txt = (el.textContent || '').trim();
       if (!txt) return;
 
-      const sep = ' \u00A0\u00A0\u00B7\u00A0\u00A0 ';
+      const sep = ' \u00A0\u00A0\u00B7\u00A0\u00A0 '; // espaces insécables + point médian
+      // 3 copies du message pour un flux continu sans “trou”
       el.textContent = '';
-      el.insertAdjacentText('beforeend', txt + sep + txt);
+      el.insertAdjacentText('beforeend', txt + sep + txt + sep + txt);
 
       el.dataset.marqueeInitialized = '1';
     }});
   </script>
+
 
 
 

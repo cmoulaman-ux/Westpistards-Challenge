@@ -1170,18 +1170,18 @@ body{ line-height:1.55; }
 .marquee__track {
   display: inline-block;
   will-change: transform;
-  animation: marquee-scroll var(--marquee-duration, 20s) linear infinite;
-  padding-left: 100%; /* lance le ruban de droite à gauche */
+  animation: marquee-scroll var(--marquee-duration, 22s) linear infinite;
+  /* (Option D) pas de padding-left ici */
 }
 
-/* Animation continue (le ruban contient le texte en double) */
 @keyframes marquee-scroll {
   0%   { transform: translateX(0); }
-  100% { transform: translateX(-50%); } /* 50% = une longueur de texte puisqu’on le double */
+  /* Avec 3 copies du texte, on décale d’un “bloc” = 1/3 de la largeur totale */
+  100% { transform: translateX(-33.333%); }
 }
 
-/* Respecte les préférences d’accessibilité */
 @media (prefers-reduced-motion: reduce) {
-  .marquee__track { animation: none; transform: none; padding-left: 0; }
+  .marquee__track { animation: none; transform: none; }
 }
+
 
