@@ -1247,3 +1247,21 @@ body{ line-height:1.55; }
   }
 }
 
+/* Badges statut — couleurs */
+.badge.pending {            /* "En attente" → jaune */
+  background: #FFD54F;
+  color: #3b2f00;
+}
+
+/* "Inactif" (selon ta classe actuelle) */
+.badge.inactive {
+  background: #8B5CF6;      /* violet */
+  color: #fff;
+}
+
+/* Au cas où certains badges portent la classe basée sur le statut brut "superseded" */
+.badge.superseded {
+  background: #8B5CF6;
+  color: #fff;
+}
+

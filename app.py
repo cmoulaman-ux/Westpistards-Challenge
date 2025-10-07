@@ -896,9 +896,26 @@ def admin_time_approve(time_id):
     e = db.session.get(TimeEntry, time_id)
     if not e:
         return PAGE("<h1>Erreur</h1><p class='muted'>Chrono introuvable.</p>"), 404
+
+    # 1) Valider ce chrono
     e.status = "approved"
+
+    # 2) Auto-inactiver (superseded) les autres chronos validés
+    db.session.flush()  # s'assure que e.id est connu
+    (
+        db.session.query(TimeEntry)
+        .filter(
+            TimeEntry.round_id == e.round_id,
+            TimeEntry.user_id == e.user_id,
+            TimeEntry.status == "approved",
+            TimeEntry.id != e.id,
+        )
+        .update({TimeEntry.status: "superseded"}, synchronize_session=False)
+    )
+
     db.session.commit()
     return redirect(url_for("admin_times"))
+
 
 @app.post("/admin/times/<int:time_id>/reject")
 def admin_time_reject(time_id):
@@ -1061,7 +1078,7 @@ def profile():
             final_ms = final_time_ms(e.raw_time_ms, e.penalties)
             final_s = ms_to_str(final_ms)
             yt = f"<a href='{e.youtube_link}' target='_blank' rel='noopener'>Vidéo</a>" if e.youtube_link else "—"
-            badge = f"<span class='badge { 'approved' if e.status=='approved' else ('rejected' if e.status=='rejected' else ('inactive' if e.status=='superseded' else 'pending')) }'>{e.status}</span>"
+            badge = f"<span class='badge { 'approved' if e.status=='approved' else ('rejected' if e.status=='rejected' else ('inactif' if e.status=='superseded' else 'pending')) }'>{e.status}</span>"
             actions = (
                 f"<form method='post' action='/my/times/{e.id}/delete' "
                 "onsubmit=\"return confirm('Supprimer ce chrono ?');\" style='display:inline;'>"
