@@ -1170,7 +1170,7 @@ body{ line-height:1.55; }
 .marquee__track {
   display: inline-block;
   will-change: transform;
-  animation: marquee-scroll var(--marquee-duration, 22s) linear infinite;
+  animation: marquee-scroll var(--marquee-duration, 30s) linear infinite;
   /* (Option D) pas de padding-left ici */
 }
 
