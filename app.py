@@ -497,7 +497,13 @@ def index():
       {banner_html}
 
       <section class="card">
-        <h2>Manches ouvertes</h2>
+        <div class="row" style="justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:8px;">
+          <h2 style="margin:0;">Manches ouvertes</h2>
+          <a class="btn outline" href="/trace/download" title="Télécharger le tracé">
+            <span class="i">⬇️</span> Télécharger le tracé
+          </a>
+        </div>
+
         {open_list_html}
       </section>
 
