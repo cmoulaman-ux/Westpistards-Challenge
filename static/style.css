@@ -1214,3 +1214,36 @@ body{ line-height:1.55; }
   .banner .marquee__track { transform: none !important; }
 }
 
+/* --- Taille confort pour le bandeau d'annonce (haut) --- */
+:root {
+  /* ajuste ces 2 valeurs pour jouer sur la taille du bandeau */
+  --banner-font-size: clamp(15px, 1.8vw, 20px);
+  --banner-padding-y: 10px; /* ex : 12px ou 14px si tu veux plus haut */
+}
+
+.banner .marquee {
+  padding: var(--banner-padding-y) 0;
+  min-height: calc(var(--banner-font-size) * 1.6 + var(--banner-padding-y) * 2);
+}
+
+.banner .marquee__track {
+  font-size: var(--banner-font-size);
+  line-height: 1.6; /* évite l'effet “écrasé” */
+}
+
+/* Optionnel : un peu plus de fondu sur les bords si le bandeau grandit */
+@media (min-width: 601px) {
+  .banner .marquee {
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 28px, #000 calc(100% - 28px), transparent);
+    mask-image: linear-gradient(to right, transparent, #000 28px, #000 calc(100% - 28px), transparent);
+  }
+}
+
+/* Mobile : garde une hauteur agréable sans écraser le texte */
+@media (max-width: 600px) {
+  :root {
+    --banner-font-size: clamp(14px, 4vw, 18px);
+    --banner-padding-y: 8px;
+  }
+}
+
