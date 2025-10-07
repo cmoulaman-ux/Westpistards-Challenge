@@ -231,6 +231,25 @@ def PAGE(inner_html):
     <a href="/privacy">Politique et Confidentialité</a><br>
     © 2025 westpistards
   </footer>
+  <!-- Script pour la boucle continue de la bannière -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {{
+      const el = document.querySelector('[data-marquee]');
+      if (!el || el.dataset.marqueeInitialized === '1') return;
+
+      const txt = (el.textContent || '').trim();
+      if (!txt) return;
+
+      const sep = ' \u00A0\u00A0\u00B7\u00A0\u00A0 ';
+      el.textContent = '';
+      el.insertAdjacentText('beforeend', txt + sep + txt);
+
+      el.dataset.marqueeInitialized = '1';
+    }});
+  </script>
+
+
+
 </body>
 </html>
 """
@@ -374,10 +393,12 @@ def index():
             banner_html = f"""
             <div class="banner" aria-live="polite">
               <div class="marquee" role="marquee" aria-label="Annonce défilante">
-                <span class="marquee__chunk">{msg}</span>
-                <span class="marquee__chunk" aria-hidden="true">{msg}</span>
+                <div class="marquee__track" data-marquee>
+                  {msg}
+                </div>
               </div>
             </div>
+
             """
 
 

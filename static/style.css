@@ -1161,4 +1161,27 @@ body{ line-height:1.55; }
   border: 1px solid #e5e7eb;
 }
 
+.marquee {
+  overflow: hidden;
+  white-space: nowrap;
+  position: relative;
+}
+
+.marquee__track {
+  display: inline-block;
+  will-change: transform;
+  animation: marquee-scroll var(--marquee-duration, 20s) linear infinite;
+  padding-left: 100%; /* lance le ruban de droite à gauche */
+}
+
+/* Animation continue (le ruban contient le texte en double) */
+@keyframes marquee-scroll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); } /* 50% = une longueur de texte puisqu’on le double */
+}
+
+/* Respecte les préférences d’accessibilité */
+@media (prefers-reduced-motion: reduce) {
+  .marquee__track { animation: none; transform: none; padding-left: 0; }
+}
 
