@@ -1210,13 +1210,18 @@ def round_leaderboard(round_id):
         """
 
     # --- Bouton "Voir le plan" (si un plan existe) ---
+    # --- Boutons Plan (si un plan existe) ---
     plan_btn = ""
     if getattr(r, "plan_data", None):
         plan_btn = (
-            f"<a class='btn outline' href='/rounds/{r.id}/plan' target='_blank' "
-            f"rel='noopener' title='Ouvrir le plan dans un nouvel onglet'>"
+            f"<div class='row' style='gap:8px;'>"
+            f"<a class='btn outline' href='/rounds/{r.id}/plan' target='_blank' rel='noopener' title='Ouvrir le plan dans un nouvel onglet'>"
             f"<span class='i'>🖼️</span> Voir le plan</a>"
+            f"<a class='btn' href='/rounds/{r.id}/plan?dl=1' title='Télécharger le plan'>"
+            f"<span class='i'>⬇️</span> Télécharger</a>"
+            f"</div>"
         )
+
 
     heading_html = f"""
       <div class="row" style="justify-content:space-between; align-items:center; gap:12px; margin-bottom:8px;">
@@ -1529,11 +1534,13 @@ def round_plan(round_id):
     r = db.session.get(Round, round_id)
     if not r or not getattr(r, "plan_data", None):
         return PAGE("<h1>Plan</h1><p class='muted'>Aucun plan pour cette manche.</p>")
+    disposition = "attachment" if request.args.get("dl") else "inline"
     return Response(
         r.plan_data,
         mimetype=(r.plan_mime or "image/png"),
-        headers={"Content-Disposition": f"inline; filename=\"{r.plan_name or f'plan_{round_id}'}\""}
+        headers={"Content-Disposition": f"{disposition}; filename=\"{r.plan_name or f'plan_{round_id}'}\""}
     )
+
 
 
 
