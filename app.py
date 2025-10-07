@@ -395,7 +395,7 @@ def index():
             banner_html = f"""
             <div class="banner" aria-live="polite">
               <div class="marquee" role="marquee" aria-label="Annonce défilante">
-              <div class="marquee-track" style="animation-duration: 20s;">
+              <div class="marquee-track" style="animation-duration: 10s;">
                   {msg}
                 </div>
               </div>
