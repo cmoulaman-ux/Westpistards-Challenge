@@ -231,23 +231,84 @@ def PAGE(inner_html):
     <a href="/privacy">Politique et Confidentialité</a><br>
     © 2025 westpistards
   </footer>
-  <!-- Script Option D : duplication x3 pour une boucle ultra fluide -->
+  <!-- Bandeau d'annonce (haut) : défile & pause au centre -->
   <script>
     document.addEventListener('DOMContentLoaded', function () {{
-      const el = document.querySelector('[data-marquee]');
-      if (!el || el.dataset.marqueeInitialized === '1') return;
+      // Respect des préférences d'accessibilité
+      if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {{
+        return;
+      }}
 
-      const txt = (el.textContent || '').trim();
-      if (!txt) return;
+      const track = document.querySelector('.banner .marquee [data-marquee]');
+      if (!track) return;
 
-      const sep = ' \u00A0\u00A0\u00B7\u00A0\u00A0 '; // espaces insécables + point médian
-      // 3 copies du message pour un flux continu sans “trou”
-      el.textContent = '';
-      el.insertAdjacentText('beforeend', txt + sep + txt + sep + txt);
+      const container = track.closest('.marquee') || track.parentElement;
 
-      el.dataset.marqueeInitialized = '1';
+      function setupAnimation() {{
+        // Annule toute anim en cours (resize, re-init)
+        track.getAnimations && track.getAnimations().forEach(a => a.cancel());
+
+        // Mesures
+        const W = container.clientWidth;
+        const T = track.scrollWidth;
+
+        // Si le texte tient, on le centre statiquement
+        if (!W || !T || T <= W) {{
+          track.style.transform = 'translateX(' + ((W - T) / 2) + 'px)';
+          return;
+        }}
+
+        // Positions (px)
+        const startX  = W;                 // totalement hors-champ à droite
+        const centerX = (W - T) / 2;       // parfaitement centré
+        const endX   = -T;                 // hors-champ à gauche
+
+        // Vitesse constante (px/s) et pause au centre (ms)
+        const SPEED_PX_PER_SEC = 110;      // ajuste si besoin (plus grand = plus vite)
+        const PAUSE_MS = 1800;             // ~1.8s de pause
+
+        const d1 = startX - centerX;       // distance jusqu'au centre
+        const d2 = centerX - endX;         // distance jusqu'à la sortie gauche
+        const t1 = d1 / SPEED_PX_PER_SEC;  // en secondes
+        const t2 = d2 / SPEED_PX_PER_SEC;  // en secondes
+        const pause = PAUSE_MS / 1000;
+
+        const total = t1 + pause + t2;
+
+        // Keyframes avec pause au centre (même transform sur deux offsets)
+        const kf = [
+          {{ transform: 'translateX(' + startX  + 'px)' }},
+          {{ transform: 'translateX(' + centerX + 'px)', offset: (t1 / total) }},
+          {{ transform: 'translateX(' + centerX + 'px)', offset: ((t1 + pause) / total) }},
+          {{ transform: 'translateX(' + endX    + 'px)' }}
+        ];
+
+        const anim = track.animate(kf, {{
+          duration: total * 1000,
+          iterations: Infinity,
+          easing: 'linear'
+        }});
+
+        // Pour Safari : applique immédiatement la 1re frame
+        track.style.transform = 'translateX(' + startX + 'px)';
+      }}
+
+      // Initialise une fois les polices chargées (mesures fiables)
+      if (document.fonts && document.fonts.ready) {{
+        document.fonts.ready.then(setupAnimation);
+      }} else {{
+        setTimeout(setupAnimation, 50);
+      }}
+
+      // Réadapte sur resize (debounce léger)
+      let to = null;
+      window.addEventListener('resize', function () {{
+        clearTimeout(to);
+        to = setTimeout(setupAnimation, 150);
+      }});
     }});
   </script>
+
 
 
 

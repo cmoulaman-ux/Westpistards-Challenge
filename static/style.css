@@ -1184,4 +1184,33 @@ body{ line-height:1.55; }
   .marquee__track { animation: none; transform: none; }
 }
 
+/* --- Bandeau d'annonce (haut) : défile & pause au centre --- */
+.banner .marquee {
+  position: relative;
+  overflow: hidden;
+  white-space: nowrap;
+  padding: 6px 0;            /* un peu d'air vertical */
+  /* léger fondu sur les bords pour entrées/sorties douces */
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 24px, #000 calc(100% - 24px), transparent);
+  mask-image: linear-gradient(to right, transparent, #000 24px, #000 calc(100% - 24px), transparent);
+}
+
+.banner .marquee__track {
+  display: inline-block;
+  will-change: transform;
+  /* neutralise l'ancienne animation du bandeau du haut seulement */
+  animation: none !important;
+  transform: translateX(0);
+}
+
+@media (max-width: 600px) {
+  .banner .marquee {
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 16px, #000 calc(100% - 16px), transparent);
+    mask-image: linear-gradient(to right, transparent, #000 16px, #000 calc(100% - 16px), transparent);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .banner .marquee__track { transform: none !important; }
+}
 
