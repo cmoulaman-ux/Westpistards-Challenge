@@ -696,14 +696,16 @@ def admin_rounds():
         close_info = ""
         if hasattr(r, "closes_at") and r.closes_at:
             close_info = f" &middot; <span class='muted'>clôture: {r.closes_at.strftime('%d/%m/%Y %H:%M')}</span>"
+        view_btn = f"<a class='icon-btn' href='/rounds/{r.id}/plan' target='_blank' title='Voir l’image du plan'><span class='i'>🖼️</span></a>" if getattr(r, "plan_data", None) else ""
         return f"""
         <li class="card">
           <div class="row" style="justify-content:space-between;">
             <div><strong>{r.name}</strong> &mdash; <span class="muted">{status_label}</span>{close_info}</div>
             <div class="row">
-            <a class="icon-btn green" href="/admin/rounds/{r.id}/export.csv" title="Télécharger CSV" aria-label="Télécharger CSV">
-              <span class="i">⬇️</span>
-            </a>
+              {view_btn}
+              <a class="icon-btn green" href="/admin/rounds/{r.id}/export.csv" title="Télécharger CSV" aria-label="Télécharger CSV">
+                <span class="i">⬇️</span>
+              </a>
               <form method="post" action="/admin/rounds/{r.id}/close">
                 <button class="btn outline" {'disabled' if r.status=='closed' else ''} type="submit">Clôturer</button>
               </form>
@@ -717,6 +719,7 @@ def admin_rounds():
           </div>
         </li>
         """
+
 
     items = "".join(row_html(r) for r in rounds) or "<p class='muted'>Aucune manche pour l’instant.</p>"
 
@@ -1188,6 +1191,16 @@ def round_leaderboard(round_id):
         }})();
         </script>
         """
+    # --- Plan de la manche (image publique) ---
+    plan_html = ""
+    if getattr(r, "plan_data", None):
+        plan_html = f"""
+        <figure class="card" style="margin-bottom:16px;">
+          <img src="/rounds/{r.id}/plan" alt="Plan de la manche" style="max-width:100%; height:auto; display:block; margin:0 auto;">
+          <figcaption class="muted" style="text-align:center; margin-top:6px;">Plan de la manche</figcaption>
+        </figure>
+        """
+
 
     try:
         # On ne prend que les chronos VALIDÉS
@@ -1199,7 +1212,8 @@ def round_leaderboard(round_id):
         )
 
         if not entries:
-            return PAGE(f"<h1>{r.name}</h1>{countdown_html}<p class='muted'>Aucun chrono validé pour le moment.</p>")
+            return PAGE(f"<h1>{r.name}</h1>{countdown_html}{plan_html}<p class='muted'>Aucun chrono validé pour le moment.</p>")
+
 
         # Sécuriser le calcul du final
         safe_entries, finals = [], []
@@ -1213,8 +1227,9 @@ def round_leaderboard(round_id):
             except Exception:
                 continue
 
-        if not safe_entries:
-            return PAGE(f"<h1>{r.name}</h1>{countdown_html}<p class='muted'>Aucun chrono exploitable.</p>")
+        if not entries:
+            return PAGE(f"<h1>{r.name}</h1>{countdown_html}{plan_html}<p class='muted'>Aucun chrono validé pour le moment.</p>")
+
 
         best = min(finals) if finals else 0
 
@@ -1253,6 +1268,7 @@ def round_leaderboard(round_id):
         return PAGE(f"""
           <h1>{r.name}</h1>
           {countdown_html}
+          {plan_html}
           {table}
         """)
 
