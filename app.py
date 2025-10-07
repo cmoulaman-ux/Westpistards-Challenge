@@ -5,6 +5,8 @@ from flask_sqlalchemy import SQLAlchemy
 import csv, io
 from flask import Response
 from flask import send_from_directory
+from werkzeug.utils import secure_filename
+
 
 
 
@@ -672,9 +674,20 @@ def admin_rounds():
         if hasattr(Round, "closes_at"):
             r.closes_at = closes_at_dt
 
+        f = request.files.get("plan")
+        if f and f.filename:
+            if (f.mimetype or "").startswith("image/"):
+                data = f.read()
+                r.plan_data = data
+                r.plan_mime = f.mimetype
+                r.plan_name = secure_filename(f.filename)
+            else:
+                return PAGE("<h1>Admin &mdash; Manches</h1><p class='muted'>Seules les images sont acceptées (PNG/JPG).</p>"), 400
+
         db.session.add(r)
         db.session.commit()
         return redirect(url_for("admin_rounds"))
+
 
     rounds = Round.query.order_by(Round.created_at.desc()).all()
 
@@ -709,15 +722,19 @@ def admin_rounds():
 
     return PAGE(f"""
       <h1>Admin &mdash; Manches</h1>
-      <form method="post" class="form">
+      <form method="post" class="form" enctype="multipart/form-data">
         <label>Nom de la manche
           <input type="text" name="name" placeholder="Ex: Manche 1 — Circuit X" required>
         </label>
         <label>Date/heure de clôture (optionnel)
           <input type="datetime-local" name="closes_at">
         </label>
+        <label>Image de la manche (PNG/JPG, optionnel)
+          <input type="file" name="plan" accept="image/*">
+        </label>
         <button class="btn" type="submit">Créer la manche</button>
       </form>
+
 
       <h2 style="margin-top:16px;">Liste</h2>
       <ul class="cards">{items}</ul>
@@ -1462,6 +1479,18 @@ def credits():
       <p>Vidéos : <a href="https://youtu.be/iFJrbnlDePs?si=5pspowwHNpqH6M7O">Dav 4780</a></p>
     """)
 
+@app.get("/rounds/<int:round_id>/plan")
+def round_plan(round_id):
+    if not db:
+        return PAGE("<h1>Erreur</h1><p class='muted'>DB non dispo.</p>"), 500
+    r = db.session.get(Round, round_id)
+    if not r or not getattr(r, "plan_data", None):
+        return PAGE("<h1>Plan</h1><p class='muted'>Aucun plan pour cette manche.</p>")
+    return Response(
+        r.plan_data,
+        mimetype=(r.plan_mime or "image/png"),
+        headers={"Content-Disposition": f"inline; filename=\"{r.plan_name or f'plan_{round_id}'}\""}
+    )
 
 
 
