@@ -187,6 +187,7 @@ def PAGE(inner_html):
     nav_parts.append("<a href='/static/docs/Reglement_WestPistardsChallenge.pdf' target='_blank' rel='noopener'>Règlement</a>")
     nav_parts.append("<a href='/rounds'>Manches</a>")
     nav_parts.append(f"<a href='{url_for('static', filename='img/traceWP.jpg')}?v=1' target='_blank'>Tracé</a>")
+    nav_parts.append("<a href='/trace/download'>Télécharger le tracé</a>")
     nav_parts.append(
         "<a href='https://www.facebook.com/west.pistards' target='_blank' rel='noopener' title='Ouvrir notre page Facebook'>Facebook</a>"
     )
@@ -1542,6 +1543,21 @@ def round_plan(round_id):
     )
 
 
+@app.get("/trace/download")
+def trace_download():
+    # Sert l'image du tracé en téléchargement (Content-Disposition: attachment)
+    import os
+    path = os.path.join(app.static_folder or "static", "img", "traceWP.jpg")
+    try:
+        with open(path, "rb") as f:
+            data = f.read()
+    except FileNotFoundError:
+        return PAGE("<h1>Tracé</h1><p class='muted'>Image introuvable.</p>"), 404
+    return Response(
+        data,
+        mimetype="image/jpeg",
+        headers={"Content-Disposition": 'attachment; filename="traceWP.jpg"'}
+    )
 
 
 
