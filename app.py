@@ -471,11 +471,12 @@ def index():
     <section class="bg-hero">
       <div class="bg-hero-yt">
         <iframe
-          src="https://www.youtube.com/embed/iFJrbnlDePs?autoplay=1&mute=1&controls=0&rel=0&loop=1&playlist=iFJrbnlDePs&modestbranding=1&playsinline=1&enablejsapi=1&origin=https://westpistards-challenge.onrender.com"
+          src="https://www.youtube.com/embed/videoseries?list=PLPm1klG-O5duFLlins-RZ4E1g3NOYH9qU&autoplay=1&mute=1&controls=0&rel=0&loop=1&playlist=PLPm1klG-O5duFLlins-RZ4E1g3NOYH9qU&modestbranding=1&playsinline=1&enablejsapi=1&origin=https://westpistards-challenge.onrender.com"
           title="Background video"
           allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
           frameborder="0">
         </iframe>
+
       </div>
       <div class="bg-hero-overlay"></div>
       <div class="hero-content">
