@@ -1191,15 +1191,23 @@ def round_leaderboard(round_id):
         }})();
         </script>
         """
-    # --- Plan de la manche (image publique) ---
-    plan_html = ""
+
+    # --- Bouton "Voir le plan" (si un plan existe) ---
+    plan_btn = ""
     if getattr(r, "plan_data", None):
-        plan_html = f"""
-        <figure class="card" style="margin-bottom:16px;">
-          <img src="/rounds/{r.id}/plan" alt="Plan de la manche" style="max-width:100%; height:auto; display:block; margin:0 auto;">
-          <figcaption class="muted" style="text-align:center; margin-top:6px;">Plan de la manche</figcaption>
-        </figure>
-        """
+        plan_btn = (
+            f"<a class='btn outline' href='/rounds/{r.id}/plan' target='_blank' "
+            f"rel='noopener' title='Ouvrir le plan dans un nouvel onglet'>"
+            f"<span class='i'>🖼️</span> Voir le plan</a>"
+        )
+
+    heading_html = f"""
+      <div class="row" style="justify-content:space-between; align-items:center; gap:12px; margin-bottom:8px;">
+        <h1 style="margin:0;">{r.name}</h1>
+        {plan_btn}
+      </div>
+    """
+
 
 
     try:
@@ -1211,8 +1219,9 @@ def round_leaderboard(round_id):
             .all()
         )
 
+       
         if not entries:
-            return PAGE(f"<h1>{r.name}</h1>{countdown_html}{plan_html}<p class='muted'>Aucun chrono validé pour le moment.</p>")
+            return PAGE(f"{heading_html}{countdown_html}<p class='muted'>Aucun chrono validé pour le moment.</p>")
 
 
         # Sécuriser le calcul du final
@@ -1228,7 +1237,8 @@ def round_leaderboard(round_id):
                 continue
 
         if not entries:
-            return PAGE(f"<h1>{r.name}</h1>{countdown_html}{plan_html}<p class='muted'>Aucun chrono validé pour le moment.</p>")
+            return PAGE(f"{heading_html}{countdown_html}<p class='muted'>Aucun chrono validé pour le moment.</p>")
+
 
 
         best = min(finals) if finals else 0
@@ -1267,8 +1277,8 @@ def round_leaderboard(round_id):
 
         return PAGE(f"""
           <h1>{r.name}</h1>
+          {heading_html}
           {countdown_html}
-          {plan_html}
           {table}
         """)
 
