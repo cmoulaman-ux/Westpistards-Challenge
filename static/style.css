@@ -1261,3 +1261,12 @@ body{ line-height:1.55; }
   color: #fff;
 }
 
+/* Force violet pour les chronos inactifs/supplantés */
+span.badge.inactive,
+span.badge.superseded,
+.badge[data-status="inactive"],
+.badge[data-status="superseded"] {
+  background: #8B5CF6 !important;
+  color: #fff !important;
+}
+
