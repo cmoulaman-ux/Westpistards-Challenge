@@ -1149,7 +1149,7 @@ body{ line-height:1.55; }
 
   /* Galerie défilante du bas */
   .marquee-photos { --h: 130px; }
-  .marquee-photos .marquee-track { animation-duration: 10s; } /* vitesse modérée */
+  .marquee-photos .marquee-track { animation-duration: 20s; } /* vitesse modérée */
 
   /* Bandeau photo (si encore utilisé quelque part) */
   .bg-photo-bottom { height: 220px; }

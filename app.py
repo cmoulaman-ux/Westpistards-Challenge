@@ -395,7 +395,7 @@ def index():
             banner_html = f"""
             <div class="banner" aria-live="polite">
               <div class="marquee" role="marquee" aria-label="Annonce défilante">
-              <div class="marquee-track" style="animation-duration: 10s;">
+              <div class="marquee-track" style="animation-duration: 30s;">
                   {msg}
                 </div>
               </div>
@@ -446,7 +446,7 @@ def index():
     <!-- Bandeau photo bas de page -->
     <!-- Bandeau photos défilantes (bas de page) -->
     <section class="marquee-photos" aria-label="Photos WestPistards">
-      <div class="marquee-track">
+      <div class="marquee-track" style="animation-duration: 20s;">
         <!-- Rangée A -->
         <img src="/static/img/bottom_gallery/imageun.jpg" alt="WestPistards 1" loading="lazy">
         <img src="/static/img/bottom_gallery/imagedeux.jpg" alt="WestPistards 2" loading="lazy">
