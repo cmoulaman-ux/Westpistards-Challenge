@@ -186,7 +186,7 @@ def PAGE(inner_html):
     # Public
     nav_parts.append("<a href='/static/docs/Reglement_WestPistardsChallenge.pdf' target='_blank' rel='noopener'>Règlement</a>")
     nav_parts.append("<a href='/rounds'>Manches</a>")
-    nav_parts.append("<a href='/static/img/traceWP.png?v=1' target='_blank'>Tracé</a>")
+    nav_parts.append("<a href='/static/img/traceWP.jpg?v=1' target='_blank'>Tracé</a>")
     nav_parts.append(
         "<a href='https://www.facebook.com/west.pistards' target='_blank' rel='noopener' title='Ouvrir notre page Facebook'>Facebook</a>"
     )
