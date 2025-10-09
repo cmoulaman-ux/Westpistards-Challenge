@@ -1146,6 +1146,7 @@ def profile():
           <a class="btn" href="/admin/rounds">Admin — Manches</a>
           <a class="btn outline" href="/admin/times">Admin — Chronos</a>
           <a class="btn" href="/admin/banner">Admin — Bannière</a>
+          <a class="btn outline" href="/admin/users">Inscrits</a>
         </div>
         """
 
@@ -1584,6 +1585,106 @@ def trace_download():
         headers={"Content-Disposition": 'attachment; filename="traceWP.jpg"'}
     )
 
+@app.get("/admin/users")
+def admin_users():
+    if not db:
+        return PAGE("<h1>Admin</h1><p class='muted'>DB non dispo.</p>")
+    u = current_user()
+    if not is_admin(u):
+        return PAGE("<h1>Accès refusé</h1><p class='muted'>Réservé aux administrateurs.</p>"), 403
+
+    # Récupération des inscrits (ordre : plus récents d'abord si created_at existe)
+    users = User.query.order_by(getattr(User, "created_at", User.id).desc()).all()
+
+    def row_html(x):
+        # Champs affichés (sans email)
+        pid = x.id
+        nat = (getattr(x, "nationality", None) or "—")
+        dt = getattr(x, "created_at", None)
+        dt_h = dt.strftime("%d/%m/%Y %H:%M") if dt else "—"
+
+        # Compteurs de chronos
+        total = db.session.query(TimeEntry).filter_by(user_id=pid).count()
+        ok = db.session.query(TimeEntry).filter_by(user_id=pid, status="approved").count()
+
+        return f"""
+        <li class="card">
+          <div class="row" style="justify-content:space-between; align-items:center; gap:8px;">
+            <div>
+              <strong>Pilote #{pid}</strong>
+              &middot; <span class="muted">Nationalité&nbsp;: {nat}</span>
+              &middot; <span class="muted">Inscription&nbsp;: {dt_h}</span>
+              &middot; <span class="muted">Chronos&nbsp;: {total} (validés&nbsp;: {ok})</span>
+            </div>
+            <div class="row" style="gap:8px;">
+              <a class="btn outline" href="/admin/users/{pid}/times" title="Voir ses chronos">Voir ses chronos</a>
+            </div>
+          </div>
+        </li>
+        """
+
+    rows = "\n".join(row_html(x) for x in users) if users else "<p class='muted'>Aucun inscrit pour le moment.</p>"
+
+    return PAGE(f"""
+      <h1>Inscrits</h1>
+      <ul class="list">
+        {rows}
+      </ul>
+    """)
+
+@app.get("/admin/users/<int:user_id>/times")
+def admin_user_times(user_id):
+    if not db:
+        return PAGE("<h1>Admin</h1><p class='muted'>DB non dispo.</p>")
+    u = current_user()
+    if not is_admin(u):
+        return PAGE("<h1>Accès refusé</h1><p class='muted'>Réservé aux administrateurs.</p>"), 403
+
+    pilot = db.session.get(User, user_id)
+    if not pilot:
+        return PAGE("<h1>Inscrits</h1><p class='muted'>Pilote introuvable.</p>"), 404
+
+    items = (
+        TimeEntry.query
+        .filter_by(user_id=user_id)
+        .order_by(getattr(TimeEntry, "created_at", TimeEntry.id).desc())
+        .all()
+    )
+
+    def row_html(t):
+        # Infos minimales et robustes (pas d’email)
+        rid = getattr(t, "round_id", "—")
+        st = getattr(t, "status", "—")
+        dt = getattr(t, "created_at", None)
+        dt_h = dt.strftime("%d/%m/%Y %H:%M") if dt else "—"
+        # Libellé statut (facultatif)
+        label = ("Validé" if st == "approved" else
+                 "Rejeté" if st == "rejected" else
+                 "Inactif" if st in ("inactive", "superseded") else
+                 "En attente")
+        badge = f"<span class='badge {('approved' if st=='approved' else ('rejected' if st=='rejected' else ('inactive' if st in ('inactive','superseded') else 'pending')))}'>{label}</span>"
+
+        return f"""
+        <li class="card">
+          <div class="row" style="justify-content:space-between; align-items:center; gap:8px;">
+            <div>
+              <strong>Round #{rid}</strong>
+              &middot; {badge}
+              &middot; <span class="muted">{dt_h}</span>
+            </div>
+          </div>
+        </li>
+        """
+
+    rows = "\n".join(row_html(t) for t in items) if items else "<p class='muted'>Aucun chrono pour ce pilote.</p>"
+
+    return PAGE(f"""
+      <h1>Chronos – Pilote #{pilot.id}</h1>
+      <p><a class="btn outline" href="/admin/users">&larr; Retour aux inscrits</a></p>
+      <ul class="list">
+        {rows}
+      </ul>
+    """)
 
 
 if __name__ == "__main__":
