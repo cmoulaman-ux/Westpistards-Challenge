@@ -1615,8 +1615,12 @@ def admin_users():
             </div>
             <div class="row" style="gap:8px;">
               <a class="btn outline" href="/admin/users/{pid}/times" title="Voir ses chronos">Voir ses chronos</a>
-              <form method="post" action="/admin/users/{pid}/delete" onsubmit="return confirm('Supprimer définitivement ce profil et tous ses chronos ?');" style="display:inline;">
-                <button class="btn danger" type="submit">Supprimer le profil</button>
+              <form method="post" action="/admin/users/{pid}/delete"
+                    onsubmit="return confirm('Supprimer définitivement ce profil et tous ses chronos ?');"
+                    style="display:inline;">
+                <button class="icon-btn danger" type="submit" title="Supprimer le profil" aria-label="Supprimer le profil">
+                  <span class="i">✖</span>
+                </button>
               </form>
             </div>
           </div>
