@@ -109,12 +109,14 @@ class LoginEvent(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), index=True, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True, nullable=False)
-    ua = db.Column(db.String(200))      # user-agent tronqué (facultatif)
-    ua_type = db.Column(db.String(16))  # 'mobile' ou 'desktop' (facultatif)
+    ua = db.Column(db.String(200))
+    ua_type = db.Column(db.String(16))  # 'mobile' ou 'desktop'
+
 
 def _ua_type(ua: str) -> str:
     ua = (ua or "").lower()
     return "mobile" if ("mobi" in ua or "android" in ua or "iphone" in ua) else "desktop"
+
 
 def log_login(u):
     if not (db and u):
@@ -126,6 +128,7 @@ def log_login(u):
         db.session.commit()
     except Exception:
         db.session.rollback()
+
 
 # Emails admin (en minuscules)
 ADMIN_EMAILS = {
@@ -1891,6 +1894,15 @@ def admin_stats():
         </ul>
       </section>
     """)
+
+@app.get("/__migrate")
+def __migrate():
+    if not db:
+        return "DB non dispo", 500
+    with app.app_context():
+        db.create_all()
+    return "ok", 200
+
 
 
 if __name__ == "__main__":
