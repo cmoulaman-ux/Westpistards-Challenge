@@ -112,6 +112,20 @@ class LoginEvent(db.Model):
     ua = db.Column(db.String(200))      # user-agent tronqué (facultatif)
     ua_type = db.Column(db.String(16))  # 'mobile' ou 'desktop' (facultatif)
 
+def _ua_type(ua: str) -> str:
+    ua = (ua or "").lower()
+    return "mobile" if ("mobi" in ua or "android" in ua or "iphone" in ua) else "desktop"
+
+def log_login(u):
+    if not (db and u):
+        return
+    try:
+        ua = request.headers.get("User-Agent", "")
+        ev = LoginEvent(user_id=u.id, ua=(ua or "")[:200], ua_type=_ua_type(ua))
+        db.session.add(ev)
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
 
 # Emails admin (en minuscules)
 ADMIN_EMAILS = {
@@ -205,20 +219,7 @@ def ms_to_str(ms: int) -> str:
 def final_time_ms(raw_ms: int, penalties: int) -> int:
     return int(raw_ms) + max(0, int(penalties or 0)) * 1000
 
-def _ua_type(ua: str) -> str:
-    ua = (ua or "").lower()
-    return "mobile" if ("mobi" in ua or "android" in ua or "iphone" in ua) else "desktop"
 
-def log_login(u):
-    if not (db and u):
-        return
-    try:
-        ua = request.headers.get("User-Agent", "")
-        ev = LoginEvent(user_id=u.id, ua=(ua or "")[:200], ua_type=_ua_type(ua))
-        db.session.add(ev)
-        db.session.commit()
-    except Exception:
-        db.session.rollback()
 
 # --- Layout inline réutilisable ---
 def PAGE(inner_html):
