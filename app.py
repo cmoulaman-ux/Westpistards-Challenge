@@ -104,7 +104,12 @@ class Announcement(db.Model):
 
 
 
-ADMIN_EMAILS = {'renaud.debry@ecf-cerca.fr', 'westpistards@gmail.com', 'c.moulaman@gmail.com'}
+# Emails admin (en minuscules)
+ADMIN_EMAILS = {
+    "renaud.debry@ecf-cerca.fr",
+    "westpistards@gmail.com",
+    "c.moulaman@gmail.com",
+}
 
 # --- Helpers utilisateur ---
 def current_user():
@@ -113,8 +118,12 @@ def current_user():
     uid = session.get("user_id")
     return db.session.get(User, uid) if uid else None
 
-def is_admin(user):
-    return bool(user and user.is_admin)
+def is_admin(u):
+    if not u:
+        return False
+    email = (u.email or "").strip().lower()
+    # admin si le flag DB est vrai OU si l’email est dans la liste
+    return bool(getattr(u, "is_admin", False) or email in ADMIN_EMAILS)
 
 def display_name(user):
     return (user.pseudo or user.email) if user else "—"
