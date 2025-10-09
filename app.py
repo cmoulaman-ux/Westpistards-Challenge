@@ -104,7 +104,7 @@ class Announcement(db.Model):
 
 
 
-ADMIN_EMAILS = {'renaud.debry@ecf-cerca.fr', 'westpistards@gmail.com'}
+ADMIN_EMAILS = {'renaud.debry@ecf-cerca.fr', 'westpistards@gmail.com', 'c.moulaman@gmail.com'}
 
 # --- Helpers utilisateur ---
 def current_user():
