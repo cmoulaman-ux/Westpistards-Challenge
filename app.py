@@ -1593,18 +1593,14 @@ def admin_users():
     if not is_admin(u):
         return PAGE("<h1>Accès refusé</h1><p class='muted'>Réservé aux administrateurs.</p>"), 403
 
-    # Récupération des inscrits (ordre : plus récents d'abord si created_at existe)
     users = User.query.order_by(getattr(User, "created_at", User.id).desc()).all()
 
     def row_html(x):
-        # Champs affichés (sans email)
         pid = x.id
         pseudo = (getattr(x, "pseudo", None) or f"Pilote #{pid}")
         nat = (getattr(x, "nationality", None) or "—")
         dt = getattr(x, "created_at", None)
         dt_h = dt.strftime("%d/%m/%Y %H:%M") if dt else "—"
-
-        # Compteurs de chronos
         total = db.session.query(TimeEntry).filter_by(user_id=pid).count()
         ok = db.session.query(TimeEntry).filter_by(user_id=pid, status="approved").count()
 
@@ -1619,6 +1615,9 @@ def admin_users():
             </div>
             <div class="row" style="gap:8px;">
               <a class="btn outline" href="/admin/users/{pid}/times" title="Voir ses chronos">Voir ses chronos</a>
+              <form method="post" action="/admin/users/{pid}/delete" onsubmit="return confirm('Supprimer définitivement ce profil et tous ses chronos ?');" style="display:inline;">
+                <button class="btn danger" type="submit">Supprimer le profil</button>
+              </form>
             </div>
           </div>
         </li>
@@ -1632,6 +1631,7 @@ def admin_users():
         {rows}
       </ul>
     """)
+
 
 @app.get("/admin/users/<int:user_id>/times")
 def admin_user_times(user_id):
@@ -1709,6 +1709,7 @@ def admin_user_delete(user_id):
         return PAGE("<h1>Erreur</h1><p class='muted'>Suppression impossible pour le moment.</p>"), 500
 
     return redirect(url_for("admin_users"))
+
 
 
 if __name__ == "__main__":
