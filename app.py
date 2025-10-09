@@ -6,6 +6,8 @@ import csv, io
 from flask import Response
 from flask import send_from_directory
 from werkzeug.utils import secure_filename
+from datetime import datetime, timedelta
+
 
 
 
@@ -338,6 +340,28 @@ def PAGE(inner_html):
 </html>
 """
 
+class LoginEvent(db.Model):
+    __tablename__ = "login_event"
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), index=True, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True, nullable=False)
+    ua = db.Column(db.String(200))      # user-agent tronqué (facultatif)
+    ua_type = db.Column(db.String(16))  # 'mobile' ou 'desktop' (facultatif)
+
+def _ua_type(ua: str) -> str:
+    ua = (ua or "").lower()
+    return "mobile" if ("mobi" in ua or "android" in ua or "iphone" in ua) else "desktop"
+
+def log_login(u):
+    if not (db and u):
+        return
+    try:
+        ua = request.headers.get("User-Agent", "")
+        ev = LoginEvent(user_id=u.id, ua=(ua or "")[:200], ua_type=_ua_type(ua))
+        db.session.add(ev)
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
 
 
 
@@ -594,6 +618,7 @@ def register():
             db.session.commit()
 
         session["user_id"] = u.id
+        log_login(u)
         return redirect(url_for("profile"))
 
     # GET -> formulaire
@@ -1189,6 +1214,8 @@ def profile():
           <a class="btn outline" href="/admin/times">Admin — Chronos</a>
           <a class="btn" href="/admin/banner">Admin — Bannière</a>
           <a class="btn outline" href="/admin/users">Inscrits</a>
+          <a class="btn outline" href="/admin/stats">📈 Stats du site</a>
+
         </div>
         """
 
@@ -1756,6 +1783,114 @@ def admin_user_delete(user_id):
 
     return redirect(url_for("admin_users"))
 
+@app.get("/admin/stats")
+def admin_stats():
+    if not db:
+        return PAGE("<h1>Admin</h1><p class='muted'>DB non dispo.</p>")
+    u = current_user()
+    if not is_admin(u):
+        return PAGE("<h1>Accès refusé</h1><p class='muted'>Réservé aux administrateurs.</p>"), 403
+
+    # Fenêtres temporelles
+    now = datetime.utcnow()
+    t5m  = now - timedelta(minutes=5)
+    t1d  = now - timedelta(days=1)
+    t7d  = now - timedelta(days=7)
+    t30d = now - timedelta(days=30)
+
+    # Comptes distincts par période
+    def distinct_users_since(dt):
+        return (db.session.query(LoginEvent.user_id)
+                .filter(LoginEvent.created_at >= dt)
+                .distinct()
+                .count())
+
+    dau = distinct_users_since(t1d)
+    wau = distinct_users_since(t7d)
+    mau = distinct_users_since(t30d)
+    now_active = distinct_users_since(t5m)
+
+    # Total inscrits
+    total_users = db.session.query(User.id).count()
+
+    # Dernières connexions (10)
+    last10 = (
+        db.session.query(LoginEvent, User)
+        .join(User, User.id == LoginEvent.user_id)
+        .order_by(LoginEvent.created_at.desc())
+        .limit(10)
+        .all()
+    )
+
+    # Connexions par jour (7 derniers jours) — utilisateurs DISTINCTS par jour
+    # On bucketise côté Python pour rester portable.
+    since7 = (
+        db.session.query(LoginEvent)
+        .filter(LoginEvent.created_at >= t7d)
+        .order_by(LoginEvent.created_at.asc())
+        .all()
+    )
+    buckets = {}
+    for ev in since7:
+        d = ev.created_at.date().isoformat()
+        buckets.setdefault(d, set()).add(ev.user_id)
+    # Assure toutes les dates (de J-6 à J)
+    days = [(now.date() - timedelta(days=i)).isoformat() for i in range(6, -1, -1)]
+    per_day = [(d, len(buckets.get(d, set()))) for d in days]
+
+    # Petites cartes
+    tiles = f"""
+    <ul class="list" style="display:grid; grid-template-columns: repeat(auto-fit,minmax(180px,1fr)); gap:12px;">
+      <li class="card"><div><div class="muted">Inscrits</div><div style="font-size:24px;font-weight:700;">{total_users}</div></div></li>
+      <li class="card"><div><div class="muted">Actifs (5 min)</div><div style="font-size:24px;font-weight:700;">{now_active}</div></div></li>
+      <li class="card"><div><div class="muted">Actifs 1 jour (DAU)</div><div style="font-size:24px;font-weight:700;">{dau}</div></div></li>
+      <li class="card"><div><div class="muted">Actifs 7 jours (WAU)</div><div style="font-size:24px;font-weight:700;">{wau}</div></div></li>
+      <li class="card"><div><div class="muted">Actifs 30 jours (MAU)</div><div style="font-size:24px;font-weight:700;">{mau}</div></div></li>
+    </ul>
+    """
+
+    # Mini “bar chart” en HTML (7 jours)
+    bars = "".join(
+        f"<div style='display:flex;align-items:flex-end;gap:4px;'><div class='muted' style='width:46px;font-size:12px;'>{d[5:]}</div><div title='{c} connexions distinctes' style='height:{6 + c*8}px; width:24px; background:#eee; border:1px solid #ddd;'></div><div style='font-size:12px;'>{c}</div></div>"
+        for d, c in per_day
+    )
+    chart = f"""
+    <section class="card">
+      <h2 style="margin-top:0;">Connexions distinctes — 7 derniers jours</h2>
+      <div style="display:grid; grid-template-columns: repeat(auto-fit,minmax(120px,1fr)); gap:8px; align-items:end;">
+        {bars}
+      </div>
+    </section>
+    """
+
+    # Dernières connexions
+    def row(ev_user):
+        ev, usr = ev_user
+        dt_h = ev.created_at.strftime("%d/%m/%Y %H:%M")
+        name = display_name(usr) if 'display_name' in globals() else (usr.pseudo or f"Pilote #{usr.id}")
+        kind = ev.ua_type or "—"
+        return f"""
+        <li class="card">
+          <div class="row" style="justify-content:space-between; align-items:center;">
+            <div><strong>{name}</strong> &middot; <span class="muted">{dt_h}</span></div>
+            <div class="muted">{kind}</div>
+          </div>
+        </li>
+        """
+
+    recent = "\n".join(row(x) for x in last10) or "<p class='muted'>Aucune connexion enregistrée.</p>"
+
+    return PAGE(f"""
+      <h1>Stats du site</h1>
+      {tiles}
+      {chart}
+      <section class="card">
+        <h2 style="margin-top:0;">Dernières connexions</h2>
+        <ul class="list">
+          {recent}
+        </ul>
+      </section>
+    """)
 
 
 if __name__ == "__main__":
