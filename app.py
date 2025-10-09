@@ -621,7 +621,6 @@ def register():
             db.session.commit()
 
         session["user_id"] = u.id
-        log_login(u)
         return redirect(url_for("profile"))
 
     # GET -> formulaire
@@ -658,6 +657,7 @@ def login():
                 return redirect(url_for("register"))
 
             session["user_id"] = u.id
+            log_login(u)
             return redirect(url_for("profile"))
         except Exception as e:
             return PAGE(f"<h1>Connexion</h1><p class='muted'>Erreur DB : {e}</p><p>Essaie de (re)créer les tables : <code>/__init_db?token=please-change-me</code></p>"), 500
