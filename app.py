@@ -1009,8 +1009,11 @@ def submit_time():
 
         try:
             raw_ms = parse_time_to_ms(time_input)
-        except Exception as e:
-            return PAGE(f"<h1>Soumettre un chrono</h1><p class='muted'>Format de temps invalide : {str(e)}</p>"), 400
+        except Exception:
+            # Messages d'erreur plus clairs
+            if ',' in (time_input or ''):
+                return PAGE("<h1>Soumettre un chrono</h1><p class='muted'>Utilise un <strong>point</strong> pour les millièmes : <code>1:32.543</code>.</p>"), 400
+            return PAGE("<h1>Soumettre un chrono</h1><p class='muted'>Format attendu : <strong>mm:ss.mmm</strong> (ex : <code>1:32.543</code>). Mets <strong>3 chiffres</strong> pour les millièmes.</p>"), 400
 
         try:
             pen = int(penalties)
@@ -1048,9 +1051,14 @@ def submit_time():
     html_lines.append(f"      {opts}")
     html_lines.append("    </select>")
     html_lines.append("  </label>")
-    html_lines.append("  <label>Temps (mm:ss.mmm, par ex 1:32.543)")
-    html_lines.append('    <input type="text" name="time_input" placeholder="1:23.456" required>')
-    html_lines.append("  </label>")
+    html_lines.append('  <label>')
+    html_lines.append('    <div class="row" style="align-items:baseline; gap:8px;">')
+    html_lines.append('      <span><strong>Temps officiel (mm:ss.mmm)</strong></span>')
+    html_lines.append('      <span class="badge" style="background:#eee; color:#333;">Format</span>')
+    html_lines.append('    </div>')
+    html_lines.append('    <input type="text" name="time_input" placeholder="mm:ss.mmm" required>')
+    html_lines.append('    <p class="muted" style="margin:6px 0 0;">Ex : 1:32.543 — minutes:secondes.millièmes</p>')
+    html_lines.append('  </label>')
     html_lines.append("  <label>Pénalités (1 pénalité = +1s)")
     html_lines.append('    <input type="number" name="penalties" min="0" step="1" value="0">')
     html_lines.append("  </label>")
