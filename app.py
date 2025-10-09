@@ -116,7 +116,18 @@ def current_user():
     if not db:
         return None
     uid = session.get("user_id")
-    return db.session.get(User, uid) if uid else None
+    if not uid:
+        return None
+    u = db.session.get(User, uid)
+    if not u:
+        return None
+    # Auto-élévation : si l’email est dans ADMIN_EMAILS, on pose le flag en base
+    email = (u.email or "").strip().lower()
+    if email in ADMIN_EMAILS and not getattr(u, "is_admin", False):
+        u.is_admin = True
+        db.session.commit()
+    return u
+
 
 def is_admin(u):
     if not u:
