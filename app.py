@@ -7,6 +7,8 @@ from flask import Response
 from flask import send_from_directory
 from werkzeug.utils import secure_filename
 from datetime import datetime, timedelta
+from sqlalchemy import text  # en haut du fichier si pas déjà importé
+
 
 
 
@@ -1903,7 +1905,29 @@ def __migrate():
         db.create_all()
     return "ok", 200
 
+@app.get("/__migrate_user_created_at")
+def __migrate_user_created_at():
+    if not db:
+        return "DB non dispo", 500
 
+    # 1) Ajouter la colonne si elle n'existe pas
+    with db.engine.begin() as conn:
+        cols = [row[1] for row in conn.exec_driver_sql('PRAGMA table_info("user")')]
+        if "created_at" not in cols:
+            conn.exec_driver_sql('ALTER TABLE "user" ADD COLUMN created_at DATETIME')
+
+    # 2) Renseigner une valeur pour les lignes NULL (now)
+    try:
+        missing = User.query.filter(getattr(User, "created_at") == None).all()  # noqa: E711
+        now = datetime.utcnow()
+        for u in missing:
+            u.created_at = now
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        return "Colonne ajoutée, mais mise à jour des valeurs par défaut échouée", 500
+
+    return "ok", 200
 
 if __name__ == "__main__":
     if db:
