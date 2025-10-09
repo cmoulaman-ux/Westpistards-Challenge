@@ -1599,6 +1599,7 @@ def admin_users():
     def row_html(x):
         # Champs affichés (sans email)
         pid = x.id
+        pseudo = (getattr(x, "pseudo", None) or f"Pilote #{pid}")
         nat = (getattr(x, "nationality", None) or "—")
         dt = getattr(x, "created_at", None)
         dt_h = dt.strftime("%d/%m/%Y %H:%M") if dt else "—"
@@ -1611,7 +1612,7 @@ def admin_users():
         <li class="card">
           <div class="row" style="justify-content:space-between; align-items:center; gap:8px;">
             <div>
-              <strong>Pilote #{pid}</strong>
+              <strong>{pseudo}</strong>
               &middot; <span class="muted">Nationalité&nbsp;: {nat}</span>
               &middot; <span class="muted">Inscription&nbsp;: {dt_h}</span>
               &middot; <span class="muted">Chronos&nbsp;: {total} (validés&nbsp;: {ok})</span>
@@ -1685,6 +1686,29 @@ def admin_user_times(user_id):
         {rows}
       </ul>
     """)
+
+@app.post("/admin/users/<int:user_id>/delete")
+def admin_user_delete(user_id):
+    if not db:
+        return PAGE("<h1>Admin</h1><p class='muted'>DB non dispo.</p>")
+    u = current_user()
+    if not is_admin(u):
+        return PAGE("<h1>Accès refusé</h1><p class='muted'>Réservé aux administrateurs.</p>"), 403
+
+    pilot = db.session.get(User, user_id)
+    if not pilot:
+        return PAGE("<h1>Inscrits</h1><p class='muted'>Pilote introuvable.</p>"), 404
+
+    try:
+        from sqlalchemy import delete
+        db.session.execute(delete(TimeEntry).where(TimeEntry.user_id == user_id))
+        db.session.delete(pilot)
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        return PAGE("<h1>Erreur</h1><p class='muted'>Suppression impossible pour le moment.</p>"), 500
+
+    return redirect(url_for("admin_users"))
 
 
 if __name__ == "__main__":
