@@ -1056,9 +1056,70 @@ def submit_time():
     html_lines.append('      <span><strong>Temps officiel (mm:ss.mmm)</strong></span>')
     html_lines.append('      <span class="badge" style="background:#eee; color:#333;">Format</span>')
     html_lines.append('    </div>')
-    html_lines.append('    <input type="text" name="time_input" placeholder="mm:ss.mmm" required>')
+    html_lines.append('    <input type="text" id="time_input" name="time_input" placeholder="mm:ss.mmm" inputmode="numeric" autocomplete="off" required>')
     html_lines.append('    <p class="muted" style="margin:6px 0 0;">Ex : 1:32.543 — minutes:secondes.millièmes</p>')
     html_lines.append('  </label>')
+    html_lines.append("""
+    <script>
+    (function () {
+      const input = document.getElementById('time_input');
+      if (!input) return;
+
+      // Masque de saisie : l’utilisateur ne tape que des chiffres.
+      input.addEventListener('input', function () {
+        // Garde uniquement les chiffres (colle inclus)
+        let digits = (input.value || '').replace(/\\D/g, '').slice(0, 8); // limite raisonnable
+        let out = '';
+
+        if (digits.length <= 2) {
+          // mm (partie minutes en cours de saisie)
+          out = digits;
+        } else if (digits.length <= 4) {
+          // mm:ss
+          const m = digits.slice(0, digits.length - 2) || '0';
+          const s = digits.slice(-2);
+          out = m + ':' + s;
+        } else {
+          // mm:ss.mmm
+          const m = digits.slice(0, digits.length - 5) || '0';
+          let s = digits.slice(digits.length - 5, digits.length - 3);
+          const ms = digits.slice(-3);
+          // borne secondes 00–59
+          if (parseInt(s, 10) > 59) s = '59';
+          if (s.length === 1) s = '0' + s;
+          out = m + ':' + s + '.' + ms;
+        }
+
+        input.value = out;
+      });
+
+      // À la sortie du champ : on complète proprement mm / mmm
+      input.addEventListener('blur', function () {
+        const v = (input.value || '').trim();
+        if (!v) return;
+
+        // Décompose m:ss.mmm (tolérant pendant l’auto-masquage)
+        const parts = v.split(':');
+        let m = (parts[0] || '0').replace(/\\D/g, '');
+        let s = '00', ms = '000';
+
+        if (parts.length > 1) {
+          const sub = parts[1].split('.');
+          s = (sub[0] || '0').replace(/\\D/g, '');
+          ms = (sub[1] || '').replace(/\\D/g, '');
+        }
+
+        // Normalisations
+        if (s.length === 1) s = '0' + s;
+        if (!s) s = '00';
+        if (parseInt(s, 10) > 59) s = '59';
+        ms = (ms + '000').slice(0, 3); // pad à 3 chiffres
+
+        input.value = m + ':' + s + '.' + ms;
+      });
+    })();
+    </script>
+    """)
     html_lines.append("  <label>Pénalités (1 pénalité = +1s)")
     html_lines.append('    <input type="number" name="penalties" min="0" step="1" value="0">')
     html_lines.append("  </label>")
