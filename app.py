@@ -2021,7 +2021,7 @@ def admin_round_plan_upload(round_id):
         db.session.rollback()
         return PAGE("<h1>Admin</h1><p class='muted'>Erreur lors de l'enregistrement.</p>"), 500
 
-    return redirect(f"/admin/rounds/{r.id}/plan")
+    return redirect("/admin")
 
 
 @app.post("/admin/rounds/<int:round_id>/plan/delete")
@@ -2044,7 +2044,7 @@ def admin_round_plan_delete(round_id):
         db.session.rollback()
         return PAGE("<h1>Admin</h1><p class='muted'>Suppression impossible pour le moment.</p>"), 500
 
-    return redirect(f"/admin/rounds/{r.id}/plan")
+    return redirect("/admin")
 
 
 if __name__ == "__main__":
