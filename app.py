@@ -2017,9 +2017,10 @@ def admin_round_plan_upload(round_id):
     r.plan_mime = mime
     try:
         db.session.commit()
-    except Exception:
+    except Exception as ex:
         db.session.rollback()
-        return PAGE("<h1>Admin</h1><p class='muted'>Erreur lors de l'enregistrement.</p>"), 500
+        return PAGE(f"<h1>Admin</h1><p class='muted'>Erreur DB : {ex.__class__.__name__} — {ex}</p>"), 500
+
 
     return redirect("/admin")
 
@@ -2040,11 +2041,32 @@ def admin_round_plan_delete(round_id):
     r.plan_mime = None
     try:
         db.session.commit()
-    except Exception:
+    except Exception as ex:
         db.session.rollback()
-        return PAGE("<h1>Admin</h1><p class='muted'>Suppression impossible pour le moment.</p>"), 500
+        return PAGE(f"<h1>Admin</h1><p class='muted'>Erreur DB : {ex.__class__.__name__} — {ex}</p>"), 500
 
     return redirect("/admin")
+
+@app.get("/__plan_schema")
+def __plan_schema():
+    if not db:
+        return "DB non dispo", 500
+    with db.engine.begin() as conn:
+        cols = [row[1] for row in conn.exec_driver_sql('PRAGMA table_info("round")')]
+    return "cols: " + ", ".join(cols), 200
+
+@app.get("/__migrate_round_plan")
+def __migrate_round_plan():
+    if not db:
+        return "DB non dispo", 500
+    with db.engine.begin() as conn:
+        cols = [row[1] for row in conn.exec_driver_sql('PRAGMA table_info("round")')]
+        if "plan_data" not in cols:
+            conn.exec_driver_sql('ALTER TABLE "round" ADD COLUMN plan_data BLOB')
+        if "plan_mime" not in cols:
+            conn.exec_driver_sql('ALTER TABLE "round" ADD COLUMN plan_mime VARCHAR(64)')
+        # si tu n'as PAS de colonne plan_name dans le modèle, n'ajoute rien d'autre
+    return "ok", 200
 
 
 if __name__ == "__main__":
