@@ -745,7 +745,7 @@ def admin_rounds():
         return redirect(url_for("admin_rounds"))
 
 
-    rounds = Round.query.order_by(Round.created_at.desc()).all()
+    rounds = Round.query.order_by(getattr(Round, "created_at", Round.id).desc()).all()
 
     def row_html(r):
         status_label = "ouverte" if r.status == "open" else "clôturée"
