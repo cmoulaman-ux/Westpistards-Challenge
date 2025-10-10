@@ -752,23 +752,12 @@ def admin_rounds():
         close_info = ""
         if hasattr(r, "closes_at") and r.closes_at:
             close_info = f" &middot; <span class='muted'>clôture: {r.closes_at.strftime('%d/%m/%Y %H:%M')}</span>"
-
-        # Icône "Voir le plan" si un plan existe
-        view_btn = (
-            f"<a class='icon-btn' href='/rounds/{r.id}/plan' target='_blank' title='Voir l’image du plan' aria-label='Voir le plan'>"
-            f"  <span class='i'>🖼️</span>"
-            f"</a>"
-            if getattr(r, "plan_data", None) else ""
-        )
-
+        view_btn = f"<a class='icon-btn' href='/rounds/{r.id}/plan' target='_blank' title='Voir l’image du plan'><span class='i'>🖼️</span></a>" if getattr(r, "plan_data", None) else ""
         return f"""
         <li class="card">
           <div class="row" style="justify-content:space-between;">
             <div><strong>{r.name}</strong> &mdash; <span class="muted">{status_label}</span>{close_info}</div>
-            <div class="row" style="gap:8px; flex-wrap:wrap;">
-              <a class="btn outline" href="/admin/rounds/{r.id}/plan" title="Ajouter ou remplacer le plan">
-                <span class="i">🖼️</span> Ajouter/Remplacer le plan
-              </a>
+            <div class="row">
               {view_btn}
               <a class="icon-btn green" href="/admin/rounds/{r.id}/export.csv" title="Télécharger CSV" aria-label="Télécharger CSV">
                 <span class="i">⬇️</span>
@@ -786,6 +775,7 @@ def admin_rounds():
           </div>
         </li>
         """
+
 
 
 
@@ -1941,111 +1931,6 @@ def __migrate_user_created_at():
 
     return "ok", 200
 
-@app.get("/admin/rounds/<int:round_id>/plan")
-def admin_round_plan_form(round_id):
-    if not db:
-        return PAGE("<h1>Admin</h1><p class='muted'>DB non dispo.</p>")
-    u = current_user()
-    if not is_admin(u):
-        return PAGE("<h1>Accès refusé</h1><p class='muted'>Réservé aux administrateurs.</p>"), 403
-
-    r = db.session.get(Round, round_id)
-    if not r:
-        return PAGE("<h1>Admin</h1><p class='muted'>Manche introuvable.</p>"), 404
-
-    has_plan = bool(getattr(r, "plan_data", None))
-    preview = ""
-    if has_plan and (getattr(r, "plan_mime", "") or "").startswith("image/"):
-        preview = f"<div style='margin:8px 0;'><img src='/rounds/{r.id}/plan' alt='Plan actuel' style='max-width:100%; height:auto; border:1px solid #eee;'></div>"
-
-    delete_btn = ""
-    if has_plan:
-        delete_btn = (
-            f"<form method='post' action='/admin/rounds/{r.id}/plan/delete' "
-            f" onsubmit=\"return confirm('Supprimer le plan actuel ?');\" style='display:inline;'>"
-            f" <button class='btn danger' type='submit'><span class='i'>✖</span> Supprimer le plan</button>"
-            f"</form>"
-        )
-
-    return PAGE(f"""
-      <h1>Plan de la manche — {r.name}</h1>
-      <section class="card">
-        <h2 style="margin-top:0;">Ajouter / Remplacer le plan</h2>
-        <form method="post" action="/admin/rounds/{r.id}/plan" enctype="multipart/form-data" class="form">
-          <label>Fichier (PNG / JPG / PDF, max 5&nbsp;Mo)
-            <input type="file" name="plan_file" accept="image/png,image/jpeg,application/pdf" required>
-          </label>
-          <button class="btn" type="submit">Enregistrer</button>
-        </form>
-        {preview}
-        <div style="margin-top:8px;">{delete_btn}</div>
-        <p style="margin-top:12px;"><a class="btn outline" href="/admin">← Retour admin</a></p>
-      </section>
-    """)
-
-
-@app.post("/admin/rounds/<int:round_id>/plan")
-def admin_round_plan_upload(round_id):
-    if not db:
-        return PAGE("<h1>Admin</h1><p class='muted'>DB non dispo.</p>")
-    u = current_user()
-    if not is_admin(u):
-        return PAGE("<h1>Accès refusé</h1><p class='muted'>Réservé aux administrateurs.</p>"), 403
-
-    r = db.session.get(Round, round_id)
-    if not r:
-        return PAGE("<h1>Admin</h1><p class='muted'>Manche introuvable.</p>"), 404
-
-    f = request.files.get("plan_file")
-    if not f or not getattr(f, "filename", ""):
-        return PAGE("<h1>Admin</h1><p class='muted'>Aucun fichier reçu.</p>"), 400
-
-    # Validation simple
-    mime = (f.mimetype or "").lower()
-    allowed = {"image/png", "image/jpeg", "application/pdf"}
-    if mime not in allowed:
-        return PAGE("<h1>Admin</h1><p class='muted'>Format non supporté. Autorisés : PNG, JPG, PDF.</p>"), 400
-
-    data = f.read()
-    if not data:
-        return PAGE("<h1>Admin</h1><p class='muted'>Fichier vide.</p>"), 400
-    if len(data) > 5 * 1024 * 1024:
-        return PAGE("<h1>Admin</h1><p class='muted'>Fichier trop volumineux (> 5 Mo).</p>"), 400
-
-    # Enregistrement en base
-    r.plan_data = data
-    r.plan_mime = mime
-    try:
-        db.session.commit()
-    except Exception as ex:
-        db.session.rollback()
-        return PAGE(f"<h1>Admin</h1><p class='muted'>Erreur DB : {ex.__class__.__name__} — {ex}</p>"), 500
-
-
-    return redirect("/admin")
-
-
-@app.post("/admin/rounds/<int:round_id>/plan/delete")
-def admin_round_plan_delete(round_id):
-    if not db:
-        return PAGE("<h1>Admin</h1><p class='muted'>DB non dispo.</p>")
-    u = current_user()
-    if not is_admin(u):
-        return PAGE("<h1>Accès refusé</h1><p class='muted'>Réservé aux administrateurs.</p>"), 403
-
-    r = db.session.get(Round, round_id)
-    if not r:
-        return PAGE("<h1>Admin</h1><p class='muted'>Manche introuvable.</p>"), 404
-
-    r.plan_data = None
-    r.plan_mime = None
-    try:
-        db.session.commit()
-    except Exception as ex:
-        db.session.rollback()
-        return PAGE(f"<h1>Admin</h1><p class='muted'>Erreur DB : {ex.__class__.__name__} — {ex}</p>"), 500
-
-    return redirect("/admin")
 
 @app.get("/__plan_schema")
 def __plan_schema():
