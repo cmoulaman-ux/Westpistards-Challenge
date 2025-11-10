@@ -752,15 +752,18 @@ def admin_rounds():
         close_info = ""
         if hasattr(r, "closes_at") and r.closes_at:
             close_info = f" &middot; <span class='muted'>clôture: {r.closes_at.strftime('%d/%m/%Y %H:%M')}</span>"
-        view_btn = f"<a class='icon-btn' href='/rounds/{r.id}/plan' target='_blank' title='Voir l’image du plan'><span class='i'>🖼️</span></a>" if getattr(r, "plan_data", None) else ""
+        view_btn = f"<a class='icon-btn' href='/rounds/{r.id}/plan' target='_blank' title='Voir l’image du plan'><span class='i'>🖼️</span></a>" if getattr(r, 'plan_data', None) else ""
         return f"""
         <li class="card">
           <div class="row" style="justify-content:space-between;">
             <div><strong>{r.name}</strong> &mdash; <span class="muted">{status_label}</span>{close_info}</div>
-            <div class="row">
+            <div class="row" style="gap:8px; flex-wrap:wrap;">
               {view_btn}
               <a class="icon-btn green" href="/admin/rounds/{r.id}/export.csv" title="Télécharger CSV" aria-label="Télécharger CSV">
                 <span class="i">⬇️</span>
+              </a>
+              <a class="btn outline" href="/admin/rounds/{r.id}/edit_close">
+                Modifier la clôture
               </a>
               <form method="post" action="/admin/rounds/{r.id}/close">
                 <button class="btn outline" {'disabled' if r.status=='closed' else ''} type="submit">Clôturer</button>
@@ -775,6 +778,7 @@ def admin_rounds():
           </div>
         </li>
         """
+
 
 
 
@@ -1952,6 +1956,76 @@ def __migrate_round_plan():
             conn.exec_driver_sql('ALTER TABLE "round" ADD COLUMN plan_mime VARCHAR(64)')
         # si tu n'as PAS de colonne plan_name dans le modèle, n'ajoute rien d'autre
     return "ok", 200
+
+@app.get("/admin/rounds/<int:round_id>/edit_close")
+def admin_round_edit_close(round_id):
+    if not db:
+        return PAGE("<h1>Admin</h1><p class='muted'>DB non dispo.</p>"), 500
+    u = current_user()
+    if not is_admin(u):
+        return PAGE("<h1>Accès refusé</h1><p class='muted'>Réservé aux administrateurs.</p>"), 403
+
+    r = db.session.get(Round, round_id)
+    if not r:
+        return PAGE("<h1>Admin</h1><p class='muted'>Manche introuvable.</p>"), 404
+
+    # Valeur par défaut pour le champ datetime-local
+    if getattr(r, "closes_at", None):
+        current_val = r.closes_at.strftime("%Y-%m-%dT%H:%M")
+    else:
+        current_val = ""
+
+    return PAGE(f"""
+      <h1>Modifier la clôture — {r.name}</h1>
+      <section class="card">
+        <form method="post" action="/admin/rounds/{r.id}/edit_close" class="form">
+          <label>Nouvelle date/heure de clôture (laisser vide pour enlever la date)
+            <input type="datetime-local" name="closes_at" value="{current_val}">
+          </label>
+          <button class="btn" type="submit">Enregistrer</button>
+        </form>
+        <p class="muted" style="margin-top:12px;">
+          Astuce : si tu veux qu'il n'y ait plus de limite de temps, laisse le champ vide et enregistre.
+        </p>
+        <p style="margin-top:12px;">
+          <a class="btn outline" href="/admin/rounds">← Retour aux manches</a>
+        </p>
+      </section>
+    """)
+
+
+@app.post("/admin/rounds/<int:round_id>/edit_close")
+def admin_round_edit_close_post(round_id):
+    if not db:
+        return PAGE("<h1>Admin</h1><p class='muted'>DB non dispo.</p>"), 500
+    u = current_user()
+    if not is_admin(u):
+        return PAGE("<h1>Accès refusé</h1><p class='muted'>Réservé aux administrateurs.</p>"), 403
+
+    r = db.session.get(Round, round_id)
+    if not r:
+        return PAGE("<h1>Admin</h1><p class='muted'>Manche introuvable.</p>"), 404
+
+    closes_at_val = (request.form.get("closes_at") or "").strip()
+    closes_at_dt = None
+    if closes_at_val:
+        try:
+            from datetime import datetime
+            closes_at_dt = datetime.fromisoformat(closes_at_val)
+        except Exception:
+            return PAGE("<h1>Admin</h1><p class='muted'>Date/heure invalide.</p>"), 400
+
+    if hasattr(r, "closes_at"):
+        r.closes_at = closes_at_dt
+
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        return PAGE("<h1>Admin</h1><p class='muted'>Erreur lors de l'enregistrement.</p>"), 500
+
+    return redirect("/admin/rounds")
+
 
 
 if __name__ == "__main__":
