@@ -1303,7 +1303,7 @@ def submit_time():
     html_lines.append("  <label>Moto (facultatif)")
     html_lines.append('    <input type="text" name="bike" placeholder="Marque / Modèle">')
     html_lines.append("  </label>")
-    html_lines.append("  <label>Lien YouTube (facultatif)")
+    html_lines.append("  <label>Lien YouTube")
     html_lines.append('    <input type="url" name="youtube_link" placeholder="https://...">')
     html_lines.append("  </label>")
     html_lines.append("  <label>Note (facultatif)")
