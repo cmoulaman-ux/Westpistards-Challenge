@@ -8,6 +8,8 @@ from flask import send_from_directory
 from werkzeug.utils import secure_filename
 from datetime import datetime, timedelta
 from sqlalchemy import text  # en haut du fichier si pas déjà importé
+import smtplib
+from email.message import EmailMessage
 
 
 
@@ -188,6 +190,15 @@ ADMIN_EMAILS = {
     "c.moulaman@gmail.com",
 }
 
+
+# --- Configuration e-mails ---
+SMTP_HOST = os.getenv("SMTP_HOST", "")
+SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
+SMTP_USER = os.getenv("SMTP_USER", "")
+SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")
+EMAIL_FROM = os.getenv("EMAIL_FROM", SMTP_USER or "no-reply@wp-challenge.local")
+
+
 # --- Helpers utilisateur ---
 def current_user():
     if not db:
@@ -272,6 +283,27 @@ def ms_to_str(ms: int) -> str:
 
 def final_time_ms(raw_ms: int, penalties: int) -> int:
     return int(raw_ms) + max(0, int(penalties or 0)) * 1000
+
+def send_email(to_email: str, subject: str, body: str):
+    """Envoie un email texte simple."""
+    if not (SMTP_HOST and SMTP_USER and SMTP_PASSWORD):
+        print(f"[MAIL] Config SMTP manquante, mail non envoyé à {to_email}")
+        return
+
+    msg = EmailMessage()
+    msg["Subject"] = subject
+    msg["From"] = EMAIL_FROM
+    msg["To"] = to_email
+    msg.set_content(body)
+
+    try:
+        with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
+            server.starttls()
+            server.login(SMTP_USER, SMTP_PASSWORD)
+            server.send_message(msg)
+        print(f"[MAIL] Mail envoyé à {to_email} : {subject}")
+    except Exception as e:
+        print(f"[MAIL] Erreur d'envoi vers {to_email}: {e}")
 
 
 
@@ -2406,6 +2438,15 @@ def __migrate_chat():
     with app.app_context():
         db.create_all()
     return "ok", 200
+
+@app.route("/test_mail")
+def test_mail():
+    send_email(
+        "westpistards@mail.com",
+        "Test depuis WP Challenge",
+        "Coucou ! Si tu reçois ce message, c'est que ton site sait envoyer des mails 🎉"
+    )
+    return "Mail test envoyé (ou tenté). Regarde la console ou ta boîte mail."
 
 
 if __name__ == "__main__":
