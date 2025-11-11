@@ -1305,7 +1305,28 @@ def profile():
             final_ms = final_time_ms(e.raw_time_ms, e.penalties)
             final_s = ms_to_str(final_ms)
             yt = f"<a href='{e.youtube_link}' target='_blank' rel='noopener'>Vidéo</a>" if e.youtube_link else "—"
-            badge = f"<span class='badge { 'approved' if e.status=='approved' else ('rejected' if e.status=='rejected' else ('inactif' if e.status=='superseded' else 'pending')) }'>{e.status}</span>"
+                        # Classe du badge selon le statut technique
+            badge_class = (
+                "approved" if e.status == "approved"
+                else "rejected" if e.status == "rejected"
+                else "inactif" if e.status == "superseded"
+                else "pending"
+            )
+
+            # Texte lisible pour le pilote
+            if e.status == "approved":
+                badge_label = "✅ Validé"
+            elif e.status == "pending":
+                badge_label = "🕒 En attente de validation"
+            elif e.status == "rejected":
+                badge_label = "❌ Rejeté (regarde les messages)"
+            elif e.status == "superseded":
+                badge_label = "Inactif"
+            else:
+                badge_label = e.status
+
+            badge = f"<span class='badge {badge_class}'>{badge_label}</span>"
+
 
             # lien vers le chat avec l'admin pour ce chrono (bulle si nouveaux messages de l'admin)
             unread_pilot = has_unread_admin_messages_for_pilot(e.id)
