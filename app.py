@@ -952,23 +952,34 @@ def admin_times():
     if not is_admin(u):
         return PAGE("<h1>Accès refusé</h1><p class='muted'>Réservé aux administrateurs.</p>"), 403
 
-    # Filtre par onglet
+    # Filtre par onglet (statut)
     tab = (request.args.get("status") or "pending").lower()
     if tab not in ("pending", "approved", "rejected"):
         tab = "pending"
+
+    # Filtre "uniquement avec nouveaux messages du pilote"
+    show_unread_only = request.args.get("unread") == "1"
 
     q = (
         TimeEntry.query
         .join(User, User.id == TimeEntry.user_id)
         .join(Round, Round.id == TimeEntry.round_id)
     )
-    q = q.filter(TimeEntry.status == tab) if tab in ("pending", "approved", "rejected") else q
+    if tab in ("pending", "approved", "rejected"):
+        q = q.filter(TimeEntry.status == tab)
+
     entries = q.order_by(TimeEntry.created_at.desc()).all()
 
-    # Onglets
+    # Si on ne veut que ceux avec nouveaux messages du pilote,
+    # on garde uniquement les chronos où has_unread_pilot_messages_for_admin(e.id) est True
+    if show_unread_only:
+        entries = [e for e in entries if has_unread_pilot_messages_for_admin(e.id)]
+
+    # Onglets de statut
     def tab_link(label, key):
         cls = "btn" + ("" if tab == key else " outline")
-        return f"<a class='{cls}' href='/admin/times?status={key}'>{label}</a>"
+        extra = "&unread=1" if show_unread_only else ""
+        return f"<a class='{cls}' href='/admin/times?status={key}{extra}'>{label}</a>"
 
     tabs = (
         "<div class='row' style='gap:8px; margin-bottom:12px;'>"
@@ -978,22 +989,45 @@ def admin_times():
         "</div>"
     )
 
+    # Bouton pour activer/désactiver le filtre "nouveaux messages"
+    if show_unread_only:
+        unread_toggle_html = (
+            "<div class='row' style='justify-content:flex-end; margin-bottom:8px;'>"
+            f"<a class='btn outline' href='/admin/times?status={tab}'>Voir tous les chronos</a>"
+            "</div>"
+        )
+    else:
+        unread_toggle_html = (
+            "<div class='row' style='justify-content:flex-end; margin-bottom:8px;'>"
+            f"<a class='btn outline' href='/admin/times?status={tab}&unread=1'>Voir seulement avec nouveaux messages</a>"
+            "</div>"
+        )
+
     if not entries:
-        mapping = {"pending":"en attente", "approved":"validés", "rejected":"rejetés"}
-        return PAGE(f"<h1>Admin &mdash; Chronos</h1>{tabs}<p class='muted'>Aucun chrono {mapping.get(tab,'')}.</p>")
+        mapping = {"pending": "en attente", "approved": "validés", "rejected": "rejetés"}
+        extra = " avec nouveaux messages" if show_unread_only else ""
+        return PAGE(
+            f"<h1>Admin &mdash; Chronos</h1>"
+            f"{tabs}"
+            f"{unread_toggle_html}"
+            f"<p class='muted'>Aucun chrono {mapping.get(tab, '')}{extra}.</p>"
+        )
 
     # Lignes du tableau : actions selon statut
     def row(e):
         final_ms_val = final_time_ms(e.raw_time_ms, e.penalties)
-        yt = f"<a href='{e.youtube_link}' target='_blank' rel='noopener'>Vidéo</a>" if (e.youtube_link or "").strip() else "—"
+        yt = (
+            f"<a href='{e.youtube_link}' target='_blank' rel='noopener'>Vidéo</a>"
+            if (e.youtube_link or "").strip()
+            else "—"
+        )
         badge = "pending" if e.status == "pending" else ("approved" if e.status == "approved" else "rejected")
 
-        # Actions selon statut (pas de "remettre en attente")
+        # Actions
         actions = []
 
-        # Bouton / icône de chat avec bulle si nouveaux messages du pilote
+        # Bouton / icône de chat (tu as déjà ajouté la bulle plus haut dans ton code si tu veux)
         unread = has_unread_pilot_messages_for_admin(e.id)
-
         if unread:
             actions.append(
                 f"<a class='icon-btn' href='/admin/times/{e.id}/chat' "
@@ -1014,7 +1048,6 @@ def admin_times():
                 f"title='Chat avec le pilote' aria-label='Chat avec le pilote'>"
                 f"<span class='i'>💬</span></a>"
             )
-
 
         if e.status == "pending":
             actions.append(
@@ -1052,23 +1085,35 @@ def admin_times():
         </tr>
         """
 
-
     rows_html = "".join(row(e) for e in entries)
-
-    table = (
-        "<table class='table'>"
-        "<thead><tr>"
-        "<th>ID</th><th>Pilote</th><th>Manche</th><th>Brut</th><th>Pén.</th><th>Final</th><th>YouTube</th><th>Statut</th><th>Actions</th>"
-        "</tr></thead>"
-        f"<tbody>{rows_html}</tbody>"
-        "</table>"
-    )
+    table = f"""
+      <table class="table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Pilote</th>
+            <th>Manche</th>
+            <th>Brut</th>
+            <th>Pén.</th>
+            <th>Final</th>
+            <th>YouTube</th>
+            <th>Statut</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows_html}
+        </tbody>
+      </table>
+    """
 
     return PAGE(f"""
       <h1>Admin &mdash; Chronos</h1>
       {tabs}
+      {unread_toggle_html}
       {table}
     """)
+
 
 
 @app.post("/admin/times/<int:time_id>/approve")
