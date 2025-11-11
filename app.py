@@ -542,7 +542,7 @@ def index():
           <img src="/static/img/partners/partner1.jpg" alt="Partenaire 1">
         </a>
         <a class="partner" href="https://www.instagram.com/lou_etheve/" target="_blank" rel="noopener" title="Sellerie Lou Ethève">
-          <img src="/static/img/partners/partner2bis.jpg" alt="Partenaire 2">
+          <img src="/static/img/partners/partner2ter.png" alt="Partenaire 2">
         </a>
         <a class="partner" href="https://www.facebook.com/share/17Jn1CirtS" target="_blank" rel="noopener" title="ECF">
           <img src="/static/img/partners/ecf.jpg" alt="ECF">
