@@ -129,6 +129,16 @@ class ChronoMessage(db.Model):
         )
     )
 
+class ChronoRead(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    time_entry_id = db.Column(db.Integer, db.ForeignKey("time_entry.id"), nullable=False, index=True)
+    who = db.Column(db.String(10), nullable=False)  # 'admin' ou 'pilot'
+    last_read_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+    __table_args__ = (
+        db.UniqueConstraint("time_entry_id", "who", name="uniq_read_per_role"),
+    )
+
 
 class Announcement(db.Model):
         id = db.Column(db.Integer, primary_key=True)
@@ -937,12 +947,30 @@ def admin_times():
         # Actions selon statut (pas de "remettre en attente")
         actions = []
 
-        # Bouton / icône de chat toujours présent
-        actions.append(
-            f"<a class='icon-btn' href='/admin/times/{e.id}/chat' "
-            f"title='Chat avec le pilote' aria-label='Chat avec le pilote'>"
-            f"<span class='i'>💬</span></a>"
-        )
+        # Bouton / icône de chat avec bulle si nouveaux messages du pilote
+        unread = has_unread_pilot_messages_for_admin(e.id)
+
+        if unread:
+            actions.append(
+                f"<a class='icon-btn' href='/admin/times/{e.id}/chat' "
+                f"title='Nouveaux messages avec le pilote' aria-label='Nouveaux messages avec le pilote'>"
+                f"<span class='i' style='position:relative; display:inline-block;'>"
+                f"💬"
+                f"<span style=\""
+                f"position:absolute; top:-6px; right:-6px; "
+                f"min-width:14px; height:14px; "
+                f"border-radius:50%; background:#e02424; color:white; "
+                f"display:flex; align-items:center; justify-content:center; "
+                f"font-size:9px;\">!</span>"
+                f"</span></a>"
+            )
+        else:
+            actions.append(
+                f"<a class='icon-btn' href='/admin/times/{e.id}/chat' "
+                f"title='Chat avec le pilote' aria-label='Chat avec le pilote'>"
+                f"<span class='i'>💬</span></a>"
+            )
+
 
         if e.status == "pending":
             actions.append(
@@ -2128,6 +2156,19 @@ def _build_chat_messages_html(msgs, pilot_view: bool) -> str:
 
     return "<ul class='list' style='margin-top:8px;'>" + "\n".join(items) + "</ul>"
 
+def has_unread_pilot_messages_for_admin(time_entry_id: int) -> bool:
+    # Dernière lecture de l’admin pour ce chrono
+    last = ChronoRead.query.filter_by(time_entry_id=time_entry_id, who="admin").first()
+
+    q = ChronoMessage.query.filter_by(time_entry_id=time_entry_id, author="pilot")
+
+    if last is None:
+        # L’admin n’a jamais ouvert le chat → s’il y a au moins un msg pilote, on considère "non lu"
+        return q.count() > 0
+
+    # Sinon, on regarde s’il existe un msg pilote plus récent que la dernière lecture
+    return q.filter(ChronoMessage.created_at > last.last_read_at).count() > 0
+
 
 
 @app.route("/admin/times/<int:time_id>/chat", methods=["GET", "POST"])
@@ -2183,6 +2224,21 @@ def admin_time_chat(time_id):
         ), 500
 
     messages_html = _build_chat_messages_html(msgs, pilot_view=False)
+
+    # On marque que l’admin vient de tout lire pour ce chrono
+    try:
+        read = ChronoRead.query.filter_by(time_entry_id=e.id, who="admin").first()
+        now = datetime.utcnow()
+        if read is None:
+            read = ChronoRead(time_entry_id=e.id, who="admin", last_read_at=now)
+            db.session.add(read)
+        else:
+            read.last_read_at = now
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        # On ignore l’erreur de "read", ça ne doit pas casser la page
+
 
     return PAGE(f"""
       <h1>Chat sur le chrono</h1>
