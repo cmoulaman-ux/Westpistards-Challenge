@@ -2089,6 +2089,47 @@ def admin_round_edit_close_post(round_id):
 
     return redirect("/admin/rounds")
 
+
+def _build_chat_messages_html(msgs, pilot_view: bool) -> str:
+    """
+    pilot_view = True  -> page côté pilote ("Admin" / "Toi")
+    pilot_view = False -> page côté admin ("Admin" / "Pilote")
+    """
+    if not msgs:
+        return "<p class='muted'>Aucun message pour le moment.</p>"
+
+    items = []
+    for m in msgs:
+        dt_h = m.created_at.strftime("%d/%m/%Y %H:%M")
+
+        if pilot_view:
+            # Vue pilote
+            who = "Admin" if m.author == "admin" else "Toi"
+            align = "flex-start" if m.author == "admin" else "flex-end"
+        else:
+            # Vue admin
+            who = "Admin" if m.author == "admin" else "Pilote"
+            align = "flex-end" if m.author == "admin" else "flex-start"
+
+        bg = "#eef" if m.author == "admin" else "#f5f5f5"
+
+        items.append(f"""
+          <li style="margin:4px 0;">
+            <div style="display:flex; justify-content:{align};">
+              <div class="card" style="max-width:70%; background:{bg};">
+                <div class="muted" style="font-size:12px; margin-bottom:4px;">
+                  {who} &middot; {dt_h}
+                </div>
+                <div>{m.body}</div>
+              </div>
+            </div>
+          </li>
+        """)
+
+    return "<ul class='list' style='margin-top:8px;'>" + "\n".join(items) + "</ul>"
+
+
+
 @app.route("/admin/times/<int:time_id>/chat", methods=["GET", "POST"])
 def admin_time_chat(time_id):
     if not db:
@@ -2110,46 +2151,38 @@ def admin_time_chat(time_id):
             db.session.add(msg)
             try:
                 db.session.commit()
-            except Exception:
+            except Exception as ex:
                 db.session.rollback()
-                return PAGE("<h1>Admin</h1><p class='muted'>Impossible d'enregistrer le message.</p>"), 500
+                return PAGE(
+                    f"<h1>Admin</h1><p class='muted'>Impossible d'enregistrer le message : {ex}</p>"
+                ), 500
         return redirect(url_for("admin_time_chat", time_id=time_id))
 
     # GET : affichage du fil
     pilot = getattr(e, "user", None)
     round_obj = getattr(e, "round", None)
+
     pilot_name = ""
     if pilot is not None:
-        pilot_name = display_name(pilot) if "display_name" in globals() else (pilot.pseudo or pilot.email or f"Pilote #{pilot.id}")
+        pilot_name = display_name(pilot) if "display_name" in globals() else (
+            pilot.pseudo or pilot.email or f"Pilote #{pilot.id}"
+        )
+
     round_name = round_obj.name if round_obj is not None else f"Manche #{e.round_id}"
 
-    msgs = (
-        ChronoMessage.query
-        .filter_by(time_entry_id=e.id)
-        .order_by(ChronoMessage.created_at.asc())
-        .all()
-    )
+    try:
+        msgs = (
+            ChronoMessage.query
+            .filter_by(time_entry_id=e.id)
+            .order_by(ChronoMessage.created_at.asc())
+            .all()
+        )
+    except Exception as ex:
+        return PAGE(
+            f"<h1>Admin</h1><p class='muted'>Erreur DB (messages) : {ex}</p>"
+        ), 500
 
-    items = []
-    for m in msgs:
-        dt_h = m.created_at.strftime("%d/%m/%Y %H:%M")
-        who = "Admin" if m.author == "admin" else "Pilote"
-        align = "flex-end" if m.author == "admin" else "flex-start"
-        bg = "#eef" if m.author == "admin" else "#f5f5f5"
-        items.append(f"""
-          <li style="margin:4px 0;">
-            <div style="display:flex; justify-content:{align};">
-              <div class="card" style="max-width:70%; background:{bg};">
-                <div class="muted" style="font-size:12px; margin-bottom:4px;">{who} &middot; {dt_h}</div>
-                <div>{m.body}</div>
-              </div>
-            </div>
-          </li>
-        """)
-
-    messages_html = "<p class='muted'>Aucun message pour le moment.</p>"
-    if items:
-        messages_html = "<ul class='list' style='margin-top:8px;'>" + "\n".join(items) + "</ul>"
+    messages_html = _build_chat_messages_html(msgs, pilot_view=False)
 
     return PAGE(f"""
       <h1>Chat sur le chrono</h1>
@@ -2172,6 +2205,7 @@ def admin_time_chat(time_id):
         </p>
       </section>
     """)
+
 
 @app.route("/times/<int:time_id>/chat", methods=["GET", "POST"])
 def pilot_time_chat(time_id):
@@ -2201,14 +2235,16 @@ def pilot_time_chat(time_id):
                 db.session.commit()
             except Exception as ex:
                 db.session.rollback()
-                return PAGE(f"<h1>Chat</h1><p class='muted'>Impossible d'enregistrer le message : {ex}</p>"), 500
+                return PAGE(
+                    f"<h1>Chat</h1><p class='muted'>Impossible d'enregistrer le message : {ex}</p>"
+                ), 500
         return redirect(url_for("pilot_time_chat", time_id=time_id))
 
     # GET : affichage du fil
     round_obj = getattr(e, "round", None)
     round_name = round_obj.name if round_obj is not None else f"Manche #{e.round_id}"
 
-    # on affiche le temps à partir de raw_time_ms (et pas raw_time_str qui n'existe pas)
+    # on affiche le temps à partir de raw_time_ms
     try:
         time_display = ms_to_str(e.raw_time_ms)
     except Exception:
@@ -2222,28 +2258,11 @@ def pilot_time_chat(time_id):
             .all()
         )
     except Exception as ex:
-        return PAGE(f"<h1>Chat</h1><p class='muted'>Erreur DB (messages) : {ex}</p>"), 500
+        return PAGE(
+            f"<h1>Chat</h1><p class='muted'>Erreur DB (messages) : {ex}</p>"
+        ), 500
 
-    items = []
-    for m in msgs:
-        dt_h = m.created_at.strftime("%d/%m/%Y %H:%M")
-        who = "Admin" if m.author == "admin" else "Toi"
-        align = "flex-start" if m.author == "admin" else "flex-end"
-        bg = "#eef" if m.author == "admin" else "#f5f5f5"
-        items.append(f"""
-          <li style="margin:4px 0;">
-            <div style="display:flex; justify-content:{align};">
-              <div class="card" style="max-width:70%; background:{bg};">
-                <div class="muted" style="font-size:12px; margin-bottom:4px;">{who} &middot; {dt_h}</div>
-                <div>{m.body}</div>
-              </div>
-            </div>
-          </li>
-        """)
-
-    messages_html = "<p class='muted'>Aucun message pour le moment.</p>"
-    if items:
-        messages_html = "<ul class='list' style='margin-top:8px;'>" + "\n".join(items) + "</ul>"
+    messages_html = _build_chat_messages_html(msgs, pilot_view=True)
 
     return PAGE(f"""
       <h1>Messages avec l'admin</h1>
@@ -2265,6 +2284,7 @@ def pilot_time_chat(time_id):
         </p>
       </section>
     """)
+
 
 
 @app.get("/__migrate_chat")
