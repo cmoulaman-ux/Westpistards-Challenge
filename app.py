@@ -100,6 +100,36 @@ if db:
         user = db.relationship('User', backref='time_entries', lazy=True)
         round = db.relationship('Round', backref='time_entries', lazy=True)
 
+class ChronoMessage(db.Model):
+    __tablename__ = "chrono_message"
+
+    id = db.Column(db.Integer, primary_key=True)
+    time_entry_id = db.Column(
+        db.Integer,
+        db.ForeignKey("time_entry.id"),
+        index=True,
+        nullable=False
+    )
+    author = db.Column(db.String(16), nullable=False)  # 'admin' ou 'pilot'
+    body = db.Column(db.Text, nullable=False)
+    created_at = db.Column(
+        db.DateTime,
+        default=datetime.utcnow,
+        nullable=False,
+        index=True
+    )
+
+    # Relation pratique vers le chrono
+    time_entry = db.relationship(
+        "TimeEntry",
+        backref=db.backref(
+            "messages",
+            lazy="dynamic",
+            cascade="all, delete-orphan"
+        )
+    )
+
+
 class Announcement(db.Model):
         id = db.Column(db.Integer, primary_key=True)
         content = db.Column(db.Text, nullable=False)         # le texte du bandeau (HTML simple permis)
@@ -906,13 +936,33 @@ def admin_times():
 
         # Actions selon statut (pas de "remettre en attente")
         actions = []
+
+        # Bouton / icône de chat toujours présent
+        actions.append(
+            f"<a class='icon-btn' href='/admin/times/{e.id}/chat' "
+            f"title='Chat avec le pilote' aria-label='Chat avec le pilote'>"
+            f"<span class='i'>💬</span></a>"
+        )
+
         if e.status == "pending":
-            actions.append(f"<form method='post' action='/admin/times/{e.id}/approve' style='display:inline;'><button class='btn' type='submit'>Valider</button></form>")
-            actions.append(f"<form method='post' action='/admin/times/{e.id}/reject' style='display:inline; margin-left:6px;'><button class='btn danger' type='submit'>Rejeter</button></form>")
+            actions.append(
+                f"<form method='post' action='/admin/times/{e.id}/approve' style='display:inline; margin-left:6px;'>"
+                f"<button class='btn' type='submit'>Valider</button></form>"
+            )
+            actions.append(
+                f"<form method='post' action='/admin/times/{e.id}/reject' style='display:inline; margin-left:6px;'>"
+                f"<button class='btn danger' type='submit'>Rejeter</button></form>"
+            )
         elif e.status == "approved":
-            actions.append(f"<form method='post' action='/admin/times/{e.id}/reject' style='display:inline;'><button class='btn danger' type='submit'>Rejeter</button></form>")
+            actions.append(
+                f"<form method='post' action='/admin/times/{e.id}/reject' style='display:inline; margin-left:6px;'>"
+                f"<button class='btn danger' type='submit'>Rejeter</button></form>"
+            )
         elif e.status == "rejected":
-            actions.append(f"<form method='post' action='/admin/times/{e.id}/approve' style='display:inline;'><button class='btn' type='submit'>Valider</button></form>")
+            actions.append(
+                f"<form method='post' action='/admin/times/{e.id}/approve' style='display:inline; margin-left:6px;'>"
+                f"<button class='btn' type='submit'>Valider</button></form>"
+            )
 
         actions_html = "".join(actions)
 
@@ -929,6 +979,7 @@ def admin_times():
           <td>{actions_html}</td>
         </tr>
         """
+
 
     rows_html = "".join(row(e) for e in entries)
 
@@ -2026,6 +2077,173 @@ def admin_round_edit_close_post(round_id):
 
     return redirect("/admin/rounds")
 
+@app.route("/admin/times/<int:time_id>/chat", methods=["GET", "POST"])
+def admin_time_chat(time_id):
+    if not db:
+        return PAGE("<h1>Admin</h1><p class='muted'>DB non dispo.</p>"), 500
+
+    u = current_user()
+    if not is_admin(u):
+        return PAGE("<h1>Accès refusé</h1><p class='muted'>Réservé aux administrateurs.</p>"), 403
+
+    e = db.session.get(TimeEntry, time_id)
+    if not e:
+        return PAGE("<h1>Admin</h1><p class='muted'>Chrono introuvable.</p>"), 404
+
+    # POST : ajout d'un message admin
+    if request.method == "POST":
+        body = (request.form.get("body") or "").strip()
+        if body:
+            msg = ChronoMessage(time_entry=e, author="admin", body=body)
+            db.session.add(msg)
+            try:
+                db.session.commit()
+            except Exception:
+                db.session.rollback()
+                return PAGE("<h1>Admin</h1><p class='muted'>Impossible d'enregistrer le message.</p>"), 500
+        return redirect(url_for("admin_time_chat", time_id=time_id))
+
+    # GET : affichage du fil
+    pilot = getattr(e, "user", None)
+    round_obj = getattr(e, "round", None)
+    pilot_name = ""
+    if pilot is not None:
+        pilot_name = display_name(pilot) if "display_name" in globals() else (pilot.pseudo or pilot.email or f"Pilote #{pilot.id}")
+    round_name = round_obj.name if round_obj is not None else f"Manche #{e.round_id}"
+
+    msgs = (
+        ChronoMessage.query
+        .filter_by(time_entry_id=e.id)
+        .order_by(ChronoMessage.created_at.asc())
+        .all()
+    )
+
+    items = []
+    for m in msgs:
+        dt_h = m.created_at.strftime("%d/%m/%Y %H:%M")
+        who = "Admin" if m.author == "admin" else "Pilote"
+        align = "flex-end" if m.author == "admin" else "flex-start"
+        bg = "#eef" if m.author == "admin" else "#f5f5f5"
+        items.append(f"""
+          <li style="margin:4px 0;">
+            <div style="display:flex; justify-content:{align};">
+              <div class="card" style="max-width:70%; background:{bg};">
+                <div class="muted" style="font-size:12px; margin-bottom:4px;">{who} &middot; {dt_h}</div>
+                <div>{m.body}</div>
+              </div>
+            </div>
+          </li>
+        """)
+
+    messages_html = "<p class='muted'>Aucun message pour le moment.</p>"
+    if items:
+        messages_html = "<ul class='list' style='margin-top:8px;'>" + "\n".join(items) + "</ul>"
+
+    return PAGE(f"""
+      <h1>Chat sur le chrono</h1>
+      <section class="card">
+        <p class="muted">
+          Manche : <strong>{round_name}</strong><br>
+          Pilote : <strong>{pilot_name or '—'}</strong><br>
+          Statut : <strong>{e.status}</strong>
+        </p>
+        <h2 style="margin-top:0;">Messages</h2>
+        {messages_html}
+        <form method="post" class="form" style="margin-top:12px;">
+          <label>Votre message (admin)
+            <textarea name="body" rows="3" required></textarea>
+          </label>
+          <button class="btn" type="submit">Envoyer</button>
+        </form>
+        <p style="margin-top:12px;">
+          <a class="btn outline" href="/admin/times">← Retour aux chronos</a>
+        </p>
+      </section>
+    """)
+
+@app.route("/times/<int:time_id>/chat", methods=["GET", "POST"])
+def pilot_time_chat(time_id):
+    if not db:
+        return PAGE("<h1>Chat</h1><p class='muted'>DB non dispo.</p>"), 500
+
+    u = current_user()
+    if not u:
+        # on force la connexion pour voir le chat
+        return redirect(url_for("login"))
+
+    e = db.session.get(TimeEntry, time_id)
+    if not e:
+        return PAGE("<h1>Chat</h1><p class='muted'>Chrono introuvable.</p>"), 404
+
+    # sécurité : le chrono doit appartenir au pilote connecté
+    if getattr(e, "user_id", None) != u.id:
+        return PAGE("<h1>Accès refusé</h1><p class='muted'>Ce chrono ne t'appartient pas.</p>"), 403
+
+    # POST : ajout d'un message pilote
+    if request.method == "POST":
+        body = (request.form.get("body") or "").strip()
+        if body:
+            msg = ChronoMessage(time_entry=e, author="pilot", body=body)
+            db.session.add(msg)
+            try:
+                db.session.commit()
+            except Exception:
+                db.session.rollback()
+                return PAGE("<h1>Chat</h1><p class='muted'>Impossible d'enregistrer le message.</p>"), 500
+        return redirect(url_for("pilot_time_chat", time_id=time_id))
+
+    # GET : affichage du fil
+    round_obj = getattr(e, "round", None)
+    round_name = round_obj.name if round_obj is not None else f"Manche #{e.round_id}"
+
+    msgs = (
+        ChronoMessage.query
+        .filter_by(time_entry_id=e.id)
+        .order_by(ChronoMessage.created_at.asc())
+        .all()
+    )
+
+    items = []
+    for m in msgs:
+        dt_h = m.created_at.strftime("%d/%m/%Y %H:%M")
+        who = "Admin" if m.author == "admin" else "Toi"
+        align = "flex-start" if m.author == "admin" else "flex-end"
+        bg = "#eef" if m.author == "admin" else "#f5f5f5"
+        items.append(f"""
+          <li style="margin:4px 0;">
+            <div style="display:flex; justify-content:{align};">
+              <div class="card" style="max-width:70%; background:{bg};">
+                <div class="muted" style="font-size:12px; margin-bottom:4px;">{who} &middot; {dt_h}</div>
+                <div>{m.body}</div>
+              </div>
+            </div>
+          </li>
+        """)
+
+    messages_html = "<p class='muted'>Aucun message pour le moment.</p>"
+    if items:
+        messages_html = "<ul class='list' style='margin-top:8px;'>" + "\n".join(items) + "</ul>"
+
+    return PAGE(f"""
+      <h1>Messages avec l'admin</h1>
+      <section class="card">
+        <p class="muted">
+          Manche : <strong>{round_name}</strong><br>
+          Ton temps : <strong>{e.raw_time_str or '—'}</strong>
+        </p>
+        <h2 style="margin-top:0;">Messages</h2>
+        {messages_html}
+        <form method="post" class="form" style="margin-top:12px;">
+          <label>Ta réponse
+            <textarea name="body" rows="3" required></textarea>
+          </label>
+          <button class="btn" type="submit">Envoyer</button>
+        </form>
+        <p style="margin-top:12px;">
+          <a class="btn outline" href="/profile">← Retour au profil</a>
+        </p>
+      </section>
+    """)
 
 
 if __name__ == "__main__":
