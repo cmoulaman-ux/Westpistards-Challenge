@@ -469,13 +469,7 @@ nav a.active {
   gap: 8px;
 }
 
-/* Partenaires — bulle noire pour le 2e logo */
-.logo-grid .partner:nth-child(2){
-  background:#000;            /* fond noir */
-  border-radius:12px;         /* même arrondi que les cartes */
-  padding:12px;               /* laisse respirer le logo */
-  border:1px solid #000;      /* fusionne avec le fond */
-}
+
 
 /* Optionnel : si le logo est foncé, on le rend plus lisible sur fond noir */
 /* Décommente si besoin */
