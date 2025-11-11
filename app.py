@@ -2199,21 +2199,30 @@ def pilot_time_chat(time_id):
             db.session.add(msg)
             try:
                 db.session.commit()
-            except Exception:
+            except Exception as ex:
                 db.session.rollback()
-                return PAGE("<h1>Chat</h1><p class='muted'>Impossible d'enregistrer le message.</p>"), 500
+                return PAGE(f"<h1>Chat</h1><p class='muted'>Impossible d'enregistrer le message : {ex}</p>"), 500
         return redirect(url_for("pilot_time_chat", time_id=time_id))
 
     # GET : affichage du fil
     round_obj = getattr(e, "round", None)
     round_name = round_obj.name if round_obj is not None else f"Manche #{e.round_id}"
 
-    msgs = (
-        ChronoMessage.query
-        .filter_by(time_entry_id=e.id)
-        .order_by(ChronoMessage.created_at.asc())
-        .all()
-    )
+    # on affiche le temps à partir de raw_time_ms (et pas raw_time_str qui n'existe pas)
+    try:
+        time_display = ms_to_str(e.raw_time_ms)
+    except Exception:
+        time_display = "—"
+
+    try:
+        msgs = (
+            ChronoMessage.query
+            .filter_by(time_entry_id=e.id)
+            .order_by(ChronoMessage.created_at.asc())
+            .all()
+        )
+    except Exception as ex:
+        return PAGE(f"<h1>Chat</h1><p class='muted'>Erreur DB (messages) : {ex}</p>"), 500
 
     items = []
     for m in msgs:
@@ -2241,7 +2250,7 @@ def pilot_time_chat(time_id):
       <section class="card">
         <p class="muted">
           Manche : <strong>{round_name}</strong><br>
-          Ton temps : <strong>{e.raw_time_str or '—'}</strong>
+          Ton temps : <strong>{time_display}</strong>
         </p>
         <h2 style="margin-top:0;">Messages</h2>
         {messages_html}
@@ -2256,6 +2265,7 @@ def pilot_time_chat(time_id):
         </p>
       </section>
     """)
+
 
 @app.get("/__migrate_chat")
 def __migrate_chat():
