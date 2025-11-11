@@ -681,19 +681,21 @@ nav a.active {
 
 /* 2) mania2.png : on garde le fond noir tel quel */
 
-/* Harmoniser la taille des 4 logos */
+/* Harmoniser la taille des 5 logos */
 .networks-grid .netw:nth-child(1) img,
 .networks-grid .netw:nth-child(2) img,
 .networks-grid .netw:nth-child(3) img,
-.networks-grid .netw:nth-child(4) img{
-  max-height: 110px !important;  /* même taille que Angle/Gravity */
+.networks-grid .netw:nth-child(4) img,
+.networks-grid .netw:nth-child(5) img{
+  max-height: 110px !important;
 }
 
 @media (max-width: 640px){
   .networks-grid .netw:nth-child(1) img,
   .networks-grid .netw:nth-child(2) img,
   .networks-grid .netw:nth-child(3) img,
-  .networks-grid .netw:nth-child(4) img{
+  .networks-grid .netw:nth-child(4) img,
+  .networks-grid .netw:nth-child(5) img{
     max-height: 96px !important;
   }
 }
@@ -1255,18 +1257,4 @@ body{ line-height:1.55; }
 
 
 
-/* Au cas où certains badges portent la classe basée sur le statut brut "superseded" */
-.badge.superseded {
-  background: #8B5CF6;
-  color: #fff;
-}
-
-/* Force violet pour les chronos inactifs/supplantés */
-span.badge.inactive,
-span.badge.superseded,
-.badge[data-status="inactive"],
-.badge[data-status="superseded"] {
-  background: #8B5CF6 !important;
-  color: #fff !important;
-}
 
