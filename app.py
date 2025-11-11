@@ -537,6 +537,9 @@ def index():
         <a class="netw" href="https://www.facebook.com/SpectacleMotoGymkhana" target="_blank" rel="noopener" title="Gravity">
           <img src="/static/img/assos/gravity2.png" alt="Gravity">
         </a>
+        <a href="https://www.facebook.com/groups/1947945858558429" target="_blank" title="Moto Liberté sur Facebook">
+         <img src="/static/img/assos/motoliberte.jpg" alt="Moto Liberté" style="height:80px; margin:8px; border-radius:8px;">
+        </a>
       </div>
       <p class="muted center" style="margin-top:8px;">
         Vous souhaitez faire apparaître votre asso ou collectif ? Contactez-nous via la page WestPistards.
