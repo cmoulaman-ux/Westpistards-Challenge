@@ -1245,5 +1245,35 @@ body{ line-height:1.55; }
   box-sizing: border-box;
 }
 
+/* --- Partenaire principal : Lou Éthève Maroquinerie --- */
+.partners-grid .partner[title="Sellerie Lou Ethève"] {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  width: 220px;
+  height: 220px;
+  transition: transform .15s ease, box-shadow .15s ease;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+.partners-grid .partner[title="Sellerie Lou Ethève"] img {
+  max-height: 140px;
+  width: auto;
+  object-fit: contain;
+  transition: transform .15s ease;
+}
+
+.partners-grid .partner[title="Sellerie Lou Ethève"]:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.partners-grid .partner[title="Sellerie Lou Ethève"]:hover img {
+  transform: scale(1.08);
+}
 
 
