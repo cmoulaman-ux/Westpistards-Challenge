@@ -2257,6 +2257,14 @@ def pilot_time_chat(time_id):
       </section>
     """)
 
+@app.get("/__migrate_chat")
+def __migrate_chat():
+    if not db:
+        return "DB non dispo", 500
+    with app.app_context():
+        db.create_all()
+    return "ok", 200
+
 
 if __name__ == "__main__":
     if db:
