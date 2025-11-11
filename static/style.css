@@ -471,12 +471,6 @@ nav a.active {
 
 
 
-/* Optionnel : si le logo est foncé, on le rend plus lisible sur fond noir */
-/* Décommente si besoin */
-// .logo-grid .partner:nth-child(2) img{
-//   filter: invert(1) brightness(1.1); /* transforme un logo noir en blanc */
-// }
-
 /* ===== Partenaires — carrés arrondis, grands et côte à côte (override) ===== */
 
 /* Grille: 2 colonnes fixes sur desktop */
@@ -520,11 +514,7 @@ nav a.active {
   display: block !important;
 }
 
-/* 2e bulle en noir (ton logo foncé) */
-.logo-grid > .partner:nth-child(2){
-  background: #000 !important;
-  border-color: #000 !important;
-}
+
 
 /* Mobile: 1 colonne */
 @media (max-width: 720px){
@@ -582,11 +572,7 @@ nav a.active {
   display: block !important;
 }
 
-/* 2e bulle en noir */
-.card .logo-grid > .partner:nth-child(2){
-  background: #000 !important;
-  border-color: #000 !important;
-}
+
 
 /* Mobile: 1 colonne, un peu plus grand si tu veux */
 @media (max-width: 720px){
