@@ -100,6 +100,15 @@ if db:
         user = db.relationship('User', backref='time_entries', lazy=True)
         round = db.relationship('Round', backref='time_entries', lazy=True)
 
+        # lectures (admin / pilote), supprimées avec le chrono
+        reads = db.relationship(
+            "ChronoRead",
+            backref="time_entry",
+            lazy=True,
+            cascade="all, delete-orphan"
+    )
+
+
 class ChronoMessage(db.Model):
     __tablename__ = "chrono_message"
 
