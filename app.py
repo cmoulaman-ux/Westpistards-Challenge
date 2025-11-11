@@ -1558,7 +1558,6 @@ def round_leaderboard(round_id):
         )
 
         return PAGE(f"""
-          <h1>{r.name}</h1>
           {heading_html}
           {countdown_html}
           {table}
