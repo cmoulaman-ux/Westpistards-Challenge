@@ -1263,12 +1263,30 @@ def profile():
             yt = f"<a href='{e.youtube_link}' target='_blank' rel='noopener'>Vidéo</a>" if e.youtube_link else "—"
             badge = f"<span class='badge { 'approved' if e.status=='approved' else ('rejected' if e.status=='rejected' else ('inactif' if e.status=='superseded' else 'pending')) }'>{e.status}</span>"
 
-            # lien vers le chat avec l'admin pour ce chrono
-            chat_link = (
-                f"<a class='icon-btn' href='/times/{e.id}/chat' "
-                f"title=\"Messages avec l'admin\" aria-label=\"Messages avec l'admin\">"
-                f"<span class='i'>💬</span></a>"
-            )
+            # lien vers le chat avec l'admin pour ce chrono (bulle si nouveaux messages de l'admin)
+            unread_pilot = has_unread_admin_messages_for_pilot(e.id)
+
+            if unread_pilot:
+                chat_link = (
+                    f"<a class='icon-btn' href='/times/{e.id}/chat' "
+                    f"title=\"Nouveaux messages avec l'admin\" aria-label=\"Nouveaux messages avec l'admin\">"
+                    f"<span class='i' style='position:relative; display:inline-block;'>"
+                    f"💬"
+                    f"<span style=\""
+                    f"position:absolute; top:-6px; right:-6px; "
+                    f"min-width:14px; height:14px; "
+                    f"border-radius:50%; background:#e02424; color:white; "
+                    f"display:flex; align-items:center; justify-content:center; "
+                    f"font-size:9px;\">!</span>"
+                    f"</span></a>"
+                )
+            else:
+                chat_link = (
+                    f"<a class='icon-btn' href='/times/{e.id}/chat' "
+                    f"title=\"Messages avec l'admin\" aria-label=\"Messages avec l'admin\">"
+                    f"<span class='i'>💬</span></a>"
+                )
+
 
             delete_form = (
                 f"<form method='post' action='/my/times/{e.id}/delete' "
@@ -2169,6 +2187,17 @@ def has_unread_pilot_messages_for_admin(time_entry_id: int) -> bool:
     # Sinon, on regarde s’il existe un msg pilote plus récent que la dernière lecture
     return q.filter(ChronoMessage.created_at > last.last_read_at).count() > 0
 
+def has_unread_admin_messages_for_pilot(time_entry_id: int) -> bool:
+    # Dernière lecture du pilote pour ce chrono
+    last = ChronoRead.query.filter_by(time_entry_id=time_entry_id, who="pilot").first()
+    q = ChronoMessage.query.filter_by(time_entry_id=time_entry_id, author="admin")
+
+    if last is None:
+        # Le pilote n'a jamais ouvert le chat → si l'admin a déjà écrit, on considère comme "non lu"
+        return q.count() > 0
+
+    # Sinon, on regarde s'il existe un msg admin plus récent que la dernière lecture
+    return q.filter(ChronoMessage.created_at > last.last_read_at).count() > 0
 
 
 @app.route("/admin/times/<int:time_id>/chat", methods=["GET", "POST"])
@@ -2319,6 +2348,21 @@ def pilot_time_chat(time_id):
         ), 500
 
     messages_html = _build_chat_messages_html(msgs, pilot_view=True)
+
+    # On marque que le pilote vient de tout lire pour ce chrono
+    try:
+        read = ChronoRead.query.filter_by(time_entry_id=e.id, who="pilot").first()
+        now = datetime.utcnow()
+        if read is None:
+            read = ChronoRead(time_entry_id=e.id, who="pilot", last_read_at=now)
+            db.session.add(read)
+        else:
+            read.last_read_at = now
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        # On ne casse pas la page en cas de souci sur la table de lecture
+
 
     return PAGE(f"""
       <h1>Messages avec l'admin</h1>
