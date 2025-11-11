@@ -1234,13 +1234,24 @@ def profile():
             final_s = ms_to_str(final_ms)
             yt = f"<a href='{e.youtube_link}' target='_blank' rel='noopener'>Vidéo</a>" if e.youtube_link else "—"
             badge = f"<span class='badge { 'approved' if e.status=='approved' else ('rejected' if e.status=='rejected' else ('inactif' if e.status=='superseded' else 'pending')) }'>{e.status}</span>"
-            actions = (
+
+            # lien vers le chat avec l'admin pour ce chrono
+            chat_link = (
+                f"<a class='icon-btn' href='/times/{e.id}/chat' "
+                f"title=\"Messages avec l'admin\" aria-label=\"Messages avec l'admin\">"
+                f"<span class='i'>💬</span></a>"
+            )
+
+            delete_form = (
                 f"<form method='post' action='/my/times/{e.id}/delete' "
                 "onsubmit=\"return confirm('Supprimer ce chrono ?');\" style='display:inline;'>"
                 "<button class='btn danger icon' type='submit' "
                 "title='Supprimer ce chrono' aria-label='Supprimer'>×</button>"
                 "</form>"
             )
+
+            actions = chat_link + " " + delete_form
+
             return (
                 "<tr>"
                 f"<td>{e.round.name}</td>"
@@ -1263,6 +1274,7 @@ def profile():
             f"<tbody>{rows}</tbody>"
             "</table>"
         )
+
 
 
 
