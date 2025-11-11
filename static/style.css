@@ -1258,6 +1258,12 @@ body{ line-height:1.55; }
   color: #3b2f00;
 }
 
+/* Uniformiser la hauteur des encarts réseaux */
+.networks-grid .netw {
+  height: 150px;             /* hauteur standard */
+  min-width: 150px;
+  box-sizing: border-box;
+}
 
 
 
