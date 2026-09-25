@@ -548,7 +548,7 @@ def index():
           <img src="/static/img/partners/ecf.jpg" alt="ECF">
         </a>
 	<a class="partner" href="https://www.facebook.com/search/top?q=honda%20moto" target="_blank" rel="noopener" title="Honda Moto">
-          <img src="/static/img/partners/honda.jpg" alt="ECF">
+          <img src="/static/img/partners/honda.jpg" alt="Honda">
         </a>
       </div>
     </section>
