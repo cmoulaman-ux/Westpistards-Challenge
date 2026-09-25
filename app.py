@@ -490,7 +490,12 @@ def PAGE(inner_html):
 # --- Pages ---
 @app.get("/")
 def index():
-    open_list_html = "<p class='muted'>Aucune manche ouverte pour le moment.</p>"
+    lang = current_lang()
+
+    if lang == "fr":
+        open_list_html = "<p class='muted'>Aucune manche ouverte pour le moment.</p>"
+    else:
+        open_list_html = "<p class='muted'>No rounds are currently open.</p>"
     countdown_script = ""  # on l'ajoutera si au moins une manche a une deadline
 
     if db:
@@ -637,6 +642,18 @@ def index():
 
             """
 
+    # Textes FR / EN de la page d'accueil
+    if lang == "fr":
+        home_title = "Bienvenue sur WP Challenge"
+        home_intro = "Entre tes chronos, partage ton lien YouTube et grimpe au classement !"
+        open_rounds_title = "Manches ouvertes"
+        layout_text = "Implantation 2026 - 2027"
+    else:
+        home_title = "Welcome to WP Challenge"
+        home_intro = "Submit your times, share your YouTube link and climb the leaderboard!"
+        open_rounds_title = "Open rounds"
+        layout_text = "2026 - 2027 Course Layout"
+
 
     # --- Rendu de la page d'accueil ---
     return PAGE(f"""
@@ -659,19 +676,19 @@ def index():
 
       <div class="hero-row blend">
         <img class="logo-secondary" src="/static/img/logo_motogymkhana.jpg" alt="Moto Gymkhana">
-        <h1 class="hero-title">Bienvenue sur WP Challenge</h1>
+        <h1 class="hero-title">{home_title}</h1>
         <img class="logo-main" src="/static/img/WP2026.jpg" alt="WP Challenge">
       </div>
 
-      <p>Entre tes chronos, partage ton lien YouTube et grimpe au classement !</p>
+      <p>{home_intro}</p>
 
       {banner_html}
 
       <section class="card">
         <div class="row" style="justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:8px;">
-          <h2 style="margin:0;">Manches ouvertes</h2>
+          <h2 style="margin:0;">{open_rounds_title}</h2>
           <a class="btn outline" href="/trace/download" title="Implantation 2026-2027">
-            <span class="i">⬇️</span> Implantation 2026 - 2027
+            <span class="i">⬇️</span> {layout_text}
           </a>
         </div>
 
