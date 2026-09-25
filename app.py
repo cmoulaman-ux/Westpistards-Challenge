@@ -326,6 +326,13 @@ def PAGE(inner_html):
     u = current_user() if db else None
     lang = current_lang()
 
+    if lang == "fr":
+        credits_text = "Crédits photo & vidéo"
+        privacy_text = "Politique et Confidentialité"
+    else:
+        credits_text = "Photo & Video Credits"
+        privacy_text = "Privacy Policy"
+
     # --- NAV DROITE (FR / EN) ---
     nav_parts = []
 
@@ -490,20 +497,6 @@ def PAGE(inner_html):
 # --- Pages ---
 @app.get("/")
 def index():
-    lang = current_lang()
-
-    if lang == "fr":
-        open_list_html = "<p class='muted'>Aucune manche ouverte pour le moment.</p>"
-    else:
-        open_list_html = "<p class='muted'>No rounds are currently open.</p>"
-    countdown_script = ""  # on l'ajoutera si au moins une manche a une deadline
-
-    if lang == "fr":
-        credits_text = "Crédits photo & vidéo"
-        privacy_text = "Politique et Confidentialité"
-    else:
-        credits_text = "Photo & Video Credits"
-        privacy_text = "Privacy Policy"
 
     if db:
         open_rounds = (
@@ -580,6 +573,7 @@ def index():
 
 
      # Liens partenaires (remplace par tes vraies pages FB)
+
     if lang == "fr":
         partners_title = "Partenaires"
         partners_intro = "Merci à nos partenaires pour leur soutien."
