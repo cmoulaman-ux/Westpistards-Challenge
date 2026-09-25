@@ -836,15 +836,28 @@ def login():
         except Exception as e:
             return PAGE(f"<h1>Connexion</h1><p class='muted'>Erreur DB : {e}</p><p>Essaie de (re)créer les tables : <code>/__init_db?token=please-change-me</code></p>"), 500
 
-    return PAGE("""
-      <h1>Connexion (sans mot de passe)</h1>
+    lang = current_lang()
+
+    if lang == "fr":
+        login_title = "Connexion (sans mot de passe)"
+        login_button = "Se connecter"
+        no_account_text = "Pas encore de compte ?"
+        register_link_text = "Inscription"
+    else:
+        login_title = "Log in (passwordless)"
+        login_button = "Log in"
+        no_account_text = "Don't have an account yet?"
+        register_link_text = "Sign up"
+
+    return PAGE(f"""
+      <h1>{login_title}</h1>
       <form method="post" class="form">
         <label>Email
           <input type="email" name="email" required>
         </label>
-        <button class="btn" type="submit">Se connecter</button>
+        <button class="btn" type="submit">{login_button}</button>
       </form>
-      <p class="muted" style="margin-top:12px;">Pas encore de compte ? <a href="/register">Inscription</a></p>
+      <p class="muted" style="margin-top:12px;">{no_account_text} <a href="/register">{register_link_text}</a></p>
     """)
 
 
