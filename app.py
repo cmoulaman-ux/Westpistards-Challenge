@@ -339,7 +339,7 @@ def PAGE(inner_html):
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <link rel="icon" type="image/png" href="/static/img/icon-192.png">
+  <link rel="icon" type="image/png" href="/static/img/WP2026.jpg">
   <title>WP Challenge</title>
   <link rel="stylesheet" href="/static/style.css">
 </head>
