@@ -1347,18 +1347,44 @@ def submit_time():
         return PAGE("<h1>Soumettre un chrono</h1><p class='muted'>Aucune manche ouverte pour le moment.</p>")
 
     opts = "".join([f"<option value='{r.id}'>{r.name}</option>" for r in open_rounds])
+    lang = current_lang()
+
+    if lang == "fr":
+        submit_title = "Soumettre un chrono"
+        round_label = "Manche"
+        official_time_label = "Temps officiel (mm:ss.mmm)"
+        time_example = "Ex : 1:32.543 — minutes:secondes.millièmes"
+        penalties_label = "Pénalités (1 pénalité = +1s)"
+        bike_label = "Moto (facultatif)"
+        bike_placeholder = "Marque / Modèle"
+        youtube_label = "Lien YouTube"
+        note_label = "Note (facultatif)"
+        note_placeholder = "Remarque libre..."
+        submit_button = "Envoyer"
+    else:
+        submit_title = "Submit a time"
+        round_label = "Round"
+        official_time_label = "Official time (mm:ss.mmm)"
+        time_example = "Example: 1:32.543 — minutes:seconds.milliseconds"
+        penalties_label = "Penalties (1 penalty = +1s)"
+        bike_label = "Bike (optional)"
+        bike_placeholder = "Brand / Model"
+        youtube_label = "YouTube Link"
+        note_label = "Note (optional)"
+        note_placeholder = "Optional comment..."
+        submit_button = "Submit"
 
     html_lines = []
-    html_lines.append("<h1>Soumettre un chrono</h1>")
+    html_lines.append(f"<h1>{submit_title}</h1>")
     html_lines.append('<form method="post" class="form" id="submit-form">')
-    html_lines.append("  <label>Manche")
+    html_lines.append(f"  <label>{round_label}")
     html_lines.append('    <select name="round_id" required>')
     html_lines.append(f"      {opts}")
     html_lines.append("    </select>")
     html_lines.append("  </label>")
     html_lines.append('  <label>')
     html_lines.append('    <div class="row" style="align-items:baseline; gap:8px;">')
-    html_lines.append('      <span><strong>Temps officiel (mm:ss.mmm)</strong></span>')
+    html_lines.append(f'      <span><strong>{official_time_label}</strong></span>')
     html_lines.append('      <span class="badge" style="background:#eee; color:#333;">Format</span>')
     html_lines.append('    </div>')
     html_lines.append('    <div class="row" style="gap:8px; flex-wrap:wrap;">')
@@ -1368,7 +1394,7 @@ def submit_time():
     html_lines.append('      <span style="align-self:center;">.</span>')
     html_lines.append('      <input type="number" name="time_mmm" placeholder="mmm" inputmode="numeric" min="0" max="999" step="1" required style="width:110px">')
     html_lines.append('    </div>')
-    html_lines.append('    <p class="muted" style="margin:6px 0 0;">Ex : 1:32.543 — minutes:secondes.millièmes</p>')
+    html_lines.append(f'    <p class="muted" style="margin:6px 0 0;">{time_example}</p>')
     html_lines.append('    <input type="hidden" name="time_input" id="time_input_hidden">')
     html_lines.append('  </label>')
 
@@ -1398,21 +1424,20 @@ def submit_time():
     </script>
     """)
 
-    html_lines.append("  <label>Pénalités (1 pénalité = +1s)")
+    html_lines.append(f"  <label>{penalties_label}")
     html_lines.append('    <input type="number" name="penalties" min="0" step="1" value="0">')
     html_lines.append("  </label>")
-    html_lines.append("  <label>Moto (facultatif)")
-    html_lines.append('    <input type="text" name="bike" placeholder="Marque / Modèle">')
+    html_lines.append(f"  <label>{bike_label}")
+    html_lines.append(f'    <input type="text" name="bike" placeholder="{bike_placeholder}">')
     html_lines.append("  </label>")
-    html_lines.append("  <label>Lien YouTube")
+    html_lines.append(f"  <label>{youtube_label}")
     html_lines.append('    <input type="url" name="youtube_link" placeholder="https://...">')
     html_lines.append("  </label>")
-    html_lines.append("  <label>Note (facultatif)")
-    html_lines.append('    <textarea name="note" rows="3" placeholder="Remarque libre..."></textarea>')
+    html_lines.append(f"  <label>{note_label}")
+    html_lines.append(f'    <textarea name="note" rows="3" placeholder="{note_placeholder}"></textarea>')
     html_lines.append("  </label>")
-    html_lines.append('  <button class="btn" type="submit">Envoyer</button>')
+    html_lines.append(f'  <button class="btn" type="submit">{submit_button}</button>')
     html_lines.append("</form>")
-
     return PAGE("\n".join(html_lines))
 
 
