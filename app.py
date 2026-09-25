@@ -558,7 +558,7 @@ def index():
       <div class="networks-grid">
         <!-- Nouveau logo en premier -->
         <a class="netw" href="https://www.facebook.com/west.pistards" target="_blank" rel="noopener" title="WP">
-          <img src="/static/img/assos/wp.jpg" alt="WP">
+          <img src="/static/img/assos/WPLOGO2026.jpg" alt="WP">
         </a>
         <a class="netw" href="https://www.instagram.com/maniacones360/" target="_blank" rel="noopener" title="Mania">
           <img src="/static/img/assos/mania3.jpg" alt="Mania">
