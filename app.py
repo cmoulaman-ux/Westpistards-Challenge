@@ -650,23 +650,23 @@ def index():
     <section class="marquee-photos" aria-label="Photos WestPistards">
       <div class="marquee-track" style="animation-duration: 20s;">
         <!-- Rangée A -->
-        <img src="/static/img/bottom_gallery/imageun.jpg" alt="WestPistards 1" loading="lazy">
-        <img src="/static/img/bottom_gallery/imagedeux.jpg" alt="WestPistards 2" loading="lazy">
-        <img src="/static/img/bottom_gallery/imagetrois.jpg" alt="WestPistards 3" loading="lazy">
-        <img src="/static/img/bottom_gallery/imagequatre.jpg" alt="WestPistards 4" loading="lazy">
-        <img src="/static/img/bottom_gallery/imagecinq.jpg" alt="WestPistards 5" loading="lazy">
-        <img src="/static/img/bottom_gallery/imagesix.jpg" alt="WestPistards 6" loading="lazy">
-        <img src="/static/img/bottom_gallery/imagesept.jpg" alt="WestPistards 7" loading="lazy">
-        <img src="/static/img/bottom_gallery/imagehuit.jpg" alt="WestPistards 8" loading="lazy">
+        <img src="/static/img/bottom_gallery/G1.jpg" alt="WestPistards 1" loading="lazy">
+        <img src="/static/img/bottom_gallery/G2.jpg" alt="WestPistards 2" loading="lazy">
+        <img src="/static/img/bottom_gallery/G3.jpg" alt="WestPistards 3" loading="lazy">
+        <img src="/static/img/bottom_gallery/G4.jpg" alt="WestPistards 4" loading="lazy">
+        <img src="/static/img/bottom_gallery/G5.jpg" alt="WestPistards 5" loading="lazy">
+        <img src="/static/img/bottom_gallery/G6.jpg" alt="WestPistards 6" loading="lazy">
+        <img src="/static/img/bottom_gallery/G7.jpg" alt="WestPistards 7" loading="lazy">
+        <img src="/static/img/bottom_gallery/G8.jpg" alt="WestPistards 8" loading="lazy">
         <!-- Rangée B (duplication pour boucle fluide) -->
-        <img src="/static/img/bottom_gallery/imageun.jpg" alt="" aria-hidden="true" loading="lazy">
-        <img src="/static/img/bottom_gallery/imagedeux.jpg" alt="" aria-hidden="true" loading="lazy">
-        <img src="/static/img/bottom_gallery/imagetrois.jpg" alt="" aria-hidden="true" loading="lazy">
-        <img src="/static/img/bottom_gallery/imagequatre.jpg" alt="" aria-hidden="true" loading="lazy">
-        <img src="/static/img/bottom_gallery/imagecinq.jpg" alt="" aria-hidden="true" loading="lazy">
-        <img src="/static/img/bottom_gallery/imagesix.jpg" alt="" aria-hidden="true" loading="lazy">
-        <img src="/static/img/bottom_gallery/imagesept.jpg" alt="" aria-hidden="true" loading="lazy">
-        <img src="/static/img/bottom_gallery/imagehuit.jpg" alt="" aria-hidden="true" loading="lazy">
+        <img src="/static/img/bottom_gallery/G1.jpg" alt="" aria-hidden="true" loading="lazy">
+        <img src="/static/img/bottom_gallery/G2.jpg" alt="" aria-hidden="true" loading="lazy">
+        <img src="/static/img/bottom_gallery/G3.jpg" alt="" aria-hidden="true" loading="lazy">
+        <img src="/static/img/bottom_gallery/G4.jpg" alt="" aria-hidden="true" loading="lazy">
+        <img src="/static/img/bottom_gallery/G5.jpg" alt="" aria-hidden="true" loading="lazy">
+        <img src="/static/img/bottom_gallery/G6.jpg" alt="" aria-hidden="true" loading="lazy">
+        <img src="/static/img/bottom_gallery/G7.jpg" alt="" aria-hidden="true" loading="lazy">
+        <img src="/static/img/bottom_gallery/G8.jpg" alt="" aria-hidden="true" loading="lazy">
       </div>
     </section>
 
