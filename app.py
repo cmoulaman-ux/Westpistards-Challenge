@@ -333,10 +333,10 @@ def PAGE(inner_html):
 
     # Public
     if lang == "fr":
-        nav_parts.append("<a href='/static/docs/Reglement_WestPistardsChallenge.pdf' target='_blank' rel='noopener'>Règlement</a>")
+        nav_parts.append("<a href='/static/docs/rulesWPC20262027.pdf' target='_blank' rel='noopener'>Règlement</a>")
         nav_parts.append("<a href='/rounds'>Manches</a>")
     else:
-        nav_parts.append("<a href='/static/docs/Reglement_WestPistardsChallenge.pdf' target='_blank' rel='noopener'>Rules</a>")
+        nav_parts.append("<a href='/static/docs/rulesWPC20262027.pdf' target='_blank' rel='noopener'>Rules</a>")
         nav_parts.append("<a href='/rounds'>Rounds</a>")
 
     nav_parts.append(
