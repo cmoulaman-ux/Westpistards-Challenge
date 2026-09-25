@@ -2164,8 +2164,9 @@ def admin_user_delete(user_id):
         db.session.execute(delete(TimeEntry).where(TimeEntry.user_id == user_id))
         db.session.delete(pilot)
         db.session.commit()
-    except Exception:
+    except Exception as e:
         db.session.rollback()
+        print(f"ERREUR SUPPRESSION USER {user_id}: {e}", flush=True)
         return PAGE("<h1>Erreur</h1><p class='muted'>Suppression impossible pour le moment.</p>"), 500
 
     return redirect(url_for("admin_users"))
