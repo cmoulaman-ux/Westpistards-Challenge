@@ -360,7 +360,7 @@ def PAGE(inner_html):
   <footer class="container muted">
     <a href="/credits">Crédits photo & vidéo</a><br>
     <a href="/privacy">Politique et Confidentialité</a><br>
-    © 2025 westpistards
+    © 2026 westpistards
   </footer>
   <!-- Bandeau d'annonce (haut) : défile & pause au centre -->
   <script>
