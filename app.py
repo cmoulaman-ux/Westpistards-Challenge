@@ -777,20 +777,40 @@ def register():
         session["user_id"] = u.id
         return redirect(url_for("profile"))
 
+
+    lang = current_lang()
+
+    if lang == "fr":
+        register_title = "Inscription"
+        email_label = "Adresse e-mail"
+        nationality_label = "Nationalité"
+        nationality_placeholder = "FR, BE, ..."
+        pseudo_label = "Pseudo (affiché dans les classements)"
+        pseudo_placeholder = "Votre pseudo public"
+        submit_text = "Valider"
+    else:
+        register_title = "Sign up"
+        email_label = "Email address"
+        nationality_label = "Nationality"
+        nationality_placeholder = "FR, BE, ..."
+        pseudo_label = "Username (displayed in the rankings)"
+        pseudo_placeholder = "Your public username"
+        submit_text = "Submit"
+
     # GET -> formulaire
     return PAGE(f"""
-      <h1>Inscription</h1>
+      <h1>{register_title}</h1>
       <form method="post" class="form">
-        <label>Adresse e-mail
+        <label>{email_label}
           <input type="email" name="email" required>
         </label>
-        <label>Nationalité
-          <input type="text" name="nationality" placeholder="FR, BE, ..." required>
+        <label>{nationality_label}
+          <input type="text" name="nationality" placeholder="{nationality_placeholder}" required>
         </label>
-        <label>Pseudo (affiché dans les classements)
-          <input type="text" name="pseudo" placeholder="Votre pseudo public">
+        <label>{pseudo_label}
+          <input type="text" name="pseudo" placeholder="{pseudo_placeholder}">
         </label>
-        <button class="btn" type="submit">Valider</button>
+        <button class="btn" type="submit">{submit_text}</button>
       </form>
     """)
 
