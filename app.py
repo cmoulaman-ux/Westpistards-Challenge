@@ -492,7 +492,7 @@ def PAGE(inner_html):
 # --- Pages ---
 @app.get("/")
 def index():
-
+    lang = current_lang()
     if db:
         open_rounds = (
             Round.query.filter_by(status="open")
