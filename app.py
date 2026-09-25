@@ -1871,7 +1871,7 @@ def round_plan(round_id):
 def trace_download():
     # Sert l'image du tracé en téléchargement (Content-Disposition: attachment)
     import os
-    path = os.path.join(app.static_folder or "static", "img", "traceWP.jpg")
+    path = os.path.join(app.static_folder or "static", "img", "traceWP2026.png")
     try:
         with open(path, "rb") as f:
             data = f.read()
@@ -1880,7 +1880,7 @@ def trace_download():
     return Response(
         data,
         mimetype="image/jpeg",
-        headers={"Content-Disposition": 'attachment; filename="traceWP.jpg"'}
+        headers={"Content-Disposition": 'attachment; filename="traceWP2026.png"'}
     )
 
 @app.get("/admin/users")
