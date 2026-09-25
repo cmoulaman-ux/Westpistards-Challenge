@@ -621,7 +621,7 @@ def index():
       <div class="hero-row blend">
         <img class="logo-secondary" src="/static/img/logo_motogymkhana.jpg" alt="Moto Gymkhana">
         <h1 class="hero-title">Bienvenue sur WP Challenge</h1>
-        <img class="logo-main" src="/static/img/logo_challenge.png" alt="WP Challenge">
+        <img class="logo-main" src="/static/img/WP2026" alt="WP Challenge">
       </div>
 
       <p>Entre tes chronos, partage ton lien YouTube et grimpe au classement !</p>
