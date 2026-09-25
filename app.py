@@ -394,8 +394,8 @@ def PAGE(inner_html):
     {inner_html}
   </main>
   <footer class="container muted">
-    <a href="/credits">Crédits photo & vidéo</a><br>
-    <a href="/privacy">Politique et Confidentialité</a><br>
+    <a href="/credits">{credits_text}</a><br>
+    <a href="/privacy">{privacy_text}</a><br>
     © 2026 westpistards
   </footer>
   <!-- Bandeau d'annonce (haut) : défile & pause au centre -->
@@ -498,6 +498,13 @@ def index():
         open_list_html = "<p class='muted'>No rounds are currently open.</p>"
     countdown_script = ""  # on l'ajoutera si au moins une manche a une deadline
 
+    if lang == "fr":
+        credits_text = "Crédits photo & vidéo"
+        privacy_text = "Politique et Confidentialité"
+    else:
+        credits_text = "Photo & Video Credits"
+        privacy_text = "Privacy Policy"
+
     if db:
         open_rounds = (
             Round.query.filter_by(status="open")
@@ -573,10 +580,17 @@ def index():
 
 
      # Liens partenaires (remplace par tes vraies pages FB)
-    partners_html = """
+    if lang == "fr":
+        partners_title = "Partenaires"
+        partners_intro = "Merci à nos partenaires pour leur soutien."
+    else:
+        partners_title = "Partners"
+        partners_intro = "Thank you to our partners for their support."
+    partners_html = f"""
     <section class="card" style="margin-top:24px;">
-      <h2>Partenaires</h2>
-      <p class="muted" style="margin-top:-4px;">Merci à nos partenaires pour leur soutien.</p>
+      <h2>{partners_title}</h2>
+      <p class="muted" style="margin-top:-4px;">{partners_intro}</p>
+     
 
       <div class="logo-grid" style="margin-top:12px;">
         <a class="partner" href="https://www.coneaddict.com" target="_blank" rel="noopener" title="Cone Addict">
@@ -594,10 +608,19 @@ def index():
       </div>
     </section>
     """
-    networks_html = """
+
+    if lang == "fr":
+        networks_title = "Les réseaux du gymkhana français"
+        networks_intro = "Où pratiquer en France — associations et collectifs."
+        networks_contact = "Vous souhaitez faire apparaître votre asso ou collectif ? Contactez-nous via la page WestPistards."
+    else:
+        networks_title = "French Moto Gymkhana Community"
+        networks_intro = "Where to practice in France — associations and riding groups."
+        networks_contact = "Would you like your association or group to appear here? Contact us via the WestPistards page."
+    networks_html = f"""
     <section class="card" style="margin-top:24px;">
-      <h2>Les réseaux du gymkhana français</h2>
-      <p class="muted" style="margin-top:-4px;">Où pratiquer en France — associations et collectifs.</p>
+      <h2>{networks_title}</h2>
+      <p class="muted" style="margin-top:-4px;">{networks_intro}</p>
 
       <div class="networks-grid">
         <!-- Nouveau logo en premier -->
@@ -618,7 +641,7 @@ def index():
         </a>
       </div>
       <p class="muted center" style="margin-top:8px;">
-        Vous souhaitez faire apparaître votre asso ou collectif ? Contactez-nous via la page WestPistards.
+        {networks_contact}
       </p>
     </section>
     """
