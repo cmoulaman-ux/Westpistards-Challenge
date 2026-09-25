@@ -1034,11 +1034,14 @@ def admin_round_delete(round_id):
         return PAGE("<h1>Erreur</h1><p class='muted'>Manche introuvable.</p>"), 404
 
     # Supprimer d'abord les chronos liés (évite l'erreur de contrainte)
+   
     try:
         from sqlalchemy import delete
-        db.session.execute(delete(TimeEntry).where(TimeEntry.round_id == round_id))
-        db.session.delete(r)
+        db.session.execute(delete(TimeEntry).where(TimeEntry.user_id == user_id))
+        db.session.execute(delete(LoginEvent).where(LoginEvent.user_id == user_id))
+        db.session.delete(pilot)
         db.session.commit()
+
         return redirect(url_for("admin_rounds"))
     except Exception as e:
         db.session.rollback()
