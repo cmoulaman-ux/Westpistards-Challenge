@@ -198,6 +198,20 @@ SMTP_USER = os.getenv("SMTP_USER", "")
 SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")
 EMAIL_FROM = os.getenv("EMAIL_FROM", SMTP_USER or "no-reply@wp-challenge.local")
 
+# --- Gestion de la langue FR / EN ---
+def current_lang():
+    return session.get("lang", "fr")
+
+
+@app.get("/lang/<lang>")
+def change_lang(lang):
+    if lang not in ("fr", "en"):
+        lang = "fr"
+
+    session["lang"] = lang
+
+    # Retourne sur la page depuis laquelle on a changé la langue
+    return redirect(request.referrer or url_for("index"))
 
 # --- Helpers utilisateur ---
 def current_user():
