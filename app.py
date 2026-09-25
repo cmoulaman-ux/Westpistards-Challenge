@@ -1433,6 +1433,29 @@ def profile():
     nationality = u.nationality or "—"
     email = u.email
 
+    lang = current_lang()
+
+    if lang == "fr":
+        profile_title = "Mon profil"
+        pilot_info_title = "Infos pilote"
+        pseudo_label = "Pseudo"
+        nationality_label = "Nationalité"
+        role_label = "Rôle"
+        actions_title = "Mes actions"
+        my_times_title = "Mes chronos"
+        submit_time_text = "Soumettre un chrono"
+        logout_text = "Se déconnecter"
+    else:
+        profile_title = "My profile"
+        pilot_info_title = "Rider information"
+        pseudo_label = "Username"
+        nationality_label = "Nationality"
+        role_label = "Role"
+        actions_title = "My actions"
+        my_times_title = "My times"
+        submit_time_text = "Submit a time"
+        logout_text = "Log out"
+
     # Récupère tous les chronos de l'utilisateur
     entries = (
         TimeEntry.query
@@ -1550,32 +1573,31 @@ def profile():
         </div>
         """
 
-
     # Actions pilote
     actions_html = (
         "<div class='row' style='gap:8px;'>"
-        "<a class='btn' href='/submit'>Soumettre un chrono</a>"
-        "<a class='btn outline' href='/logout'>Se déconnecter</a>"
+        f"<a class='btn' href='/submit'>{submit_time_text}</a>"
+        f"<a class='btn outline' href='/logout'>{logout_text}</a>"
         "</div>"
     )
 
     # Page finale (sans triple guillemets)
     html = []
-    html.append("<h1>Mon profil</h1>")
+    html.append(f"<h1>{profile_title}</h1>")
     html.append("<section class='card'>")
-    html.append("<h2 style='margin-top:0;'>Infos pilote</h2>")
-    html.append(f"<p><strong>Pseudo :</strong> {pseudo}</p>")
+    html.append(f"<h2 style='margin-top:0;'>{pilot_info_title}</h2>")
+    html.append(f"<p><strong>{pseudo_label} :</strong> {pseudo}</p>")
     html.append(f"<p><strong>Email :</strong> {email}</p>")
-    html.append(f"<p><strong>Nationalité :</strong> {nationality}</p>")
-    html.append(f"<p><strong>Rôle :</strong> {role}</p>")
+    html.append(f"<p><strong>{nationality_label} :</strong> {nationality}</p>")
+    html.append(f"<p><strong>{role_label} :</strong> {role}</p>")
     html.append(admin_links)
     html.append("</section>")
     html.append("<section style='margin-top:16px;' class='card'>")
-    html.append("<h2 style='margin-top:0;'>Mes actions</h2>")
+    html.append(f"<h2 style='margin-top:0;'>{actions_title}</h2>")
     html.append(actions_html)
     html.append("</section>")
     html.append("<section style='margin-top:16px;' class='card'>")
-    html.append("<h2 style='margin-top:0;'>Mes chronos</h2>")
+    html.append(f"<h2 style='margin-top:0;'>{my_times_title}</h2>")
     html.append(chronos_html)
     html.append("</section>")
     return PAGE("".join(html))
