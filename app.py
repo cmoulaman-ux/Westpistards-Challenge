@@ -326,12 +326,7 @@ def PAGE(inner_html):
     u = current_user() if db else None
     lang = current_lang()
 
-    if lang == "fr":
-        credits_text = "Crédits photo & vidéo"
-        privacy_text = "Politique et Confidentialité"
-    else:
-        credits_text = "Photo & Video Credits"
-        privacy_text = "Privacy Policy"
+
 
     # --- NAV DROITE (FR / EN) ---
     nav_parts = []
@@ -401,8 +396,8 @@ def PAGE(inner_html):
     {inner_html}
   </main>
   <footer class="container muted">
-    <a href="/credits">{credits_text}</a><br>
-    <a href="/privacy">{privacy_text}</a><br>
+    <a href="/credits">Crédits photo & vidéo</a><br>
+    <a href="/privacy">Politique et Confidentialité</a><br>
     © 2026 westpistards
   </footer>
   <!-- Bandeau d'annonce (haut) : défile & pause au centre -->
