@@ -1041,11 +1041,10 @@ def admin_round_delete(round_id):
         db.session.execute(delete(LoginEvent).where(LoginEvent.user_id == user_id))
         db.session.delete(pilot)
         db.session.commit()
-
-        return redirect(url_for("admin_rounds"))
     except Exception as e:
         db.session.rollback()
-        return PAGE(f"<h1>Erreur</h1><p class='muted'>Suppression impossible : {e.__class__.__name__}: {e}</p>"), 500
+        print(f"ERREUR SUPPRESSION USER {user_id}: {e}", flush=True)
+        return PAGE("<h1>Erreur</h1><p class='muted'>Suppression impossible pour le moment.</p>"), 500
 
 
 @app.get("/admin/times")
