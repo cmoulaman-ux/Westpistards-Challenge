@@ -324,39 +324,40 @@ def send_email(to_email: str, subject: str, body: str):
 # --- Layout inline réutilisable ---
 def PAGE(inner_html):
     u = current_user() if db else None
-
-    # --- NAV DROITE (simple et claire) ---
-    nav_parts = []
-    # Public
-    nav_parts.append("<a href='/static/docs/Reglement_WestPistardsChallenge.pdf' target='_blank' rel='noopener'>Règlement</a>")
-    nav_parts.append("<a href='/rounds'>Manches</a>")
-    nav_parts.append(
-        "<a href='https://www.facebook.com/west.pistards' target='_blank' rel='noopener' title='Ouvrir notre page Facebook'>Facebook</a>"
-    )
-
-
-
-    # Connexion / Profil
-    if u:
-        nav_parts.append("<a href='/profile'>Profil</a>")
-        # 👇 plus de lien Admin ici (tu gères l’admin depuis le profil)
-        nav_parts.append("<a href='/logout'>Déconnexion</a>")
-    else:
-        nav_parts.append("<a href='/register'>Inscription</a>")
-        nav_parts.append("<a href='/login'>Connexion</a>")
-
-    # Connexion / Profil
-    if u:
-        nav_parts.append("<a href='/profile'>Profil</a>")
-        # 👇 plus de lien Admin ici (tu gères l’admin depuis le profil)
-        nav_parts.append("<a href='/logout'>Déconnexion</a>")
-    else:
-        nav_parts.append("<a href='/register'>Inscription</a>")
-        nav_parts.append("<a href='/login'>Connexion</a>")
-
-    # Sélecteur de langue
     lang = current_lang()
 
+    # --- NAV DROITE (FR / EN) ---
+    nav_parts = []
+
+    # Public
+    if lang == "fr":
+        nav_parts.append("<a href='/static/docs/Reglement_WestPistardsChallenge.pdf' target='_blank' rel='noopener'>Règlement</a>")
+        nav_parts.append("<a href='/rounds'>Manches</a>")
+    else:
+        nav_parts.append("<a href='/static/docs/Reglement_WestPistardsChallenge.pdf' target='_blank' rel='noopener'>Rules</a>")
+        nav_parts.append("<a href='/rounds'>Rounds</a>")
+
+    nav_parts.append(
+        "<a href='https://www.facebook.com/west.pistards' target='_blank' rel='noopener' title='Facebook'>Facebook</a>"
+    )
+
+    # Connexion / Profil
+    if u:
+        if lang == "fr":
+            nav_parts.append("<a href='/profile'>Profil</a>")
+            nav_parts.append("<a href='/logout'>Déconnexion</a>")
+        else:
+            nav_parts.append("<a href='/profile'>Profile</a>")
+            nav_parts.append("<a href='/logout'>Log out</a>")
+    else:
+        if lang == "fr":
+            nav_parts.append("<a href='/register'>Inscription</a>")
+            nav_parts.append("<a href='/login'>Connexion</a>")
+        else:
+            nav_parts.append("<a href='/register'>Sign up</a>")
+            nav_parts.append("<a href='/login'>Log in</a>")
+
+    # Sélecteur de langue
     if lang == "fr":
         nav_parts.append("<strong>🇫🇷 FR</strong>")
         nav_parts.append("<a href='/lang/en'>🇬🇧 EN</a>")
