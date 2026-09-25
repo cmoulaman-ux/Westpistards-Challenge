@@ -632,7 +632,7 @@ def index():
         <div class="row" style="justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:8px;">
           <h2 style="margin:0;">Manches ouvertes</h2>
           <a class="btn outline" href="/trace/download" title="Implantation 2026-2027">
-            <span class="i">⬇️</span> Implantation 2026
+            <span class="i">⬇️</span> Implantation 2026 - 2027
           </a>
         </div>
 
