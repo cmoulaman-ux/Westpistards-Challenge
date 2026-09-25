@@ -1445,6 +1445,9 @@ def profile():
         my_times_title = "Mes chronos"
         submit_time_text = "Soumettre un chrono"
         logout_text = "Se déconnecter"
+        no_times_text = "Aucun chrono pour l’instant."
+        
+
     else:
         profile_title = "My profile"
         pilot_info_title = "Rider information"
@@ -1455,6 +1458,9 @@ def profile():
         my_times_title = "My times"
         submit_time_text = "Submit a time"
         logout_text = "Log out"
+        no_times_text = "No times yet."
+        
+       
 
     # Récupère tous les chronos de l'utilisateur
     entries = (
@@ -1467,7 +1473,7 @@ def profile():
     # --- Section "Mes chronos" avec badges de statut ---
     # Section chronos
     if not entries:
-        chronos_html = "<p class='muted'>Aucun chrono pour l’instant.</p>"
+        chronos_html = f"<p class='muted'>{no_times_text}</p>"
     else:
         def row(e):
             raw = ms_to_str(e.raw_time_ms)
@@ -1546,10 +1552,14 @@ def profile():
             )
 
         rows = "".join(row(e) for e in entries)
+        if lang == "fr":
+            table_headers = "<th>Manche</th><th>Brut</th><th>Pén.</th><th>Final</th><th>Moto</th><th>YouTube</th><th>Statut</th><th>Actions</th>"
+        else:
+            table_headers = "<th>Round</th><th>Time</th><th>Pen.</th><th>Final</th><th>Bike</th><th>YouTube</th><th>Status</th><th>Actions</th>"
         chronos_html = (
             "<table class='table'>"
             "<thead><tr>"
-            "<th>Manche</th><th>Brut</th><th>Pén.</th><th>Final</th><th>Moto</th><th>YouTube</th><th>Statut</th><th>Actions</th>"
+            f"{table_headers}"
             "</tr></thead>"
             f"<tbody>{rows}</tbody>"
             "</table>"
