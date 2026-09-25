@@ -1848,8 +1848,8 @@ def my_time_delete(time_id):
 def credits():
     return PAGE("""
       <h1>Crédits photo & vidéo</h1>
-      <p>Photos : <a href="https://www.facebook.com/profile.php?id=100062921426923" target="_blank">Suzie Fontaine Photos</a></p>
-      <p>Vidéos : <a href="https://youtu.be/5OXhfkt5BqY?si=bWjH6IVx65XOxVkQ">Merci Alaaaaaiiiiiinnnnn</a></p>
+      <p>Photos : <a href="https://www.facebook.com/profile.php?id=100066529642212" target="_blank">Camille Photography</a></p>
+      <p>Vidéos : <a href="https://www.youtube.com/@renodebgymkhanarider6027/videos">Merci Nolweeeeeeennnn</a></p>
     """)
 
 @app.get("/rounds/<int:round_id>/plan")
