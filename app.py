@@ -345,7 +345,28 @@ def PAGE(inner_html):
         nav_parts.append("<a href='/register'>Inscription</a>")
         nav_parts.append("<a href='/login'>Connexion</a>")
 
+    # Connexion / Profil
+    if u:
+        nav_parts.append("<a href='/profile'>Profil</a>")
+        # 👇 plus de lien Admin ici (tu gères l’admin depuis le profil)
+        nav_parts.append("<a href='/logout'>Déconnexion</a>")
+    else:
+        nav_parts.append("<a href='/register'>Inscription</a>")
+        nav_parts.append("<a href='/login'>Connexion</a>")
+
+    # Sélecteur de langue
+    lang = current_lang()
+
+    if lang == "fr":
+        nav_parts.append("<strong>🇫🇷 FR</strong>")
+        nav_parts.append("<a href='/lang/en'>🇬🇧 EN</a>")
+    else:
+        nav_parts.append("<a href='/lang/fr'>🇫🇷 FR</a>")
+        nav_parts.append("<strong>🇬🇧 EN</strong>")
+
     nav_right = " ".join(nav_parts)
+
+  
 
 
     return f"""
